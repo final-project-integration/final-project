@@ -1,13 +1,18 @@
-## What this PR does
--
+## Summary
+Describe what this PR changes.
 
-## Related task / issue
--
+## Type
+- [ ] Feature
+- [ ] Bug fix
+- [ ] Refactor / cleanup
+- [ ] Docs
 
-## Testing steps
--
+## How to test
+Steps or commands to verify.
 
 ## Checklist
 - [ ] Runs locally
-- [ ] Follows branch/folder rules
+- [ ] Unit/CLI tested
 - [ ] Updated docs/API_CONTRACTS.md if interfaces changed
+- [ ] Touched only my team folder (or coordinated with Integration)
+- [ ] CODEOWNERS requested reviews are added
