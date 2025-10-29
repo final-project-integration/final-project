@@ -1,11 +1,1 @@
-# Default: Integration lead reviews everything
-* @ditto-d
-
-# Fill in real owners later:
-# /accounts/    @alice
-# /prediction/  @bob
-# /reports/     @carol
-# /storage/     @dave
-# /validation/  @eve
-# /test/        @qa
-# /integration/ @ditto-d
+...
