@@ -42,6 +42,14 @@ Login → Main Menu → Choose a feature → Module runs → Return to menu
 * CodeOwner review & approval
 * No direct commits to `main`
 
+## Pull Request Rules
+
+- Fill the PR template completely (no blank sections).
+- Tag the Integration lead if modifying any shared interfaces.
+- Verify the project runs locally before opening the PR.
+- Get at least one teammate review before merge.
+- If your change affects module interfaces or public methods, add the `api-change` label and notify Integration.
+
 
 ###  Running the Program
 
