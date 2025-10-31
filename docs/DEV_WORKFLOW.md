@@ -136,7 +136,7 @@ Use these first:
 * `docs/ONBOARDING_CHECKLIST.md` — new member checklist
 * `docs/API_CONTRACTS.md` — shared method signatures
 * Ask your **team lead**
-* Tag **@ditto-d** **Darxware** **Aaron-Madou** **Kapil-Tamang for Integration questions
+* Tag **@ditto-d** **@Darxware** **@Aaron-Madou** **@Kapil-Tamang** for Integration questions
 
 ---
 
