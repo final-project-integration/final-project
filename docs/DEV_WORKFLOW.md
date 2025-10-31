@@ -1,6 +1,6 @@
 #  Developer Workflow Guide
 
-Welcome to the project! This guide explains **how to work in our GitHub repo**, create branches, and submit your code smoothly.
+Welcome to the project! This guide explains **how to work in our GitHub repo**, create branches, and submit your code smoothly. Scroll to the bottom for a  30 second “I forgot Git, save me” panic guide.
 
 ---
 
@@ -148,4 +148,75 @@ If unsure → ask before merging.
 We ship as a team.
 
 
+## 😭 READ THIS IF YOU FORGOT GIT
 
+ “I Forgot Git, Save Me” 
+ 
+Check branch
+git branch
+
+Switch branches
+git checkout <branch-name>
+
+Update local main
+git checkout main
+git pull origin main
+
+Update your feature branch with latest main
+git checkout <my-branch>
+git merge main
+
+Save changes, commit, push
+git add .
+git commit -m "message"
+git push
+
+Made changes on the wrong branch
+
+Save work:
+
+git stash
+
+
+Switch:
+
+git checkout <correct-branch>
+
+
+Bring changes back:
+
+git stash pop
+
+Create a new branch
+git checkout -b <branch-name>
+
+Undo last commit but keep changes
+git reset --soft HEAD~1
+
+Undo last commit and discard changes (irreversible)
+git reset --hard HEAD~1
+
+Check file status and diffs
+git status
+git diff
+
+Show remote branches
+git branch -r
+
+Emergency Reset Procedure
+
+If unsure what happened, run these in order:
+
+git stash
+git checkout main
+git pull origin main
+
+
+This returns you to a clean state without losing work.
+
+Key Rules
+Goal	Command
+Update project	git pull origin main
+Save progress	git add . → git commit → git push
+Switch branches	git checkout <branch>
+Create branch	git checkout -b <branch>
