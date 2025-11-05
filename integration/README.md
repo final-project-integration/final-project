@@ -1,2 +1,1 @@
-# integration
-# Integration branch setup
+# Integration system entrypoint

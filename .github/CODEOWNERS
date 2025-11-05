@@ -1,11 +1,18 @@
-# Default: Integration lead reviews everything
-* @ditto-d
 
-# Fill in real owners later:
-# /accounts/    @alice
-# /prediction/  @bob
-# /reports/     @carol
-# /storage/     @dave
-# /validation/  @eve
-# /test/        @qa
-# /integration/ @ditto-d
+/integration/ @ditto-d @Darxware @Aaron-Madou @Kapil-Tamang 
+
+/docs/API_CONTRACTS.md @ditto-d @Darxware @Aaron-Madou @Kapil-Tamang 
+
+/docs/ARCHITECTURE.md @ditto-d @Darxware @Aaron-Madou @Kapil-Tamang 
+
+* @ditto-d @Darxware @Aaron-Madou @Kapil-Tamang
+
+/accounts/ @jessyram
+/integration/ @ditto-d
+/prediction/ @TanzinaS
+/storage/ @DriedArcher
+/test/ @AWASHJUNGLE
+/validation/ @AungLatt2001
+/reports/ @angeloSA77
+
+
