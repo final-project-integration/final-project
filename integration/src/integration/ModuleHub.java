@@ -15,102 +15,71 @@ package integration;
  */
 public class ModuleHub {
 
+    // fields for each team's modules | placeholders, not initialized 
+    private Object accountsModule;
+    private Object storageModule;
+    private Object reportsModule;
+    private Object predictionModule;
+    private Object validationModule;
+
     /**
      * Calls the Storage team to load, save, or delete budget data.
      *
      *
-     * @param action what we want Storage to do: "load", "save", or "delete"
+     * @param action what we want Storage to do
      * @param username which user's data we're working with
-     * @param year which year's budget data (like 2024, 2025, etc.)
-     * @return true if it worked, false if something went wrong
+     * @param year which year's budget data 
+     *  @return true if successful, false otherwise
      * @author Denisa Cakoni
      */
-    public boolean callStorage(String action, String username, int year) {
-        // send the request to Storage team's code
-        //
-        return false;
-    }
+    public boolean callStorage(String action, String username, int year) {}
+       
 
     /**
-     * Calls the Reports team to generate a financial summary report.
+     * calls the Reports team to generate a financial  report.
      *
      *
-     * @param reportType "monthly", "annual"...
-     * @param username whose budget we're analyzing
-     * @param year: which year to make the report for
+     * @param reportType "monthly", "annual" etc.
+     * @param username whose report to generate
+     * @return formatted report as a String
      * @author Denisa Cakoni
      */
-    public String callReports(String reportType, String username, int year) {
-        // ask Reports team to crunch the numbers
-        return null;
-    }
+    public String callReports(String reportType, String username) {}
+    
 
     /**
-     * Calls the Prediction team to run "what-if" scenarios.
+     * calls the Prediction module to run "what-if" scenarios.
      *
      *
      * @param scenarioType what to calculate
-     * @param username whose budget to analyze
-     * @param year which year's data to use
+     * @param username : whose data to use
+     * @param year     : which year's data to use
+     * @return prediction result text
      * @author Denisa Cakoni
      */
-    public String callPrediction(String scenarioType, String username, int year) {
-        // send to Prediction team for what-if calculations
-        return null;
-    }
+    public String callPrediction(String scenarioType, String username, int year) {}
 
     /**
      * Calls the Validation team to check if data is valid.
      *
      *
-     * @param validationType what to check: "csv", "date", "amount", or "category"
-     * @param dataToValidate the actual data that needs checking
-     * @return true if data is good, false if there's a problem
+     * @param validationType : type of validation to perform
+     * @param dataToValidate actual input data
+     * @return true if valid, false otherwise
      * @author Denisa Cakoni
      */
-    public boolean callValidation(String validationType, String dataToValidate) {
-        // let Validation team check if this data is legit
-
-        return false;
-    }
+    public boolean callValidation(String validationType, String dataToValidate) {}
 
     /**
-     * Calls the Accounts team for login, logout, password...
+     * Calls the Accounts module for user account actions such as login, logout, password
      *
      *
      * @param action "login", "logout", "changePassword", "deleteAccount"
      * @param username the account username
-     * @return true if the operation worked, false if it failed
+     *  @return true if successful, false otherwise
      * @author Denisa Cakoni
      */
-    public boolean callAccounts(String action, String username) {
-        // route to Accounts team for user account stuff
-        return false;
-    }
+    public boolean callAccounts(String action, String username) {}
 
-    /**
-     * Asks Reports team to export a report to a CSV file.
-     *
-     * @param reportContent the report text to save
-     * @param filename what to name the file
-     * @return true if file was created successfully, false if it failed
-     * @author Denisa Cakoni
-     */
-    public boolean exportReportToCSV(String reportContent, String filename) {
-
-        return false;
-    }
-
-    /**
-     * Gets the list of years that a user has budget data for.
-     * Like if they uploaded 2023.csv and 2024.csv, this returns {2023, 2024}.
-     *
-     * @param username whose data to check
-     * @return array of years that have data, or empty array if no data exists
-     * @author Denisa Cakoni
-     */
-    public int[] getStoredYears(String username) {
-        // TODO: Ask Storage team what years this user has saved
-        return new int[0];
-    }
+    
 }
