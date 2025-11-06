@@ -6,7 +6,7 @@
  *
  * @author Sahadat Amzad
  */
-class DeficitSolver {
+public class DeficitSolver {
 
     /**
      * Calculates the user's total financial deficit.
