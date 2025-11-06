@@ -8,7 +8,7 @@ package integration;
  * @author Shazadul Islam
  *
  */
-public class Main {
+public class MainMenu {
 
     /**
      * Prints the Main menu, so users can see where they can navigate to within the program.
