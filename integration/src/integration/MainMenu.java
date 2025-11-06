@@ -4,9 +4,7 @@ package integration;
  * This class allows the user to navigate to all of the different "pages" of the program.
  * Handles all menu navigation and user routing throughout the Personal Finance Manager application.
  *
- *
  * @author Shazadul Islam
- *
  */
 public class MainMenu {
 
@@ -16,7 +14,7 @@ public class MainMenu {
      * @author Shazadul Islam
      */
     public void displayMenu() {
-        // TODO: Print main menu options
+        // Print main menu options
     }
 
     /**
@@ -27,7 +25,7 @@ public class MainMenu {
      * @author Shazadul Islam
      */
     public boolean getUserChoice(int numChoice) {
-        // TODO: Validate and route based on user choice
+        // Validate and route based on user choice
         return false;
     }
 
@@ -39,7 +37,7 @@ public class MainMenu {
      * @author Shazadul Islam
      */
     public void returnToMenu() {
-        // TODO: Return to main menu
+        // Return to main menu
     }
 
     /**
@@ -50,7 +48,7 @@ public class MainMenu {
      * @author Shazadul Islam
      */
     public void returnToModules() {
-        // TODO: Return to modules list
+        // Return to modules list
     }
 
     /**
@@ -59,15 +57,15 @@ public class MainMenu {
      * @author Shazadul Islam
      */
     public void exitProgram() {
-        // TODO: Exit program
+        // Exit program
     }
 
     /**
-     * Prints the settings, so users can do things change username and password and security questions.
+     * Prints the settings, so users can do things like change username and password and security questions.
      *
      * @author Shazadul Islam
      */
     public void displayAccountSettings() {
-        // TODO: Display account settings menu
+        // Display account settings menu
     }
 }
