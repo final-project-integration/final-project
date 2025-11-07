@@ -6,16 +6,13 @@ import java.util.Collections;
 /**
  * Low-level, field-centric checks (emptiness, numeric, ranges, dates).
  * 
- * Author: David Humala
+ * @author David Humala
  */
 public class DataTypeValidator {
 
     /**
-     * Default constructor for DataTypeValidator.
-     */
-    public DataTypeValidator() {}
-
-    /**
+     * Checks that the input is non-null and non-blank after trim.
+     * 
      * @param value input string
      * @return true if non-null/non-blank after trim
      */
@@ -24,6 +21,8 @@ public class DataTypeValidator {
     }
 
     /**
+     * Checks whether the input parses as a number.
+     * 
      * @param value numeric string
      * @return true if parses as number
      */
@@ -32,6 +31,8 @@ public class DataTypeValidator {
     }
 
     /**
+     * Checks whether the numeric value is strictly greater than zero.
+     * 
      * @param value numeric string
      * @return true if strictly greater than zero
      */
@@ -40,6 +41,8 @@ public class DataTypeValidator {
     }
 
     /**
+     * Checks whether the numeric value lies within the inclusive range.
+     * 
      * @param value numeric string
      * @param min   inclusive min
      * @param max   inclusive max
@@ -50,6 +53,8 @@ public class DataTypeValidator {
     }
 
     /**
+     * Checks whether the input parses to a valid date.
+     * 
      * @param value date string
      * @return true if value parses to a valid date
      */
