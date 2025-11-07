@@ -23,7 +23,6 @@ public class CSVHandler {
 	 * @return an array list of {@link Transaction} objects loaded from the CSV file
 	 * @author Eddie Zhu
 	 */
-	
 	public ArrayList<Transaction> readCSV(String file) {
 		return null;
 	}
@@ -34,8 +33,6 @@ public class CSVHandler {
 	 * @param transactions an array list of {@link Transaction} objects to save
 	 * @author Eddie Zhu
 	 */
-	
-	
 	public void writeCSV(String file, ArrayList<Transaction> transactions) {
 		
 	}
@@ -46,7 +43,6 @@ public class CSVHandler {
 	 * @param linesToPreview the number of lines that you would like to preview (excluding header)
 	 * @author Eddie Zhu
 	 */
-	
 	public void previewCSV(String file, int linesToPreview) {
 		
 	}
@@ -57,7 +53,6 @@ public class CSVHandler {
 	 * @param transactions an array list of {@link Transaction} objects to completely replace the file contents
 	 * @author Eddie Zhu
 	 */
-	
 	public void overwriteCSV(String file, ArrayList<Transaction> transactions) {
 		
 	}
