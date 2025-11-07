@@ -11,6 +11,11 @@ import java.util.Collections;
 public class CrossFieldValidator {
 
     /**
+     * Default constructor for CrossFieldValidator.
+     */
+    public CrossFieldValidator() {}
+
+    /**
      * Ensure startDate {@literal <=} endDate and both valid (format + chronology).
      * 
      * @param startDate the starting date to validate (string/DTO placeholder)
@@ -22,7 +27,7 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Checks that the sum of category planned amounts equals the budget total (within tolerance).
+     * Sum of category planned amounts equals budget total (within tolerance).
      * 
      * @param budget object representing a budget (DTO placeholder)
      * @return validation result
@@ -32,7 +37,7 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Verifies income categories are not negative and expenses are not positive.
+     * Income categories not negative; expenses not positive, etc.
      * 
      * @param transaction object representing a transaction (DTO placeholder)
      * @return validation result
@@ -42,7 +47,7 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Detects duplicate transactions (same date, amount, merchant, category).
+     * Detect duplicate transactions (same date, amount, merchant, category).
      * 
      * @param transactions list (DTO placeholder)
      * @return validation result with duplicate findings
@@ -52,7 +57,7 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Validates that a category exists and respects hierarchy (e.g., "Food:Groceries").
+     * Category exists and respects hierarchy (e.g., "Food:Groceries").
      * 
      * @param category category object/string (DTO placeholder)
      * @return validation result
