@@ -5,7 +5,7 @@ package storage;
  * It stores the date, categorical sorting, and amount spent in each transaction,
  * and allows for obtaining the data through various getter fields.
  *
- * This class is part of the Storage module responsible for creating an object representation
+ * This class is part of the Storage module, responsible for creating an object representation
  * for any and all transactions.
  *
  * @author Karol Kopciuch
@@ -69,3 +69,4 @@ public class Transaction {
     }
 
 }
+
