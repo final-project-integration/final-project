@@ -2,7 +2,6 @@ package com.pfm.reports;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -23,8 +22,8 @@ public class ReportAnalyzer {
      * @return the category label with the highest expense, or empty if none
      * @author Angelo Samir Alvarez 
      */
-    public Optional<String> calculateHighestExpenseCategory(Map<String, BigDecimal> categoryTotals) {
-        return Optional.empty();
+    public String calculateHighestExpenseCategory(Map<String, BigDecimal> categoryTotals) {
+        return null;
     }
 
     /**
@@ -34,7 +33,7 @@ public class ReportAnalyzer {
      * @return the arithmetic mean of the provided month totals
      * @author Angelo Samir Alvarez 
      */
-    public BigDecimal calculateMonthlyAverage(Map<Month, BigDecimal> monthlyTotals) {
+    public BigDecimal calculateMonthlyAverage(Map<Integer, BigDecimal> monthlyTotals) {
         return BigDecimal.ZERO;
     }
 
@@ -46,9 +45,9 @@ public class ReportAnalyzer {
      * @return an ordered list, jan..Dec, of savings values; missing months are assumed zero
      * @author Angelo Samir Alvarez 
      */
-    public List<BigDecimal> calculateSavingsTrend(Map<Month, BigDecimal> monthlyIncome,
-                                                  Map<Month, BigDecimal> monthlyExpenses) {
-        return List.of();
+    public List<BigDecimal> calculateSavingsTrend(Map<Integer, BigDecimal> monthlyIncome,
+                                                  Map<Integer, BigDecimal> monthlyExpenses) {
+         return java.util.Collections.emptyList();
     }
 
     /**
@@ -61,6 +60,6 @@ public class ReportAnalyzer {
      */
     public Map<String, BigDecimal> generateComparisonReport(Map<String, BigDecimal> periodA,
                                                             Map<String, BigDecimal> periodB) {
-        return Map.of();
+        return java.util.Collections.emptyMap();
     }
 }
