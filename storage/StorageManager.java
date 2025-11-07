@@ -71,7 +71,7 @@ public class StorageManager{
 	 * @param username the name of the user whose data is being accessed
 	 * @param year the year the data is being accessed
 	 * @author Farhan Chowdhury
-	 * @return The {Budget} object with all the budget information for the specified year
+	 * @return The {@link Budget} object with all the budget information for the specified year
 	*/	
 	public Budget getUserBudget(String username, int year ){
 		return null;
