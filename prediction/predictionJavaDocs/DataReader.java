@@ -1,11 +1,21 @@
+package prediction.predictionJavaDocs;
+
 /**
  * DataReader class for the Prediction Team Module Reads, validates, calculates
  * income and expenses, compares calculations, and summarizes report.
  * 
  * @author Jessica Barrera Saguay
  */
-
 public class DataReader {
+
+	 /**
+     * Default constructor for the DataReader class.
+     * Initializes the object without any parameters.
+	 * * @author Jessica Barrera Saguay
+     */
+    public DataReader() {
+        // Default constructor
+    }
 
 	/**
 	 * Reads stored budget data from the file provided. This method does not return
@@ -13,7 +23,7 @@ public class DataReader {
 	 * 
 	 * @author Jessica Barrera Saguay
 	 */
-	void readData() {
+	public void readData() {
 	}
 
 	/**
@@ -23,7 +33,7 @@ public class DataReader {
 	 * @return {@code true} if the data is valid, {@code false} otherwise
 	 * @author Jessica Barrera Saguay
 	 */
-	boolean isDataValid() {
+	public boolean isDataValid() {
 		return true;
 	}
 
@@ -35,7 +45,7 @@ public class DataReader {
 	 * @return the sum of all income sources
 	 * @author Jessica Barrera Saguay
 	 */
-	double calculateTotalIncome() {
+	public double calculateTotalIncome() {
 
 		double salary = 0, wages = 0, bonuses = 0, tips = 0, other = 0;
 		double totalIncome = salary + wages + bonuses + tips + other;
@@ -48,7 +58,7 @@ public class DataReader {
 	 * @return the total amount of all expenses combined
 	 * @author Jessica Barrera Saguay
 	 */
-	double calculateTotalExpenses() {
+	public double calculateTotalExpenses() {
 
 		double fixedExpenses = 0;
 		double variableExpenses = 0;
@@ -67,7 +77,7 @@ public class DataReader {
 	 *         false} otherwise
 	 * @author Jessica Barrera Saguay
 	 */
-	boolean compareIncomeVsExpenses(double totalIncome, double totalExpenses) {
+	public boolean compareIncomeVsExpenses(double totalIncome, double totalExpenses) {
 		return totalIncome > totalExpenses;
 	}
 
@@ -78,6 +88,6 @@ public class DataReader {
 	 * 
 	 * @author Jessica Barrera Saguay
 	 */
-	void createSummaryReport() {
+	public void createSummaryReport() {
 	}
 }

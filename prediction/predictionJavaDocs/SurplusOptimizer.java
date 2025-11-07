@@ -1,9 +1,20 @@
+package prediction.predictionJavaDocs;
+
 /**
  * SurplusOptimizer class for the Prediction Team module.
  * Declares methods used to examine surplus budgets and determines how to manage funds.
  * @author Daniel Moore
  */
 public class SurplusOptimizer {
+
+    /**
+     * Default constructor for the DataReader class.
+     * Initializes the object without any parameters.
+	 * * @author Daniel Moore
+     */
+    public SurplusOptimizer() {
+        // Default constructor
+    }
 
     /** 
      * Creates/updates the surplus amount.
@@ -65,8 +76,3 @@ public class SurplusOptimizer {
 
 }
 
-/* ================================================================
-   TEAM SECTION:
-   Each class must include full Javadoc comments with @author,
-   @param, and @return where appropriate.
-   ================================================================ */
