@@ -4,15 +4,17 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.time.Month;
 
 /**
  * Analyzer provides analytical computations over already-aggregated report data,
  * such as identifying top categories and computing trends.
  * 
- * @Author Angelo Samir Alvarez 
- * @Author Furkan Bilgi
- * @Author Chukwuemeka Okwuka
- * @Author Omar Piron
+ * @author Angelo Samir Alvarez 
+ * @author Furkan Bilgi
+ * @author Chukwuemeka Okwuka
+ * @author Omar Piron
  */
 public class ReportAnalyzer {
 
@@ -43,7 +45,7 @@ public class ReportAnalyzer {
      *
      * @param monthlyIncome  mapping of Month → total income
      * @param monthlyExpenses mapping of Month → total expenses
-     * @return an ordered list, jan..Dec, of savings values; missing months are assumed zero
+     * @return an ordered list, Jan..Dec, of savings values; missing months are assumed zero
      * @author Angelo Samir Alvarez 
      */
     public List<BigDecimal> calculateSavingsTrend(Map<Month, BigDecimal> monthlyIncome,
@@ -55,7 +57,7 @@ public class ReportAnalyzer {
      * Compares two periods (e.g., year a vs year b) for the same set of categories.
      *
      * @param periodA mapping of Category → total amount for period a
-     * @param periodB mapping of Category → total amount for period a
+     * @param periodB mapping of Category → total amount for period b
      * @return a mapping of Category : (periodB - periodA)
      * @author Angelo Samir Alvarez 
      */
@@ -64,3 +66,4 @@ public class ReportAnalyzer {
         return Map.of();
     }
 }
+
