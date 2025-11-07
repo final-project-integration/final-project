@@ -1,7 +1,7 @@
 package com.pfm.reports;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.io.File;
 import java.util.Locale;
 import java.util.Map;
 
@@ -38,8 +38,8 @@ public class ReportManager {
      * @return an immutable mapping of Month → total amount (expenses can be negative)
      * @author 
      */
-    public Map<Month, BigDecimal> generateMonthlySummary(int year) {
-        return Map.of();
+    public Map<Integer, BigDecimal> generateMonthlySummary(int year) {
+        return java.util.Collections.emptyMap();
     }
 
     /**
@@ -50,7 +50,7 @@ public class ReportManager {
      * @author 
      */
     public Map<String, BigDecimal> generateCategorySummary(int year) {
-        return Map.of();
+        return java.util.Collections.emptyMap();
     }
 
     /**
@@ -75,9 +75,9 @@ public class ReportManager {
 
     /**
      * Exports the active summaries to a CSV file at the provided path.
-     * @param outputPath target path for the CSV file, parent directories should exist
+     * @param outputFile target path for the CSV file, parent directories should exist
      */
-    public void exportReportToCSV(Path outputPath) {
+    public void exportReportToCSV(File outputfile) {
     }
 
     /**
@@ -96,9 +96,19 @@ public class ReportManager {
      * @param totalExpenses sum of all expense entries for the year 
      * @param netBalance   {@code totalIncome - totalExpenses} 
      */
-    public record YearlySummary(
-            BigDecimal totalIncome,
-            BigDecimal totalExpenses,
-            BigDecimal netBalance
-    ) { }
+    public static final class YearlySummary {
+        private final BigDecimal totalIncome;
+        private final BigDecimal totalExpenses;
+        private final BigDecimal netBalance;
+
+        public YearlySummary(BigDecimal totalIncome, BigDecimal totalExpenses, BigDecimal netBalance) {
+            this.totalIncome = totalIncome;
+            this.totalExpenses = totalExpenses;
+            this.netBalance = netBalance;
+        }
+
+        public BigDecimal getTotalIncome() { return totalIncome; }
+        public BigDecimal getTotalExpenses() { return totalExpenses; }
+        public BigDecimal getNetBalance() { return netBalance; }
+    }
 }
