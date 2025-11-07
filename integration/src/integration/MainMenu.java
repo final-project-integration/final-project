@@ -9,6 +9,11 @@ package integration;
 public class MainMenu {
 
     /**
+     * Default constructor for MainMenu.
+     */
+    public MainMenu() {}
+
+    /**
      * Prints the Main menu, so users can see where they can navigate to within the program.
      *
      * @author Shazadul Islam
