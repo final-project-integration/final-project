@@ -15,6 +15,11 @@ package integration;
  */
 public class ModuleHub {
 
+    /**
+     * Default constructor for ModuleHub.
+     */
+    public ModuleHub() {}
+
     // fields for each team's modules | placeholders, not initialized 
     private Object accountsModule;
     private Object storageModule;
