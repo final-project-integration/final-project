@@ -8,17 +8,20 @@ import java.util.Collections;
  * 
  * @author Ataik
  */
-
 public class CrossFieldValidator {
+
+    /**
+     * Default constructor for CrossFieldValidator.
+     */
+    public CrossFieldValidator() {}
 
     /**
      * Ensure startDate <= endDate and both valid (format + chronology).
      * 
-     * @param startDate
-     * @param endDate
+     * @param startDate the starting date to validate (string/DTO placeholder)
+     * @param endDate the ending date to validate (string/DTO placeholder)
      * @return validation result with error if range invalid
      */
-
     public ValidationResult validateDateRange(String startDate, String endDate) {
         return null;
     }
@@ -29,7 +32,6 @@ public class CrossFieldValidator {
      * @param budget object representing a budget (DTO placeholder)
      * @return validation result
      */
-
     public ValidationResult validateBudgetBalance(Object budget) {
         return null;
     }
@@ -40,7 +42,6 @@ public class CrossFieldValidator {
      * @param transaction object representing a transaction (DTO placeholder)
      * @return validation result
      */
-
     public ValidationResult validateIncomeVsExpense(Object transaction) {
         return null;
     }
@@ -48,10 +49,9 @@ public class CrossFieldValidator {
     /**
      * Detect duplicate transactions (same date, amount, merchant, category).
      * 
-     * @param transactions list (DTO placeholder)
+     * @param transactions list of transaction-like objects (DTO placeholder)
      * @return validation result with duplicate findings
      */
-
     public ValidationResult detectDuplicateTransactions(List<Object> transactions) {
         return null;
     }
@@ -59,10 +59,9 @@ public class CrossFieldValidator {
     /**
      * Category exists and respects hierarchy (e.g., "Food:Groceries").
      * 
-     * @param category category object/string (DTO placeholder)
+     * @param category category object or string (DTO placeholder)
      * @return validation result
      */
-
     public ValidationResult validateCategoryHierarchy(Object category) {
         return null;
     }
