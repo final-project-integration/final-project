@@ -9,7 +9,7 @@ import java.util.Collections;
  * @author Mayesha Fahmida
  */
 
-public static class ValidationEngine {
+public class ValidationEngine {
 
     /**
      * Validate generic user input (emptiness, length, allowed chars, etc.).
