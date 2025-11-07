@@ -73,8 +73,8 @@ public class DataReader {
 	 * 
 	 * @param totalIncome   the total income calculated from all sources
 	 * @param totalExpenses the total amount of all expenses
-	 * @return {@code true} if total income is greater than total expenses; {code@
-	 *         false} otherwise
+	 * @return the code will return {@code true} if the total income is greater than the total expenses, but
+ *         {@code false} otherwise
 	 * @author Jessica Barrera Saguay
 	 */
 	public boolean compareIncomeVsExpenses(double totalIncome, double totalExpenses) {
