@@ -8,15 +8,14 @@ import java.util.List;
  * 
  * @author Aung Latt
  */
-
 public class ValidationResult {
 
     /**
+     * Default constructor for ValidationResult.
      * Aggregated result/messages for validations.
      * 
      * @author Aung Latt
      */
-
     public ValidationResult() {
 
     }
@@ -26,7 +25,6 @@ public class ValidationResult {
      * 
      * @param message error text
      */
-
     public void addError(String message) {
 
     }
@@ -36,7 +34,6 @@ public class ValidationResult {
      * 
      * @param message warning text
      */
-
     public void addWarning(String message) {
 
     }
@@ -44,7 +41,6 @@ public class ValidationResult {
     /**
      * @return true if errors exist
      */
-
     public boolean hasErrors() {
         return false;
     }
@@ -52,7 +48,6 @@ public class ValidationResult {
     /**
      * @return read-only list of messages
      */
-
     public java.util.List<String> getMessages() {
         return java.util.Collections.emptyList();
     }
@@ -60,7 +55,6 @@ public class ValidationResult {
     /**
      * Clear messages and flags.
      */
-
     public void clear() {
 
     }
