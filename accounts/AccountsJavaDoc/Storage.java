@@ -1,3 +1,4 @@
+package AccountsJavaDoc;
 import java.util.Map;
 
 /**
@@ -16,33 +17,34 @@ import java.util.Map;
 
 public class Storage {
 	/**
-	 * Saves the user's account data
+	 * Saves the user's account data.
 	 *
-	 * @param users - a map with user Account objects
-	 * @author
+	 * @param users a map with user Account objects
+	 * @author Andony Ariza
 	 */
 	public void saveUserInfo(Map<String, Accounts> users) {
 
 	}
 
 	/**
-	 * Loads a map of all the stored users
-	 *
-	 * @author
+	 * Loads a map of all the stored users.
+	 * @return a map of usernames and their corresponding Accounts objects
+	 * @author Andony Ariza
 	 */
 	public Map<String, Accounts> loadUserInfo() {
-		
+		return null;
 	}
 
 	/**
-	 * Retrieves the stored user information of a specific username
+	 * Retrieves the stored user information of a specific username.
 	 *
-	 * @param username - the username of the account to return
+	 * @param username the username of the account to return
 	 * @return the Account object for the given username
-	 * @author
+	 * @author Andony Ariza
 	 */
 	public Accounts getUserInfo(String username) {
-		
+		return null;
 	}
+
 
 }
