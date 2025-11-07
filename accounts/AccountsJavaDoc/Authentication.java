@@ -1,3 +1,4 @@
+Package AccountsJavaDoc
 /**
  * Authentication handles all security related functionality, including password hashing and
  * user verification. It ensures that sensitive information dealt with in the Accounts class
@@ -17,8 +18,8 @@
     /**
      * Verifies whether the provided username and password
      *
-     * @param the username entered by the user
-     * @param the password entered by the user
+     * @param username the username entered by the user
+     * @param password the password entered by the user
      * @return true if authentication is successful
      * @author Zhengjun Xie
      */
@@ -141,4 +142,5 @@
     public boolean setSecretAnswer(String username, String secretAnswer) {
         return false;
     }
+
  }
