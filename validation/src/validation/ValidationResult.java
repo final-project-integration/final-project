@@ -17,7 +17,6 @@ public class ValidationResult {
      * @author Aung Latt
      */
     public ValidationResult() {
-
     }
 
     /**
@@ -26,7 +25,6 @@ public class ValidationResult {
      * @param message error text
      */
     public void addError(String message) {
-
     }
 
     /**
@@ -35,10 +33,11 @@ public class ValidationResult {
      * @param message warning text
      */
     public void addWarning(String message) {
-
     }
 
     /**
+     * Indicates whether any errors have been recorded.
+     * 
      * @return true if errors exist
      */
     public boolean hasErrors() {
@@ -46,6 +45,8 @@ public class ValidationResult {
     }
 
     /**
+     * Returns a read-only view of all messages.
+     * 
      * @return read-only list of messages
      */
     public java.util.List<String> getMessages() {
@@ -56,6 +57,5 @@ public class ValidationResult {
      * Clear messages and flags.
      */
     public void clear() {
-
     }
 }
