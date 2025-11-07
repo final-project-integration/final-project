@@ -1,4 +1,4 @@
-Package AccountsJavaDoc
+package AccountsJavaDoc;
 /**
  * Authentication handles all security related functionality, including password hashing and
  * user verification. It ensures that sensitive information dealt with in the Accounts class
@@ -16,7 +16,16 @@ Package AccountsJavaDoc
  public class Authentication{
 
     /**
-     * Verifies whether the provided username and password
+    * Constructs a new Authentication object.
+    * This default constructor initializes Authentication class (no parameters).
+    * 
+    * @author Jessica Ramirez
+    */
+   public Authentication() { //Default constructor.
+   }
+
+    /**
+     * Verifies whether the provided username and password.
      *
      * @param username the username entered by the user
      * @param password the password entered by the user
@@ -62,7 +71,7 @@ Package AccountsJavaDoc
     }
 
     /**
-     * Validates that the provided user information 
+     * Validates that the provided user information.
      *
      * @param username the username to validate
      * @param password the password to validate
@@ -89,7 +98,7 @@ Package AccountsJavaDoc
     }
 
     /**
-     * Clears all in-memory authentication and session data to prevent
+     * Clears all in-memory authentication and session data to prevent.
      * 
      * @author Zhengjun Xie
      */
@@ -98,7 +107,7 @@ Package AccountsJavaDoc
     }
 
     /**
-     * Hashes a plain-text password or secret answer
+     * Hashes a plain-text password or secret answer.
      *
      * @param plain the plain-text string to be hashed
      * @return a hashed version of the input string
@@ -144,3 +153,4 @@ Package AccountsJavaDoc
     }
 
  }
+
