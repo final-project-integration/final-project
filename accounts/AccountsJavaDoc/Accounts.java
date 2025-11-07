@@ -16,11 +16,20 @@ package AccountsJavaDoc;
 public class Accounts {
 
     /**
+    * Constructs a new Accounts object. 
+    * This default constructor initializes the Accounts class (no parameters).
+    * 
+    * @author Jessica Ramirez
+    */
+   public Accounts() { //Default constructor
+   }
+
+    /**
      * Registers a new user account.
      *
      * @param username the new user's desired username
      * @param password the chosen password
-     * @return true if registration is successful. False otherwise
+     * @return true if registration is successful, false otherwise
      * @author Zhengjun Xie
      */
     public boolean registerUser(String username, String password){
@@ -32,7 +41,7 @@ public class Accounts {
      *
      * @param username the username entered by the user
      * @param password the password entered by the user
-     * @return true if sign-in is successful. False otherwise
+     * @return true if sign-in is successful, false otherwise
      * @author Zhengjun Xie
      */
     public boolean signIn(String username, String password) {
@@ -42,7 +51,7 @@ public class Accounts {
     /**
      * Sign out the currently active user and clears their session data.
      * 
-     * @return true if sign-out was successful. False otherwise
+     * @return true if sign-out was successful, false otherwise
      * @author Zhengjun Xie
      */
     public boolean signOut() {
@@ -55,7 +64,7 @@ public class Accounts {
      * @param username the username of the account
      * @param oldPassword the current password
      * @param newPassword the new password to set
-     * @return true  if the password was successfully changed. False otherwise
+     * @return true  if the password was successfully changed, false otherwise
      * @author Zhengjun Xie
      */
     public boolean changePassword(String username, String oldPassword, String newPassword){
@@ -67,7 +76,7 @@ public class Accounts {
      *
      * @param username  the username associated with the account
      * @param newPassword the new password to set
-     * @return true if the password is successfully reset. False otherwise
+     * @return true if the password is successfully reset, false otherwise
      * @author Zhengjun Xie
      */
     public boolean resetPassword(String username, String newPassword){
@@ -75,7 +84,7 @@ public class Accounts {
     }
 
     /**
-     * Allows users to set or update their secret question and answer.
+     * Allows users to set or update their secret question and answer
      * for password recovery.
      *
      * @param username the username of the account
@@ -104,7 +113,7 @@ public class Accounts {
      *
      * @param username the username associated with the account
      * @param answer the provided secret answer
-     * @return true if the secret answer matches the stored one. False otherwise
+     * @return true if the secret answer matches the stored one, false otherwise
      * @author Zhengjun Xie
      */
     public boolean verifySecretAnswer(String username, String answer) {
@@ -128,7 +137,7 @@ public class Accounts {
      * of the same account.
      *
      * @param username  the username of the account.
-     * @return true if the username is already taken. False otherwise
+     * @return true if the username is already taken, false otherwise
      * @author Jessica Ramirez
      */
     public boolean isDuplicateUsername(String username){
@@ -174,4 +183,5 @@ public class Accounts {
         return false;
     }
 }
+
 
