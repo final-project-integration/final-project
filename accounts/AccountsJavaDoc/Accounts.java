@@ -84,7 +84,7 @@ public class Accounts {
     }
 
     /**
-     * Allows users to set or update their secret question and answer
+     * Allows users to set or update their secret question and answer.
      * for password recovery.
      *
      * @param username the username of the account

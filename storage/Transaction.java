@@ -1,3 +1,5 @@
+package storage;
+
 /**
  * The Transaction class represents a single Transaction entry.
  * It stores the date, categorical sorting, and amount spent in each transaction,
@@ -11,27 +13,32 @@
  */
 public class Transaction {
 
-    String date;
-    String category;
-    double amount;
+    // Private fields to enforce encapsulation
+    private String date; 
+    private String category;
+    private double amount;
 
     /**
-     *  Constructs a new transaction object
-     *  Initializes all three instance fields with default empty values.
+     * Constructs a new transaction object.
+     * Initializes all three instance fields with default empty values (null for Strings, 0.0 for amount).
      */
     public Transaction() {
-        // Initialize object fields
+        this.date = null;
+        this.category = null;
+        this.amount = 0.0;
     }
+    
     /**
-     *  Constructs a new transaction object
-     *  Initializes all three instance fields
+     * Constructs a new transaction object by initializing all three instance fields.
      * @param date the date of the transaction in MM/DD/YYYY format
      * @param category the category of the transaction (e.g., Food, Utilities, Compensation)
      * @param amount the dollar amount of the transaction (positive for income, negative for expense)
      * @author Karol Kopciuch
      */
     public Transaction(String date, String category, double amount) {
-
+        this.date = date;
+        this.category = category;
+        this.amount = amount;
     }
 
     /**
@@ -40,7 +47,7 @@ public class Transaction {
      * @author Karol Kopciuch
      */
     public String getDate() {
-        return null;
+        return this.date;
     }
 
     /**
@@ -49,16 +56,16 @@ public class Transaction {
      * @author Karol Kopciuch
      */
     public String getCategory() {
-        return null;
+        return this.category;
     }
 
     /**
-     * Retrieves the amount of money that changed in the transaction
-     * @return a String representing the date in MM/DD/YYYY format
+     * Retrieves the amount of money that changed in the transaction.
+     * @return a double representing the dollar amount of the transaction
      * @author Karol Kopciuch
      */
     public double getAmount() {
-        return 0.0;
+        return this.amount;
     }
 
 }
