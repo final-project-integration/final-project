@@ -1,3 +1,4 @@
+package prediction.predictionJavaDocs;
 
 /**
  * ScenarioSimulator class for the Prediction Team module.
@@ -6,6 +7,15 @@
  * @author Tanzina Sumona
  */
 public class ScenarioSimulator {
+
+    /**
+     * Default constructor for the DataReader class.
+     * Initializes the object without any parameters.
+	 * * @author Tanzina Sumona
+     */
+    public ScenarioSimulator() {
+        // Default constructor
+    }
 
     /**
      * Creates a new financial scenario.

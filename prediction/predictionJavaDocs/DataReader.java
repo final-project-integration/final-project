@@ -1,11 +1,21 @@
+package prediction.predictionJavaDocs;
+
 /**
  * DataReader class for the Prediction Team Module Reads, validates, calculates
  * income and expenses, compares calculations, and summarizes report.
  * 
  * @author Jessica Barrera Saguay
  */
-
 public class DataReader {
+
+	 /**
+     * Default constructor for the DataReader class.
+     * Initializes the object without any parameters.
+	 * * @author Jessica Barrera Saguay
+     */
+    public DataReader() {
+        // Default constructor
+    }
 
 	/**
 	 * Reads stored budget data from the file provided. This method does not return

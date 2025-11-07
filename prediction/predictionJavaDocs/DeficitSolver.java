@@ -1,3 +1,4 @@
+package prediction.predictionJavaDocs;
 
 /**
  * DeficitSolver class for the Prediction Team module. Declares methods used
@@ -7,6 +8,15 @@
  * @author Sahadat Amzad
  */
 public class DeficitSolver {
+
+    /**
+     * Default constructor for the DataReader class.
+     * Initializes the object without any parameters.
+	 * * @author Sahadat Amzad
+     */
+    public DeficitSolver() {
+        // Default constructor
+    }
 
     /**
      * Calculates the user's total financial deficit.

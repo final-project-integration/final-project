@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"prediction.predictionJavaDocs","l":"DataReader"},{"p":"prediction.predictionJavaDocs","l":"DeficitSolver"},{"p":"prediction.predictionJavaDocs","l":"ScenarioSimulator"},{"p":"prediction.predictionJavaDocs","l":"SurplusOptimizer"}];updateSearchResults();
