@@ -1,3 +1,5 @@
+package AccountsJavaDoc;
+
 /**
  * Accounts manages user data management, including the creation, modification, and deletion
  * of stored users. It interacts with the Authentication class to securely handle user 
@@ -14,7 +16,7 @@
 public class Accounts {
 
     /**
-     * Registers a new user account
+     * Registers a new user account.
      *
      * @param username the new user's desired username
      * @param password the chosen password
@@ -73,7 +75,7 @@ public class Accounts {
     }
 
     /**
-     * Allows users to set or update their secret question and answer
+     * Allows users to set or update their secret question and answer.
      * for password recovery.
      *
      * @param username the username of the account
@@ -172,3 +174,4 @@ public class Accounts {
         return false;
     }
 }
+
