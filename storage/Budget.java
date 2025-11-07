@@ -1,3 +1,5 @@
+package storage;
+
 import java.util.ArrayList;
 
 /**
@@ -94,4 +96,5 @@ public class Budget {
         // Implementation pending
         return null;
     }
+
 }
