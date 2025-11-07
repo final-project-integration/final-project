@@ -9,7 +9,7 @@ import java.util.Collections;
  * @author David Humala
  */
 
-public static class DataTypeValidator {
+public class DataTypeValidator {
 
     /**
      * @param value input string
