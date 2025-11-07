@@ -11,12 +11,7 @@ import java.util.Collections;
 public class CrossFieldValidator {
 
     /**
-     * Default constructor for CrossFieldValidator.
-     */
-    public CrossFieldValidator() {}
-
-    /**
-     * Ensure startDate <= endDate and both valid (format + chronology).
+     * Ensure startDate {@literal <=} endDate and both valid (format + chronology).
      * 
      * @param startDate the starting date to validate (string/DTO placeholder)
      * @param endDate the ending date to validate (string/DTO placeholder)
@@ -27,7 +22,7 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Sum of category planned amounts equals budget total (within tolerance).
+     * Checks that the sum of category planned amounts equals the budget total (within tolerance).
      * 
      * @param budget object representing a budget (DTO placeholder)
      * @return validation result
@@ -37,7 +32,7 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Income categories not negative; expenses not positive, etc.
+     * Verifies income categories are not negative and expenses are not positive.
      * 
      * @param transaction object representing a transaction (DTO placeholder)
      * @return validation result
@@ -47,9 +42,9 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Detect duplicate transactions (same date, amount, merchant, category).
+     * Detects duplicate transactions (same date, amount, merchant, category).
      * 
-     * @param transactions list of transaction-like objects (DTO placeholder)
+     * @param transactions list (DTO placeholder)
      * @return validation result with duplicate findings
      */
     public ValidationResult detectDuplicateTransactions(List<Object> transactions) {
@@ -57,9 +52,9 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Category exists and respects hierarchy (e.g., "Food:Groceries").
+     * Validates that a category exists and respects hierarchy (e.g., "Food:Groceries").
      * 
-     * @param category category object or string (DTO placeholder)
+     * @param category category object/string (DTO placeholder)
      * @return validation result
      */
     public ValidationResult validateCategoryHierarchy(Object category) {
