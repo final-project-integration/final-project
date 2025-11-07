@@ -1,3 +1,5 @@
+package storage;
+
 import java.util.ArrayList;
 
 /**
@@ -14,12 +16,15 @@ import java.util.ArrayList;
 
 public class Budget {
 	
+    // Internal list to hold all Transaction objects for the year
+    private ArrayList<Transaction> transactions;
+    
     /**
      * Constructs a new Budget object for the current year.
-     * Initializes internal data structures for tracking income and expenses.
+     * Initializes the internal data structure for tracking transactions.
      */
     public Budget() {
-        // No initialization yet
+        this.transactions = new ArrayList<>();
     }
     
     /**
@@ -30,54 +35,54 @@ public class Budget {
      * @param amount the dollar amount of the transaction (positive for income, negative for expense)
      */
     public void addTransaction(String date, String category, double amount) {
-        // Implementation pending
+        // Implementation pending: Create new Transaction and add to list
     }
 
     /**
-     * Removes a transaction from the user's budget.
+     * Removes a transaction from the user's budget based on its index.
      *
-     * @param transactionIndex the index number of the transaction to remove
+     * @param transactionIndex the 0-based index number of the transaction to remove
      */
     public void removeTransaction(int transactionIndex) {
-        // Implementation pending
+        // Implementation pending: Remove transaction if index is valid
     }
 
     /**
-     * Updates an existing transaction with new information.
+     * Updates an existing transaction with new information based on its index.
      *
-     * @param transactionIndex the index number of the transaction to update
+     * @param transactionIndex the 0-based index number of the transaction to update
      * @param newDate the updated date of the transaction in MM/DD/YYYY format
      * @param newCategory the updated category of the transaction
      * @param newAmount the updated amount of the transaction
      */
     public void updateTransaction(int transactionIndex, String newDate, String newCategory, double newAmount) {
-        // Implementation pending
+        // Implementation pending: Update transaction details
     }
 
     /**
-     * Retrieves all transactions grouped by month.
+     * Retrieves all transactions, potentially sorted or grouped by month.
      *
-     * @return an ArrayList of transactions sorted or grouped by month
+     * @return an ArrayList of {@link Transaction} objects sorted or grouped by month
      */
-    public ArrayList<Object> getTransactionsByMonth() {
+    public ArrayList<Transaction> getTransactionsByMonth() {
         // Implementation pending
         return null;
     }
 
     /**
-     * Retrieves all transactions grouped by category.
+     * Retrieves all transactions, potentially sorted or grouped by category.
      *
-     * @return an ArrayList of transactions sorted or grouped by category
+     * @return an ArrayList of {@link Transaction} objects sorted or grouped by category
      */
-    public ArrayList<Object> getTransactionsByCategory() {
+    public ArrayList<Transaction> getTransactionsByCategory() {
         // Implementation pending
         return null;
     }
 
     /**
-     * Calculates the total income and expenses for each month in the year.
+     * Calculates the total income and expenses (net total) for each month in the year.
      *
-     * @return an ArrayList of monthly totals (income minus expenses)
+     * @return an ArrayList of 12 Double values representing the monthly net totals
      */
     public ArrayList<Double> calculateMonthlyTotals() {
         // Implementation pending
@@ -88,7 +93,7 @@ public class Budget {
      * Generates a summary of the user's annual financial performance.
      * This includes total income, total expenses, and overall net balance.
      *
-     * @return an ArrayList containing summary values for income, expenses, and net balance
+     * @return an ArrayList containing summary values for total income, total expenses, and overall net balance
      */
     public ArrayList<Double> calculateAnnualSummary() {
         // Implementation pending
