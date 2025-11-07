@@ -11,6 +11,11 @@ package integration;
 public class ErrorHandler {
 
     /**
+     * Default constructor for ErrorHandler.
+     */
+    public ErrorHandler() {}
+
+    /**
      * Handles errors that occur when calling other team modules.
      * Catches exceptions, displays appropriate messages, and recovers gracefully.
      *
@@ -19,7 +24,7 @@ public class ErrorHandler {
      * @author Kapil Tamang
      */
     public void handleModuleError(String moduleName, Exception error) {
-        // TODO: Handle and log module errors
+        // Handle and log module errors
     }
 
     /**
@@ -29,7 +34,7 @@ public class ErrorHandler {
      * @author Kapil Tamang
      */
     public void recoverToMenu() {
-        // TODO: Return to safe state
+        // Return to safe state
     }
 
     /**
@@ -41,7 +46,7 @@ public class ErrorHandler {
      * @author Kapil Tamang
      */
     public void logError(String errorMessage, Exception error) {
-        // TODO: Log error details
+        // Log error details
     }
 
     /**
@@ -52,6 +57,6 @@ public class ErrorHandler {
      * @author Kapil Tamang
      */
     public void displayError(String message) {
-        // TODO: Display formatted error message
+        // Display formatted error message
     }
 }

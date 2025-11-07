@@ -12,6 +12,11 @@ package integration;
 public class UIUtilities {
 
     /**
+     * Default constructor for UIUtilities.
+     */
+    public UIUtilities() {}
+
+    /**
      * Clears all text from the console screen.
      * Provides a clean display for new menu or information screens.
      *
@@ -56,5 +61,3 @@ public class UIUtilities {
         return null;
     }
 }
-
-
