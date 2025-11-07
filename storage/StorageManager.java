@@ -3,7 +3,7 @@ package storage;
 /**
  * The StorageManager Class handles reading and writing
  * user budget information to and from saved files.
- * * @author Farhan Chowdhury
+ * @author Farhan Chowdhury
  * @version 11/4/2025
  */
 
@@ -78,3 +78,4 @@ public class StorageManager{
 	}
 
 }
+
