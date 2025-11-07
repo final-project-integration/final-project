@@ -9,7 +9,7 @@ import java.util.List;
  * @author Aung Latt
  */
 
-public static class ValidationResult {
+public class ValidationResult {
 
     /**
      * Aggregated result/messages for validations.
