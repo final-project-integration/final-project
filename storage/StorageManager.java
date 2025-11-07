@@ -10,12 +10,6 @@ package storage;
 
 public class StorageManager{
 	
-	
-	/**
-	 * Default Constructor
-	 */
-	public StorageManager() {
-	}
 
 	/**
 	 * Loads the user data from saved file.
@@ -80,5 +74,6 @@ public class StorageManager{
 
 }
 	
+
 
 
