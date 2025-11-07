@@ -16,6 +16,16 @@ import java.util.Map;
  */
 
 public class Storage {
+
+	/**
+	* Constructs a new Storage object. 
+	* This default constructor initializes Storage class (no parameters).
+	*
+	* @author Andony Ariza
+	*/
+	public Storage() { //Default Constructor
+	}
+	
 	/**
 	 * Saves the user's account data.
 	 *
@@ -48,3 +58,4 @@ public class Storage {
 
 
 }
+
