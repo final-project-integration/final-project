@@ -11,6 +11,11 @@ import java.util.Collections;
 public class DataTypeValidator {
 
     /**
+     * Default constructor for DataTypeValidator.
+     */
+    public DataTypeValidator() {}
+
+    /**
      * Checks that the input is non-null and non-blank after trim.
      * 
      * @param value input string
