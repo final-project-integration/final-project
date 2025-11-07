@@ -9,7 +9,7 @@ import java.util.Collections;
  * @author Ataik
  */
 
-public static class CrossFieldValidator {
+public class CrossFieldValidator {
 
     /**
      * Ensure startDate <= endDate and both valid (format + chronology).
