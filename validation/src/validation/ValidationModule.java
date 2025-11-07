@@ -8,7 +8,11 @@ import java.util.Collections;
  * 
  * @author Aung Latt, Mayesha Fahmida, David Humala, Ataik
  */
-
 public class ValidationModule {
+
+    /**
+     * Default constructor for ValidationModule.
+     */
+    public ValidationModule() {}
 
 }
