@@ -6,7 +6,8 @@ import java.util.Collections;
 /**
  * Validation module (the outer class) for PFM.
  * 
- * @author Aung Latt, Mayesha Fahmida, David Humala, Ataik
+ * @author 
+ *  Aung Latt, Mayesha Fahmida, David Humala, Ataik
  */
 public class ValidationModule {
 
@@ -14,5 +15,4 @@ public class ValidationModule {
      * Default constructor for ValidationModule.
      */
     public ValidationModule() {}
-
 }
