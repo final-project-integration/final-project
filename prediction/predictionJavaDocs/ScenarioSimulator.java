@@ -1,4 +1,3 @@
-package prediction.predictionJavaDocs;
 
 /**
  * ScenarioSimulator class for the Prediction Team module.
