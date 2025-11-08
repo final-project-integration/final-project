@@ -1,4 +1,3 @@
-package AccountsJavaDoc;
 /**
  * Authentication handles all security related functionality, including password hashing and
  * user verification. It ensures that sensitive information dealt with in the Accounts class
@@ -153,4 +152,5 @@ package AccountsJavaDoc;
     }
 
  }
+
 
