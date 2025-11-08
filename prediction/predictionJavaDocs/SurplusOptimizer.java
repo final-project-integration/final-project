@@ -1,4 +1,3 @@
-package prediction.predictionJavaDocs;
 
 /**
  * SurplusOptimizer class for the Prediction Team module.
@@ -75,4 +74,5 @@ public class SurplusOptimizer {
     }
 
 }
+
 
