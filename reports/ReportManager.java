@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 import java.io.File;
 import java.util.Locale;
 import java.util.Map;
-
+import java.nio.file.Path;
+import java.time.Month;
 
 /**
  * Manages loading data and orchestrating the generation and presentation of report artifacts
@@ -14,10 +15,10 @@ import java.util.Map;
  *  Computing overall balance figures
  *  Exporting summaries to CSV and displaying reports on screen
  * 
- * @Author Angelo Samir Alvarez 
- * @Author Furkan Bilgi
- * @Author Chukwuemeka Okwuka
- * @Author Omar Piron
+ * @author Angelo Samir Alvarez 
+ * @author Furkan Bilgi
+ * @author Chukwuemeka Okwuka
+ * @author Omar Piron
  */
 public class ReportManager {
 
@@ -26,7 +27,6 @@ public class ReportManager {
      * so that summaries can be produced without additional I/O.
      *
      * @param year the four-digit year to load (e.g., 2025)
-     * @author 
      */
     public void loadYearlyData(int year) {
     }
@@ -36,7 +36,6 @@ public class ReportManager {
      *
      * @param year the four-digit year corresponding to the loaded dataset
      * @return an immutable mapping of Month → total amount (expenses can be negative)
-     * @author 
      */
     public Map<Integer, BigDecimal> generateMonthlySummary(int year) {
         return java.util.Collections.emptyMap();
@@ -47,7 +46,6 @@ public class ReportManager {
      *
      * @param year the four-digit year corresponding to the loaded dataset
      * @return an immutable mapping of Category → total amount
-     * @author 
      */
     public Map<String, BigDecimal> generateCategorySummary(int year) {
         return java.util.Collections.emptyMap();
@@ -58,7 +56,6 @@ public class ReportManager {
      *
      * @param year the four-digit year corresponding to the loaded dataset
      * @return a {@link YearlySummary} struct containing key totals
-     * @author 
      */
     public YearlySummary generateYearlySummary(int year) {
         return new YearlySummary(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
@@ -112,3 +109,4 @@ public class ReportManager {
         public BigDecimal getNetBalance() { return netBalance; }
     }
 }
+
