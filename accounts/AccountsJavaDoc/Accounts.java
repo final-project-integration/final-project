@@ -1,4 +1,3 @@
-package AccountsJavaDoc;
 
 /**
  * Accounts manages user data management, including the creation, modification, and deletion
@@ -183,5 +182,6 @@ public class Accounts {
         return false;
     }
 }
+
 
 
