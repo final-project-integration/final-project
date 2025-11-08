@@ -1,4 +1,4 @@
-package integration;
+
 
 /**
  * ErrorHandler manages all error handling and recovery operations for the application.
