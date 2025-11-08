@@ -1,4 +1,3 @@
-package storage;
 
 /**
  * The StorageManager Class handles reading and writing
@@ -78,4 +77,5 @@ public class StorageManager{
 	}
 
 }
+
 
