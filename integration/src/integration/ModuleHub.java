@@ -1,4 +1,3 @@
-package integration;
 
 /**
  * ModuleHub is the traffic controller, it directs requests to the right team's module.
