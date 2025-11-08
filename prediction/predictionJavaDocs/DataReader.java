@@ -1,4 +1,3 @@
-package prediction.predictionJavaDocs;
 
 /**
  * DataReader class for the Prediction Team Module Reads, validates, calculates
