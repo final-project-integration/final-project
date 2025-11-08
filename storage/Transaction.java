@@ -1,4 +1,3 @@
-package storage;
 
 /**
  * The Transaction class represents a single Transaction entry.
@@ -69,3 +68,4 @@ public class Transaction {
     }
 
 }
+
