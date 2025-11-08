@@ -1,4 +1,3 @@
-package integration;
 
 /**
  * UIUtilities provides utility methods for user interface operations.
