@@ -1,4 +1,3 @@
-package prediction.predictionJavaDocs;
 
 /**
  * DeficitSolver class for the Prediction Team module. Declares methods used
