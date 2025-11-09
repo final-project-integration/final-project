@@ -10,3 +10,4 @@ out/
 .DS_Store
 .idea/
 .vscode/
+javadoc_errors.txt
