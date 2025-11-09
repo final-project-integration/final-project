@@ -15,6 +15,9 @@ import java.util.Map;
  */
 public class ReportFormatter {
 
+     /** Default constructor for ReportFormatter. */
+    public ReportFormatter() {}
+
     /**
      * Formats a monetary amount for display using the given {@link Locale}.
      *
