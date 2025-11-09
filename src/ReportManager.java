@@ -18,8 +18,11 @@ import java.util.Map;
  * @author Omar Piron
  */
 public class ReportManager {
-    /** Default constructor for ReportManager. */
-public ReportManager() {}
+    /**
+     * Creates a ReportManager instance.
+     */
+    public ReportManager() {}
+
 
 
     /**
@@ -107,7 +110,7 @@ public ReportManager() {}
             this.netBalance = netBalance;
         }
 
-       /**
+/**
  * Gets total income for the year.
  * @return total income for the year
  */
