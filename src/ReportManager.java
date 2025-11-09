@@ -107,20 +107,23 @@ public ReportManager() {}
             this.netBalance = netBalance;
         }
 
-        /** Gets total income for the year.
-         *  @return total income for the year
-         */
+       /**
+ * Gets total income for the year.
+ * @return total income for the year
+ */
+public BigDecimal getTotalIncome() { return totalIncome; }
 
-        public BigDecimal getTotalIncome() { return totalIncome; }
+/**
+ * Gets total expenses for the year.
+ * @return total expenses for the year
+ */
+public BigDecimal getTotalExpenses() { return totalExpenses; }
 
-        /** Gets total expenses for the year.
-         *  @return total expenses for the year
-         */
-        public BigDecimal getTotalExpenses() { return totalExpenses; }
+/**
+ * Gets net balance for the year.
+ * @return net balance for the year
+ */
+public BigDecimal getNetBalance() { return netBalance; }
 
-        /** Gets net balance for the year.
-         *  @return net balance for the year
-         */
-        public BigDecimal getNetBalance() { return netBalance; }
     }
 }
