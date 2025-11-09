@@ -18,6 +18,9 @@ import java.util.Map;
  * @author Omar Piron
  */
 public class ReportManager {
+    /** Default constructor for ReportManager. */
+public ReportManager() {}
+
 
     /**
      * Loads all income and expense records for the specified year into memory
@@ -104,13 +107,20 @@ public class ReportManager {
             this.netBalance = netBalance;
         }
 
-        /** @return total income for the year */
+        /** Gets total income for the year.
+         *  @return total income for the year
+         */
+
         public BigDecimal getTotalIncome() { return totalIncome; }
 
-        /** @return total expenses for the year */
+        /** Gets total expenses for the year.
+         *  @return total expenses for the year
+         */
         public BigDecimal getTotalExpenses() { return totalExpenses; }
 
-        /** @return net balance for the year */
+        /** Gets net balance for the year.
+         *  @return net balance for the year
+         */
         public BigDecimal getNetBalance() { return netBalance; }
     }
 }
