@@ -35,7 +35,12 @@ public class ModuleHub {
      * @author Denisa Cakoni
      */
     public boolean callStorage(String action, String username, int year) {
+<<<<<<< HEAD:src/ModuleHub.java
         return false;
+=======
+   
+      
+>>>>>>> 344af91f9c2ad4520317ef8294d88424d4ccd34c:integration/src/integration/ModuleHub.java
     }
 
     /**
@@ -47,7 +52,7 @@ public class ModuleHub {
      * @author Denisa Cakoni
      */
     public String callReports(String reportType, String username) {
-        return "";
+        
     }
 
     /**
@@ -60,7 +65,7 @@ public class ModuleHub {
      * @author Denisa Cakoni
      */
     public String callPrediction(String scenarioType, String username, int year) {
-        return "";
+  
     }
 
     /**
@@ -72,7 +77,7 @@ public class ModuleHub {
      * @author Denisa Cakoni
      */
     public boolean callValidation(String validationType, String dataToValidate) {
-        return false;
+       
     }
 
     /**
@@ -84,6 +89,6 @@ public class ModuleHub {
      * @author Denisa Cakoni
      */
     public boolean callAccounts(String action, String username) {
-        return false;
+        
     }
 }
