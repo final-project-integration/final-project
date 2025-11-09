@@ -1,4 +1,3 @@
-
 /**
  * ModuleHub is the traffic controller, it directs requests to the right team's module.
  * Instead of calling other teams directly, we go through this hub to keep things organized.
@@ -19,7 +18,7 @@ public class ModuleHub {
      */
     public ModuleHub() {}
 
-    // fields for each team's modules | placeholders, not initialized 
+    // fields for each team's modules | placeholders, not initialized
     private Object accountsModule;
     private Object storageModule;
     private Object reportsModule;
@@ -29,21 +28,18 @@ public class ModuleHub {
     /**
      * Calls the Storage team to load, save, or delete budget data.
      *
-     *
      * @param action what we want Storage to do
      * @param username which user's data we're working with
-     * @param year which year's budget data 
-     *  @return true if successful, false otherwise
+     * @param year which year's budget data
+     * @return true if successful, false otherwise
      * @author Denisa Cakoni
      */
     public boolean callStorage(String action, String username, int year) {
         return false;
     }
-       
 
     /**
      * calls the Reports team to generate a financial  report.
-     *
      *
      * @param reportType "monthly", "annual" etc.
      * @param username whose report to generate
@@ -53,11 +49,9 @@ public class ModuleHub {
     public String callReports(String reportType, String username) {
         return "";
     }
-    
 
     /**
      * calls the Prediction module to run "what-if" scenarios.
-     *
      *
      * @param scenarioType what to calculate
      * @param username : whose data to use
@@ -72,7 +66,6 @@ public class ModuleHub {
     /**
      * Calls the Validation team to check if data is valid.
      *
-     *
      * @param validationType : type of validation to perform
      * @param dataToValidate actual input data
      * @return true if valid, false otherwise
@@ -85,15 +78,12 @@ public class ModuleHub {
     /**
      * Calls the Accounts module for user account actions such as login, logout, password
      *
-     *
      * @param action "login", "logout", "changePassword", "deleteAccount"
      * @param username the account username
-     *  @return true if successful, false otherwise
+     * @return true if successful, false otherwise
      * @author Denisa Cakoni
      */
     public boolean callAccounts(String action, String username) {
         return false;
     }
-
-    
 }
