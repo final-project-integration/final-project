@@ -8,10 +8,10 @@ import java.util.Map;
  * Formatter produces user-friendly string representations of report data,
  * including currency values and text-based tables for console or log output.
  * 
- * @Author Angelo Samir Alvarez 
- * @Author Furkan Bilgi
- * @Author Chukwuemeka Okwuka
- * @Author Omar Piron
+ * @author Angelo Samir Alvarez 
+ * @author Furkan Bilgi
+ * @author Chukwuemeka Okwuka
+ * @author Omar Piron
  */
 public class ReportFormatter {
 
