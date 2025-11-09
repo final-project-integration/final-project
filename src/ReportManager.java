@@ -1,4 +1,4 @@
-cat > src/ReportManager.java <<'EOF'
+
 import java.math.BigDecimal;
 import java.io.File;
 import java.util.Map;
@@ -129,4 +129,4 @@ public class ReportManager {
         public BigDecimal getNetBalance() { return netBalance; }
     }
 }
-EOF
+
