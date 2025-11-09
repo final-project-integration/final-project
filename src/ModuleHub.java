@@ -36,7 +36,9 @@ public class ModuleHub {
      *  @return true if successful, false otherwise
      * @author Denisa Cakoni
      */
-    public boolean callStorage(String action, String username, int year) {}
+    public boolean callStorage(String action, String username, int year) {
+        return false;
+    }
        
 
     /**
@@ -48,7 +50,9 @@ public class ModuleHub {
      * @return formatted report as a String
      * @author Denisa Cakoni
      */
-    public String callReports(String reportType, String username) {}
+    public String callReports(String reportType, String username) {
+        return "";
+    }
     
 
     /**
@@ -61,7 +65,9 @@ public class ModuleHub {
      * @return prediction result text
      * @author Denisa Cakoni
      */
-    public String callPrediction(String scenarioType, String username, int year) {}
+    public String callPrediction(String scenarioType, String username, int year) {
+        return "";
+    }
 
     /**
      * Calls the Validation team to check if data is valid.
@@ -72,7 +78,9 @@ public class ModuleHub {
      * @return true if valid, false otherwise
      * @author Denisa Cakoni
      */
-    public boolean callValidation(String validationType, String dataToValidate) {}
+    public boolean callValidation(String validationType, String dataToValidate) {
+        return false;
+    }
 
     /**
      * Calls the Accounts module for user account actions such as login, logout, password
@@ -83,7 +91,9 @@ public class ModuleHub {
      *  @return true if successful, false otherwise
      * @author Denisa Cakoni
      */
-    public boolean callAccounts(String action, String username) {}
+    public boolean callAccounts(String action, String username) {
+        return false;
+    }
 
     
 }
