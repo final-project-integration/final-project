@@ -1,11 +1,10 @@
-import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Analyzer provides analytical computations over already-aggregated report data,
  * such as identifying top categories and computing trends.
- *
+ * 
  * @author Angelo Samir Alvarez
  * @author Furkan Bilgi
  * @author Chukwuemeka Okwuka
@@ -13,51 +12,47 @@ import java.util.Map;
  */
 public class ReportAnalyzer {
 
-    /** Default constructor for ReportAnalyzer. */
-    public ReportAnalyzer() {}
-
     /**
      * Returns the category with the largest (absolute) expense total.
      *
-     * @param categoryTotals mapping of category name to total amount
-     *                       (expenses represented as positive magnitudes)
-     * @return the category label with the highest expense, or {@code null} if none
+     * @param categoryLines list of strings formatted as "CategoryName:Amount"
+     * @return the category name with the highest amount, or null if the list is empty
      */
-    public String calculateHighestExpenseCategory(Map<String, BigDecimal> categoryTotals) {
+    public String calculateHighestExpenseCategory(List<String> categoryLines) {
         return null;
     }
 
     /**
-     * Computes the average monthly total given a map of month totals.
+     * Computes the average monthly total given a list of month totals.
      *
-     * @param monthlyTotals mapping of month index (1–12) to total amount
+     * @param monthlyLines list of strings representing monthly totals
      * @return the arithmetic mean of the provided month totals
      */
-    public BigDecimal calculateMonthlyAverage(Map<Integer, BigDecimal> monthlyTotals) {
-        return BigDecimal.ZERO;
+    public String calculateMonthlyAverage(List<String> monthlyLines) {
+        return "0.00";
     }
 
     /**
-     * Derives a per-month savings series defined as {@code income - expenses} for each month.
+     * Derives a per-month savings series defined as 'income - expenses' for each month.
      *
-     * @param monthlyIncome   mapping of month index (1–12) to total income
-     * @param monthlyExpenses mapping of month index (1–12) to total expenses
-     * @return an ordered list, Jan..Dec, of savings values; missing months assumed zero
+     * @param monthlyIncomeLines  list of income lines
+     * @param monthlyExpenseLines list of expense lines
+     * @return an ordered list of savings lines
      */
-    public List<BigDecimal> calculateSavingsTrend(Map<Integer, BigDecimal> monthlyIncome,
-                                                  Map<Integer, BigDecimal> monthlyExpenses) {
-        return java.util.Collections.emptyList();
+    public List<String> calculateSavingsTrend(List<String> monthlyIncomeLines,
+                                              List<String> monthlyExpenseLines) {
+        return Collections.emptyList();
     }
 
     /**
-     * Compares two periods (e.g., period A vs period B) for the same set of categories.
+     * Compares two periods (e.g., year A vs year B) for the same set of categories.
      *
-     * @param periodA mapping of category name to total amount for period A
-     * @param periodB mapping of category name to total amount for period B
-     * @return a mapping of category name to the difference {@code (periodB - periodA)}
+     * @param periodALines list of category totals for period A
+     * @param periodBLines list of category totals for period B
+     * @return a list of difference lines
      */
-    public Map<String, BigDecimal> generateComparisonReport(Map<String, BigDecimal> periodA,
-                                                            Map<String, BigDecimal> periodB) {
-        return java.util.Collections.emptyMap();
+    public List<String> generateComparisonReport(List<String> periodALines,
+                                                 List<String> periodBLines) {
+        return Collections.emptyList();
     }
 }
