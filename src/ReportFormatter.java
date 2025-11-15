@@ -1,62 +1,51 @@
-
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Formatter produces user-friendly string representations of report data,
  * including currency values and text-based tables for console or log output.
  * 
- * @author Angelo Samir Alvarez 
+ * @author Angelo Samir Alvarez
  * @author Furkan Bilgi
  * @author Chukwuemeka Okwuka
  * @author Omar Piron
  */
 public class ReportFormatter {
 
-     /** Default constructor for ReportFormatter. */
-    public ReportFormatter() {}
-
     /**
-     * Formats a monetary amount for display using the given {@link Locale}.
+     * Attaches a currency symbol to the amount string.
      *
-     * @param amount the amount to format, could be negative for expenses
-     * @param locale the locale that determines currency symbol and grouping
-     * @return a localized currency string
-     * @author Angelo Samir Alvarez 
+     * @param amountString    a numeric value represented as a string
+     * @param currencySymbol  something like "$", "€", etc.
+     * @return a formatted currency string
      */
-    public String formatCurrency(BigDecimal amount, Locale locale) {
-        return "";
+    public String formatCurrency(String amountString, String currencySymbol)  {
+        return currencySymbol + amountString;
     }
 
     /**
-     * Builds a simple monospace table string from headers and rows.
-     * Column widths should fit the widest cell in each column.
+     * Builds a monospace table string from headers and rows.
      *
-     * @param headers ordered list of column headers
-     * @param rows list of rows, each row is an ordered list of column strings
+     * @param headers list of column headers
+     * @param rows    list of row data, where each row is a List<String>
      * @return a printable table string
-     * @author Angelo Samir Alvarez 
      */
     public String formatTable(List<String> headers, List<List<String>> rows) {
         return "";
     }
 
     /**
-     * Formats category totals into a bullet list for quick reading.
+     * Creates a readable bullet list for category totals.
      *
-     * @param categoryTotals mapping of Category → total amount
-     * @param locale locale for currency formatting
-     * @return a multi line string such as - "Groceries: $300.00"
-     * @author Angelo Samir Alvarez 
+     * @param categoryLines a list of strings in the format "Category:Amount"
+     * @param currencySymbol a symbol like "$"
+     * @return a multi-line string with each category on its own line
      */
-    public String formatCategoryTotals(Map<String, BigDecimal> categoryTotals, Locale locale) {
+    public String formatCategoryTotals(List<String> categoryLines, String currencySymbol) {
         return "";
     }
 
     /**
-     * Produces a header/footer block that can wrap report content.
+     * Produces a header/footer block with the main content printed elsewhere.
      *
      * @param title  the title text to display at the top
      * @param footer the footer text to display at the bottom
