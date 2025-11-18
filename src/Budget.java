@@ -1,102 +1,208 @@
-
 import java.util.ArrayList;
 
 /**
- * The Budget class represents a user's financial data for a single calendar year.
- * It stores income and expense transactions, allows modification of these records,
- * and provides analytical summaries such as monthly totals and annual performance.
+ * The Budget class represents all financial activity for a single calendar year.
+ * It stores a list of income and expense transactions, allows modifying these records,
+ * and provides summary calculations such as totals by month, totals by category,
+ * and an overall annual summary.
  *
- * This class is part of the Storage module responsible for maintaining budget objects
- * between program sessions.
+ * This class is part of the Storage module and is responsible for maintaining
+ * the user's financial data between program sessions.
  *
- * @author Emmanuel Cano
+ * author Emmanuel
  * @version 11/4/2025
  */
-
 public class Budget {
-	
-    // Internal list to hold all Transaction objects for the year
+
+    /** A list of all income and expense transactions for this budget year. */
     private ArrayList<Transaction> transactions;
-    
+
     /**
-     * Constructs a new Budget object for the current year.
-     * Initializes the internal data structure for tracking transactions.
+     * Constructs a new empty {@code Budget} object.
+     * Initializes the internal list that stores all transactions.
      */
     public Budget() {
-        this.transactions = new ArrayList<>();
+        transactions = new ArrayList<>();
     }
-    
+
     /**
      * Adds a new transaction to the user's budget for the year.
      *
-     * @param date the date of the transaction in MM/DD/YYYY format
-     * @param category the category of the transaction (e.g., Food, Utilities, Compensation)
-     * @param amount the dollar amount of the transaction (positive for income, negative for expense)
+     * @param date      the date of the transaction in MM/DD/YYYY format
+     * @param category  the transaction category (e.g., Food, Utilities, Compensation)
+     * @param amount    the dollar amount of the transaction
+     *                  (positive for income, negative for expenses)
      */
     public void addTransaction(String date, String category, double amount) {
-        // Implementation pending: Create new Transaction and add to list
+        transactions.add(new Transaction(date, category, amount));
     }
 
     /**
-     * Removes a transaction from the user's budget based on its index.
+     * Removes an existing transaction at the specified index.
      *
-     * @param transactionIndex the 0-based index number of the transaction to remove
+     * @param transactionIndex  the index of the transaction to remove
+     *                          (must be between 0 and the number of transactions − 1)
      */
     public void removeTransaction(int transactionIndex) {
-        // Implementation pending: Remove transaction if index is valid
+        if (transactionIndex >= 0 && transactionIndex < transactions.size()) {
+            transactions.remove(transactionIndex);
+        } else {
+            System.out.println("Invalid transaction index.");
+        }
     }
 
     /**
-     * Updates an existing transaction with new information based on its index.
+     * Updates an existing transaction with new values.
      *
-     * @param transactionIndex the 0-based index number of the transaction to update
-     * @param newDate the updated date of the transaction in MM/DD/YYYY format
-     * @param newCategory the updated category of the transaction
-     * @param newAmount the updated amount of the transaction
+     * @param transactionIndex  the index of the transaction to update
+     * @param newDate           the updated date in MM/DD/YYYY format
+     * @param newCategory       the updated category name
+     * @param newAmount         the updated amount (positive for income, negative for expense)
      */
     public void updateTransaction(int transactionIndex, String newDate, String newCategory, double newAmount) {
-        // Implementation pending: Update transaction details
+        if (transactionIndex >= 0 && transactionIndex < transactions.size()) {
+            transactions.get(transactionIndex).update(newDate, newCategory, newAmount);
+        } else {
+            System.out.println("Invalid transaction index.");
+        }
     }
 
     /**
-     * Retrieves all transactions, potentially sorted or grouped by month.
+     * Groups all transactions by their calendar month based on the date string.
+     * Index 0 corresponds to January, index 1 to February, ..., index 11 to December.
      *
-     * @return an ArrayList of {@link Transaction} objects sorted or grouped by month
+     * @return an ArrayList of 12 lists, where each inner list contains
+     *         all transactions that occurred in that month
      */
-    public ArrayList<Transaction> getTransactionsByMonth() {
-        // Implementation pending
-        return null;
+    public ArrayList<ArrayList<Transaction>> getTransactionsByMonth() {
+
+        ArrayList<ArrayList<Transaction>> monthly = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            monthly.add(new ArrayList<>());
+        }
+
+        for (Transaction t : transactions) {
+            int month = extractMonth(t.getDate());
+            if (month >= 1 && month <= 12) {
+                monthly.get(month - 1).add(t);
+            }
+        }
+
+        return monthly;
     }
 
     /**
-     * Retrieves all transactions, potentially sorted or grouped by category.
+     * Extracts the month number from a date in the format MM/DD/YYYY.
      *
-     * @return an ArrayList of {@link Transaction} objects sorted or grouped by category
+     * @param date  the date string to parse
+     * @return an integer month value from 1 (January) to 12 (December)
      */
-    public ArrayList<Transaction> getTransactionsByCategory() {
-        // Implementation pending
-        return null;
+    private int extractMonth(String date) {
+        return Integer.parseInt(date.substring(0, 2));
     }
 
     /**
-     * Calculates the total income and expenses (net total) for each month in the year.
+     * Groups all transactions by their category.
      *
-     * @return an ArrayList of 12 Double values representing the monthly net totals
+     * @return an ArrayList containing two elements:
+     *         <ul>
+     *             <li>Index 0: an ArrayList<String> of unique category names</li>
+     *             <li>Index 1: an ArrayList<ArrayList<Transaction>> where each inner list
+     *                 groups all transactions belonging to the corresponding category</li>
+     *         </ul>
+     */
+    public ArrayList<Object> getTransactionsByCategory() {
+
+        ArrayList<String> categories = new ArrayList<>();
+        ArrayList<ArrayList<Transaction>> grouped = new ArrayList<>();
+
+        for (Transaction t : transactions) {
+            String cat = t.getCategory();
+            int index = categories.indexOf(cat);
+
+            if (index == -1) {
+                categories.add(cat);
+                grouped.add(new ArrayList<>());
+                index = categories.size() - 1;
+            }
+
+            grouped.get(index).add(t);
+        }
+
+        ArrayList<Object> result = new ArrayList<>();
+        result.add(categories);
+        result.add(grouped);
+
+        return result;
+    }
+
+    /**
+     * Calculates the total income and expenses for each month of the year.
+     *
+     * @return an ArrayList<Double> of 12 values, where each element represents
+     *         the total amount for that month (income minus expenses)
      */
     public ArrayList<Double> calculateMonthlyTotals() {
-        // Implementation pending
-        return null;
+
+        ArrayList<Double> totals = new ArrayList<>();
+
+        for (int i = 0; i < 12; i++) {
+            totals.add(0.0);
+        }
+
+        for (Transaction t : transactions) {
+            int month = extractMonth(t.getDate());
+            if (month >= 1 && month <= 12) {
+                double newTotal = totals.get(month - 1) + t.getAmount();
+                totals.set(month - 1, newTotal);
+            }
+        }
+
+        return totals;
     }
 
     /**
-     * Generates a summary of the user's annual financial performance.
-     * This includes total income, total expenses, and overall net balance.
+     * Computes an annual summary of all financial activity.
      *
-     * @return an ArrayList containing summary values for total income, total expenses, and overall net balance
+     * @return an ArrayList<Double> containing:
+     *         <ul>
+     *             <li>Total income (sum of all positive amounts)</li>
+     *             <li>Total expenses (sum of all negative amounts)</li>
+     *             <li>Net balance (income + expenses)</li>
+     *         </ul>
      */
     public ArrayList<Double> calculateAnnualSummary() {
-        // Implementation pending
-        return null;
+        double income = 0;
+        double expenses = 0;
+
+        for (Transaction t : transactions) {
+            if (t.getAmount() > 0)
+                income += t.getAmount();
+            else
+                expenses += t.getAmount();
+        }
+
+        double net = income + expenses;
+
+        ArrayList<Double> summary = new ArrayList<>();
+        summary.add(income);
+        summary.add(expenses);
+        summary.add(net);
+
+        return summary;
+    }
+
+    /**
+     * Prints all stored transactions to the console.
+     * This method is primarily used for debugging.
+     */
+    public void printAllTransactions() {
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions recorded.");
+        } else {
+            for (int i = 0; i < transactions.size(); i++) {
+                System.out.println(i + ": " + transactions.get(i));
+            }
+        }
     }
 }
-
