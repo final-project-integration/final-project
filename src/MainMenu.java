@@ -1,4 +1,5 @@
-
+import java.util.Scanner;
+import java.util.InputMismatchException;
 
 /**
  * This class allows the user to navigate to all of the different "pages" of the program.
@@ -18,8 +19,19 @@ public class MainMenu {
      *
      * @author Shazadul Islam
      */
-    public void displayMenu() {
+    public static void displayMenu() {
         // Print main menu options
+    	// Print main menu options
+    	System.out.println("Hamilton Heights:");
+    	System.out.println("Personal Finance Manager");
+    	System.out.println();
+    	System.out.println("Main Menu");
+    	System.out.println("  1. Table of Contents");
+    	System.out.println("  2. Settings");
+    	System.out.println("  3. Quit to Desktop");
+    	System.out.print("Please enter the number associated with you desired option: ");
+    	
+    	getUserChoice(3);
     }
 
     /**
@@ -29,9 +41,27 @@ public class MainMenu {
      * @return true if a valid choice was made, otherwise false
      * @author Shazadul Islam
      */
-    public boolean getUserChoice(int numChoice) {
-        // Validate and route based on user choice
-        return false;
+    public static int getUserChoice(int numChoices) {
+    	// Validate and route based on user choice
+        Scanner sc = new Scanner(System.in);
+        int num = 0;
+        
+        while(true){
+            try {
+                num = sc.nextInt();
+            
+                if (num >= 1 && num <=numChoices){
+                    return num;
+                }
+                else{
+                    System.out.print("Please enter a valid number associated with an option displayed in the main menu (1-"+ numChoices+"): ");
+                }
+                
+            } catch(InputMismatchException e) {
+                System.out.print("Please enter a valid number associated with an option displayed in the main menu (1-"+ numChoices+"):");
+                sc.nextLine();
+            }
+        }
     }
 
     /**
@@ -43,6 +73,13 @@ public class MainMenu {
      */
     public void returnToMenu() {
         // Return to main menu
+    	System.out.println("Main Menu");
+    	System.out.println("  1. Table of Contents");
+    	System.out.println("  2. Settings");
+    	System.out.println("  3. Quit to Desktop");
+    	System.out.print("Please enter the number associated with you desired option: ");
+    	
+    	getUserChoice(3);
     }
 
     /**
@@ -63,6 +100,8 @@ public class MainMenu {
      */
     public void exitProgram() {
         // Exit program
+    	System.out.println("Goodbye!");
+        System.exit(0);
     }
 
     /**
@@ -72,5 +111,9 @@ public class MainMenu {
      */
     public void displayAccountSettings() {
         // Display account settings menu
+    }
+    
+    public static void main(String[] args) {
+        displayMenu();
     }
 }
