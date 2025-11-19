@@ -204,5 +204,14 @@ public class Budget {
                 System.out.println(i + ": " + transactions.get(i));
             }
         }
+        
+     /**
+     * Returns all transactions stored in this budget.
+     * @return an ArrayList of all Transaction objects
+     */
+    public ArrayList<Transaction> getAllTransactions() {
+        return this.transactions;
+    }
     }
 }
+

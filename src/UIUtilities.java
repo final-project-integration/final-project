@@ -1,3 +1,4 @@
+import java.util.Scanner;
 
 /**
  * UIUtilities provides utility methods for user interface operations.
@@ -23,6 +24,7 @@ public class UIUtilities {
      */
     public void clearConsole() {
         // Clear console screen
+        //
     }
 
     /**
@@ -34,29 +36,32 @@ public class UIUtilities {
      */
     public void outputMessage(String message) {
         // Print message to console
+        System.out.println(message);
     }
 
     /**
      * Asks the user a question by printing to the console.
      * Displays a formatted query and prepares to receive user input.
      *
+     * @return coupled with the user's response with a string.
      * @param query a string containing the question for the user
      * @author Aaron Madou
      */
-    public void queryUser(String query) {
+    public String queryUser(String query) {
         // Display query and await input
+		System.out.println(query);
+		return grabResponse();
     }
 
     /**
      * Reads and returns the user's response from the console.
      * Captures user input after a query has been displayed.
      *
-     * @param response the input of the user in response to the query
      * @return a string containing the user's response
      * @author Aaron Madou
      */
-    public String grabResponse(String response) {
+    public String grabResponse() {
         // Read and return user input
-        return null;
+		return new Scanner(System.in).nextLine();
     }
 }
