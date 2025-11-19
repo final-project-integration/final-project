@@ -25,6 +25,9 @@ public class ErrorHandler {
      */
     public void handleModuleError(String moduleName, Exception error) {
         // Handle and log module errors
+        displayError("An error has occured in the ")+ moduleName + " module.";
+        logError("Error in " + moduleName, error);
+        recoverToMenu();
     }
 
     /**
@@ -35,6 +38,7 @@ public class ErrorHandler {
      */
     public void recoverToMenu() {
         // Return to safe state
+        System.out.println("Restoring main menu.");
     }
 
     /**
@@ -47,6 +51,12 @@ public class ErrorHandler {
      */
     public void logError(String errorMessage, Exception error) {
         // Log error details
+        System.err.println("ERROR")
+        System.err.println("Time: " + java.time.LocalDateTime.now());
+        System.err.println("Message: " + errorMessage);
+        System.err.println("Exception Type: " + error.getClass().getName());
+        System.err.println("Stack Trace:");
+        error.printStackTrace(System.err);
     }
 
     /**
@@ -58,5 +68,8 @@ public class ErrorHandler {
      */
     public void displayError(String message) {
         // Display formatted error message
+        System.out.println("ERROR");
+        System.out.println(message);
+        System.out.println("Please try again.");
     }
 }
