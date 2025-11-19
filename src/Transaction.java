@@ -1,4 +1,3 @@
-
 /**
  * The Transaction class represents a single Transaction entry.
  * It stores the date, categorical sorting, and amount spent in each transaction,
@@ -12,23 +11,20 @@
  */
 public class Transaction {
 
-    // Private fields to enforce encapsulation
-    private String date; 
+    private String date;
     private String category;
     private double amount;
 
     /**
-     * Constructs a new transaction object.
-     * Initializes all three instance fields with default empty values (null for Strings, 0.0 for amount).
+     *  Constructs a new transaction object
+     *  Initializes all three instance fields with default empty values.
      */
     public Transaction() {
-        this.date = null;
-        this.category = null;
-        this.amount = 0.0;
+        // Initialize object fields
     }
-    
     /**
-     * Constructs a new transaction object by initializing all three instance fields.
+     *  Constructs a new transaction object
+     *  Initializes all three instance fields
      * @param date the date of the transaction in MM/DD/YYYY format
      * @param category the category of the transaction (e.g., Food, Utilities, Compensation)
      * @param amount the dollar amount of the transaction (positive for income, negative for expense)
@@ -39,6 +35,37 @@ public class Transaction {
         this.category = category;
         this.amount = amount;
     }
+
+
+
+
+    /**
+     * Sets the date of a transaction.
+     * @param date the date of the transaction in MM/DD/YYYY format
+     * @author Karol Kopciuch
+     */
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    /**
+     * Sets the category of purchase in the transaction
+     * @param category the category of the transaction (e.g., Food, Utilities, Compensation)
+     * @author Karol Kopciuch
+     */
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    /**
+     * Sets the amount spent in the transaction
+     * @param amount dollar amount in the transaction
+     * @author Karol Kopciuch
+     */
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
 
     /**
      * Retrieves the date that was entered in a transaction.
@@ -59,8 +86,8 @@ public class Transaction {
     }
 
     /**
-     * Retrieves the amount of money that changed in the transaction.
-     * @return a double representing the dollar amount of the transaction
+     * Retrieves the amount of money that changed in the transaction
+     * @return a String representing the date in MM/DD/YYYY format
      * @author Karol Kopciuch
      */
     public double getAmount() {
@@ -68,4 +95,3 @@ public class Transaction {
     }
 
 }
-
