@@ -66,6 +66,20 @@ public class Transaction {
         this.amount = amount;
     }
 
+    /**
+     * Updates the fields of this transaction with new values.
+     *
+     * @param newDate      the updated date in MM/DD/YYYY format
+     * @param newCategory  the updated transaction category
+     * @param newAmount    the updated amount (positive for income, negative for expense)
+     *
+     * @author Karol Kopciuch
+     */
+    public void update(String newDate, String newCategory, double newAmount) {
+        setDate(newDate);
+        setCategory(newCategory);
+        setAmount(newAmount);
+    }
 
     /**
      * Retrieves the date that was entered in a transaction.
