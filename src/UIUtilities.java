@@ -20,11 +20,14 @@ public class UIUtilities {
      * Clears all text from the console screen.
      * Provides a clean display for new menu or information screens.
      *
+	 * NOTE: ONLY WORKS IN THE TERMINAL CONSOLE, NOT ECLIPSE. 
+	 *
      * @author Aaron Madou
      */
     public void clearConsole() {
         // Clear console screen
-        //
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
     }
 
     /**
