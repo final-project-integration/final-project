@@ -165,9 +165,9 @@ public class MainMenu {
      *
      * @author Shazadul Islam
      */
-    public void toMenu() {
+    public int toMenu() {
         // Return to main menu
-    	System.out.println("Main Menu");
+    	System.out.println("Main Menu: ");
     	System.out.println("  1. Table of Contents");
     	System.out.println("  2. Settings");
     	System.out.println("  3. Quit Program");
@@ -175,23 +175,32 @@ public class MainMenu {
     	
     	int mainMenuChoice = getUserChoice(3);
     	
-    	switch (mainMenuChoice) {
-        case 1:
-            //Make call to gotoModules
-            break; 
-        case 2:
-            //Make a call to displayAccountSettings;
-            break;
-        case 3:
-        	exitProgram();
-        	break;
-        default:
-            
-    	}
+    	System.out.println();
+    	
+    	return mainMenuChoice;
     }
     
     /**
-     * Prints the Main menu, so users can see where they can navigate to within the program.
+     * Return the user to a table of contents of modules.
+     * If they are within a module and would like to go to a different module, then
+     * they can return to the list of modules and select the next module that they would like to view.
+     *
+     * @author Shazadul Islam
+     */
+    public int toModules() {
+    	// Return to modules list
+    	System.out.println("Table of Modules");
+    	System.out.println("  1. Reports");
+    	System.out.println("  2. Prediction");
+    	System.out.print("Please enter the number associated with your desired option: ");
+    	
+    	int tableChoice = getUserChoice(2);
+    	
+    	return tableChoice;
+    }
+    
+    /**
+     * Runs the entire program
      *
      * @author Shazadul Islam
      */
@@ -202,21 +211,39 @@ public class MainMenu {
     	
     	enter();
     	
-    	toMenu();
+    	int mainMenuChoice = toMenu();
+    	switch (mainMenuChoice) {
+        case 1:
+            toModules();
+            break; 
+        case 2:
+            displayAccountSettings();
+            break;
+        case 3:
+        	exitProgram();
+        	break;
+        default:
+        	System.out.print("Something went wrong. You shouldn't be here!");
+    	}
+    	
+    	int tableChoice = toModules();
+    	switch (tableChoice) {
+        case 1:
+            //Make a call to reports that gets its files from storage
+            break; 
+        case 2:
+            //Make a call to predictions 
+            break;
+        case 3:
+        	exitProgram();
+        	break;
+        default:
+        	System.out.print("Something went wrong. You shouldn't be here!");
+    	}
     	
     	getUserChoice(3);
     }
 
-    /**
-     * Return the user to a table of contents of modules.
-     * If they are within a module and would like to go to a different module, then
-     * they can return to the list of modules and select the next module that they would like to view.
-     *
-     * @author Shazadul Islam
-     */
-    public void returnToModules() {
-        // Return to modules list
-    }
 
     /**
      * Prints the settings, so users can do things like change username and password and security questions.
