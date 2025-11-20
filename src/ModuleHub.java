@@ -108,7 +108,7 @@ public class ModuleHub {
      * @param username   whose report to generate (used for display only)
      * @return a status message
      */
-    public String callReports(String reportType, String username) {
+    public String callReports(String reportType, String username) { //int year(removed from method args because year is fixed in alpha build)
         if (reportType == null) {
             return "[ModuleHub] reportType cannot be null.";
         }
@@ -213,7 +213,7 @@ public class ModuleHub {
      * @param username the account username
      * @return true if successful
      */
-    public boolean callAccounts(String action, String username) {
+    public boolean callAccounts(String action, String username, String password) {
         if (action == null) {
             System.out.println("[ModuleHub] accounts action cannot be null.");
             return false;
