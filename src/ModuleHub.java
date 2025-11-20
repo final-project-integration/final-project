@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * ModuleHub is the traffic controller: it routes requests to the proper team module.
  * It acts as the middleman that talks to Accounts, Storage, Reports, Prediction, and Validation teams.
@@ -12,153 +9,132 @@ import java.util.List;
  *  4) Return the response to the caller
  *
  * @author Denisa Cakoni
- *
  */
 public class ModuleHub {
 
+    // === Authentication + Accounts stack ===
+    private final Storage authStorage;
+    private final Authentication authModule;
+    private final Accounts accountsModule;
 
-    //  Team module fields
+    // === Budget storage (CSV / Budget) ===
+    private final StorageManager storageModule;
 
-
-    private final Accounts          accountsModule;
-    private final Authentication    authModule;
-    private final StorageManager    storageModule;
+    // === Prediction (DataReader + ScenarioSimulator) ===
+    private final DataReader predictionData;
     private final ScenarioSimulator predictionModule;
-    private final ReportManager     reportsModule;
-    private final ValidationEngine  validationModule;
 
-    // shared data for storage/report/prediction
-    private Budget      currentBudget;
-    private final DataReader baseDataReader;
+    // === Reports ===
+    private final ReportManager reportsModule;
+
+    // === Validation ===
+    private final ValidationEngine validationModule;
+
+    // === Error handling ===
+    private final ErrorHandler errorHandler;
 
     /**
-     * Default constructor for ModuleHub.
-     * Creates one instance of each team module that the hub will talk to.
+     * Default constructor for ModuleHub. Wires all modules together.
      */
     public ModuleHub() {
-        // Accounts + Authentication
-        this.accountsModule     = new Accounts();
-        this.authModule         = new Authentication();
 
-        // Storage
-        this.storageModule      = new StorageManager();
+        // ---- Auth + Accounts ----
+        authStorage    = new Storage();
+        authModule     = new Authentication(authStorage);
+        accountsModule = new Accounts(authModule, authStorage);
 
-        // Prediction: use shared DataReader
-        this.baseDataReader     = new DataReader();
-        this.baseDataReader.readData();
-        this.predictionModule   = new ScenarioSimulator(baseDataReader);
+        // ---- Budget storage (CSV files under /data) ----
+        storageModule = new StorageManager();
 
-        // Reports
-        this.reportsModule      = new ReportManager();
+        // ---- Prediction: read Data.csv once and share with ScenarioSimulator ----
+        predictionData = new DataReader();
+        predictionData.readData();       // prints errors if CSV missing or bad
+        predictionModule = new ScenarioSimulator(predictionData);
 
-        // Validation
-        this.validationModule   = new ValidationEngine();
+        // ---- Reports ----
+        reportsModule = new ReportManager();
 
-        // No budget yet – will be supplied later by UI
-        this.currentBudget      = null;
+        // ---- Validation ----
+        validationModule = new ValidationEngine();
+
+        // ---- Error handling ----
+        errorHandler = new ErrorHandler();
     }
 
     /**
-     * Allows MainMenu or other code to tell the hub what the "current" Budget is.
+     * Calls the Storage team to load, delete, or list budget data.
+     * For alpha, only actions that do NOT require a Budget object are supported.
      *
-     * @param budget active Budget object for the logged-in user/year
-     */
-    public void setCurrentBudget(Budget budget) {
-        this.currentBudget = budget;
-    }
-
-
-    // Storage
-
-
-    /**
-     * Calls the Storage team to load, save, or delete budget data.
-     *
-     * @param action   what we want Storage to do ("load", "save", "delete", "listyears")
-     * @param username which user's data we're working with
-     * @param year     which year's budget data
-     * @return true if the call was dispatched successfully, false otherwise
+     * @param action   "load", "delete", or "listyears"
+     * @param username user whose data we want
+     * @param year     the year to load/delete/list
+     * @return true if successful, false otherwise
      */
     public boolean callStorage(String action, String username, int year) {
         if (action == null) {
-            System.out.println("[ModuleHub] Storage action cannot be null.");
+            System.out.println("[ModuleHub] storage action cannot be null.");
             return false;
         }
 
-        switch (action.toLowerCase()) {
-            case "load":
-                storageModule.loadUserData(username, year);
-                return true;
+        try {
+            switch (action.toLowerCase()) {
+                case "load":
+                    storageModule.loadUserData(username, year);
+                    return true;
 
-            case "save":
-                if (currentBudget == null) {
-                    System.out.println("[ModuleHub] No current budget set – cannot save.");
+                case "delete":
+                    storageModule.deleteUserData(username, year);
+                    return true;
+
+                case "listyears":
+                    storageModule.listAvailableYears(username);
+                    return true;
+
+                default:
+                    System.out.println("[ModuleHub] Unknown storage action: " + action);
                     return false;
-                }
-                storageModule.saveUserData(username, year, currentBudget);
-                return true;
-
-            case "delete":
-                storageModule.deleteUserData(username, year);
-                return true;
-
-            case "listyears":
-                storageModule.listAvailableYears(username);
-                return true;
-
-            default:
-                System.out.println("[ModuleHub] Invalid storage action: " + action);
-                return false;
+            }
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Storage", e);
+            return false;
         }
     }
 
-
-    // Reports
-
-
     /**
      * Calls the Reports team to generate a financial report.
+     * For alpha, always loads year 2025.
      *
-     * @param reportType "monthly", "category", or "yearly"
-     * @param username   whose report to generate (reserved for future use)
-     * @param year       which year to report on
-     * @return formatted report text
+     * @param reportType the type of report ("monthly", "annual", etc.)
+     * @param username   whose report to generate (used for display only)
+     * @return a status message
      */
-    public String callReports(String reportType, String username, int year) {
+    public String callReports(String reportType, String username) {
         if (reportType == null) {
             return "[ModuleHub] reportType cannot be null.";
         }
 
-        // In a real integration, ReportManager would receive real FinancialRecord data
-        reportsModule.loadYearlyData(year); // currently just a stub print
+        try {
+            int year = 2025;  // Alpha fixed year
+            reportsModule.loadYearlyData(year);
+            reportsModule.displayReportOnScreen();
+            return "Report generated for " + username + " (" + year + "), type: " + reportType;
 
-        if (reportType.equalsIgnoreCase("monthly")) {
-            ArrayList<String> lines = reportsModule.generateMonthlySummary(year);
-            return String.join("\n", lines);
-        } else if (reportType.equalsIgnoreCase("category")) {
-            ArrayList<String> lines = reportsModule.generateCategorySummary(year);
-            return String.join("\n", lines);
-        } else if (reportType.equalsIgnoreCase("yearly")) {
-            ReportManager.YearlySummary summary = reportsModule.generateYearlySummary(year);
-            return "Yearly Summary for " + year + "\n"
-                    + "Income:  $" + summary.getTotalIncome() + "\n"
-                    + "Expenses:$" + summary.getTotalExpenses() + "\n"
-                    + "Net:     $" + summary.getNetBalance();
-        } else {
-            return "[ModuleHub] Unknown report type: " + reportType;
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Reports", e);
+            return "[ModuleHub] Failed to generate report.";
         }
     }
 
-
-    //  Prediction
-
-
     /**
-     * Calls the Prediction module to run "what-if" scenarios.
+     * Calls the Prediction module to run what-if scenarios.
      *
-     * @param scenarioType what to calculate ("compare", etc.)
-     * @param username     whose data to use (reserved for future multi-user support)
-     * @param year         which year's data to use
+     * Alpha supports:
+     *   "summary" → summary report from DataReader
+     *   "compare-demo" → demo comparison between two scenarios
+     *
+     * @param scenarioType type of prediction ("summary", "compare-demo")
+     * @param username     user (not used in alpha)
+     * @param year         year (not used in alpha)
      * @return prediction result text
      */
     public String callPrediction(String scenarioType, String username, int year) {
@@ -166,32 +142,33 @@ public class ModuleHub {
             return "[ModuleHub] scenarioType cannot be null.";
         }
 
-        if (scenarioType.equalsIgnoreCase("compare")) {
-            boolean s1 = predictionModule.createScenario("Base");
-            boolean s2 = predictionModule.createScenario("WhatIf");
-
-            if (!s1 || !s2) {
-                return "[ModuleHub] Could not create prediction scenarios.";
+        try {
+            if ("summary".equalsIgnoreCase(scenarioType)) {
+                return predictionData.createSummaryReport();
             }
 
-            predictionModule.applyExpenseChange("WhatIf", "Entertainment", 50.0);
-            predictionModule.compareScenarios("Base", "WhatIf");
-            return "[ModuleHub] Compared scenarios 'Base' and 'WhatIf' (see console output).";
-        }
+            else if ("compare-demo".equalsIgnoreCase(scenarioType)) {
+                predictionModule.createScenario("BaseScenario");
+                predictionModule.createScenario("AdjustedScenario");
+                predictionModule.applyExpenseChange("AdjustedScenario", "Entertainment", 50.0);
+                predictionModule.compareScenarios("BaseScenario", "AdjustedScenario");
+                return "Prediction scenario comparison complete (see console).";
+            }
 
-        return "[ModuleHub] Unknown prediction scenario: " + scenarioType;
+            return "[ModuleHub] Unknown prediction scenarioType: " + scenarioType;
+
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Prediction", e);
+            return "[ModuleHub] Failed to run prediction.";
+        }
     }
 
-
-    //  Validation
-
-
     /**
-     * Calls the Validation team to check if data is valid.
+     * Calls the Validation team to check input validity.
      *
-     * @param validationType type of validation to perform ("userinput", "transaction", etc.)
-     * @param dataToValidate actual input data (or DTO placeholder)
-     * @return true if valid, false otherwise
+     * @param validationType type of validation ("userinput", "text")
+     * @param dataToValidate input data
+     * @return true if input is valid
      */
     public boolean callValidation(String validationType, String dataToValidate) {
         if (validationType == null) {
@@ -199,47 +176,42 @@ public class ModuleHub {
             return false;
         }
 
-        ValidationResult result;
+        try {
+            switch (validationType.toLowerCase()) {
+                case "userinput":
+                case "text":
+                    ValidationResult result =
+                            validationModule.validateUserInput("input", dataToValidate);
 
-        switch (validationType.toLowerCase()) {
-            case "userinput":
-                result = validationModule.validateUserInput("userInput", dataToValidate);
-                break;
+                    if (result.hasErrors()) {
+                        for (String msg : result.getMessages()) {
+                            System.out.println(msg);
+                        }
+                        return false;
+                    }
+                    return true;
 
-            case "transaction":
-                // For now we just pass the raw string as a placeholder DTO
-                result = validationModule.validateTransaction(dataToValidate);
-                break;
-
-            default:
-                System.out.println("[ModuleHub] Unknown validation type: " + validationType);
-                return false;
-        }
-
-        if (result.hasErrors()) {
-            List<String> messages = result.getMessages();
-            for (String msg : messages) {
-                System.out.println(msg);
+                default:
+                    System.out.println("[ModuleHub] Unknown validation type: " + validationType);
+                    return false;
             }
+
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
             return false;
         }
-
-        return true;
     }
 
-
-    //  Accounts+authentication
-
-
     /**
-     * Calls the Accounts module for user account actions such as login/logout/password.
+     * Calls the Accounts module for login/logout/deletion.
      *
-     * NOTE: This simplified version only supports "logout" and "deleteAccount"
-     * because the Accounts API uses username+password, which MainMenu will supply later.
+     * Alpha version supports:
+     *   - logout
+     *   - deleteAccount
      *
-     * @param action   "logout", "deleteAccount", etc.
+     * @param action   "logout" or "deleteAccount"
      * @param username the account username
-     * @return true if successful, false otherwise
+     * @return true if successful
      */
     public boolean callAccounts(String action, String username) {
         if (action == null) {
@@ -247,16 +219,22 @@ public class ModuleHub {
             return false;
         }
 
-        switch (action.toLowerCase()) {
-            case "logout":
-                return accountsModule.signOut();
+        try {
+            switch (action.toLowerCase()) {
+                case "logout":
+                    return accountsModule.signOut();
 
-            case "deleteaccount":
-                return accountsModule.deleteUser(username);
+                case "deleteaccount":
+                    return accountsModule.deleteUser(username);
 
-            default:
-                System.out.println("[ModuleHub] Unknown accounts action: " + action);
-                return false;
+                default:
+                    System.out.println("[ModuleHub] Unknown accounts action: " + action);
+                    return false;
+            }
+
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Accounts", e);
+            return false;
         }
     }
 }
