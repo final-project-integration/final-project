@@ -19,7 +19,7 @@ public class ModuleHubTester {
         // 2. Test reports
 
         System.out.println("\n=== Test Reports ===");
-        String monthly = hub.callReports("monthly", "alice", 2025);
+        String monthly = hub.callReports("monthly", "alice");
         System.out.println(monthly);
 
 
@@ -40,9 +40,9 @@ public class ModuleHubTester {
         System.out.println("Validation #2: " + ok2);
 
 
-        // 5. Test accountd
+        // 5. Test accounts
 
         System.out.println("\n=== Test Accounts ===");
-        hub.callAccounts("deleteaccount", "alice");
+        //hub.callAccounts("deleteaccount", "alice");
     }
 }
