@@ -1,5 +1,3 @@
-
-
 /**
  * ErrorHandler manages all error handling and recovery operations for the application.
  * Logs errors, displays user-friendly error messages, and recovers from errors gracefully
@@ -25,7 +23,7 @@ public class ErrorHandler {
      */
     public void handleModuleError(String moduleName, Exception error) {
         // Handle and log module errors
-        displayError("An error has occured in the ")+ moduleName + " module.";
+        displayError("An error has occured in the " + moduleName + " module.");
         logError("Error in " + moduleName, error);
         recoverToMenu();
     }
@@ -51,7 +49,7 @@ public class ErrorHandler {
      */
     public void logError(String errorMessage, Exception error) {
         // Log error details
-        System.err.println("ERROR")
+        System.err.println("ERROR");
         System.err.println("Time: " + java.time.LocalDateTime.now());
         System.err.println("Message: " + errorMessage);
         System.err.println("Exception Type: " + error.getClass().getName());
