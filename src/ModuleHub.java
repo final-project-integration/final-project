@@ -39,7 +39,7 @@ public class ModuleHub {
     private final ErrorHandler errorHandler;
 
 
-    // Beta scaffolding: remember what file/year we last used for reports
+    // Beta skeleton: remember what file/year we last used for reports
     // So later Prediction & Storage can reuse these.
 
     private String lastReportFileName = null; // TODO (Beta): expose to other modules if needed
@@ -157,7 +157,7 @@ public class ModuleHub {
             // Use the year from the first record (assuming all rows are same year)
             int year = records.get(0).getYear();
 
-            // --- Beta scaffolding: remember last used file + year ---
+            //  Beta skeleton: remember last used file + year ---
             lastReportFileName = fileName; // TODO (Beta): let Storage/Prediction reuse this
             lastReportYear     = year;     // TODO (Beta): use when user chooses among uploaded years
 
@@ -302,7 +302,7 @@ public class ModuleHub {
         try {
             // Alpha: DataReader always reads "Data.csv" internally.
             // TODO (Beta): once Prediction supports readData(String fileName),
-            //              call it here using lastReportFileName / year.
+            //              we'll call it here using lastReportFileName / year.
             if (!predictionDataLoaded) {
                 predictionData.readData();  // current API: no filename parameter
                 predictionDataLoaded = true;
@@ -372,9 +372,6 @@ public class ModuleHub {
     /**
      * Calls the Accounts module for login/logout/deletion.
      *
-     * Alpha version supports:
-     *   - logout
-     *   - deleteAccount
      *
      * @param action   "logout" or "deleteAccount"
      * @param username the account username
