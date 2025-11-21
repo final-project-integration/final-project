@@ -16,40 +16,48 @@ import java.util.Scanner;
  */
 public class ModuleHub {
 
-    //  Authentication + Accounts stack 
+    //  Authentication + Accounts stack
     private final Storage authStorage;
     private final Authentication authModule;
     private final Accounts accountsModule;
 
-    // Budget storage (CSV / Budget) 
+    // Budget storage (CSV / Budget)
     private final StorageManager storageModule;
 
     // Prediction (DataReader + ScenarioSimulator)
     private final DataReader predictionData;
     private final ScenarioSimulator predictionModule;
-
+    // Prediction data loaded flag to avoid double-reading CSV
+    private boolean predictionDataLoaded = false;
     // Reports
     private final ReportManager reportsModule;
 
-    //  Validation 
+    //  Validation
     private final ValidationEngine validationModule;
 
-    // Error handling 
+    // Error handling
     private final ErrorHandler errorHandler;
+
+
+    // Beta scaffolding: remember what file/year we last used for reports
+    // So later Prediction & Storage can reuse these.
+
+    private String lastReportFileName = null; // TODO (Beta): expose to other modules if needed
+    private int    lastReportYear     = -1;   // TODO (Beta): use when choosing among uploaded years
 
     /**
      * Default constructor for ModuleHub. Wires all modules together.
      */
     public ModuleHub() {
-        // Auth + Accounts 
+        // Auth + Accounts
         authStorage    = new Storage();
         authModule     = new Authentication(authStorage);
         accountsModule = new Accounts(authModule, authStorage);
 
-        // Budget storage (CSV files under /data) 
+        // Budget storage (CSV files under /data)
         storageModule = new StorageManager();
 
-        // Prediction: read Data.csv once and share with ScenarioSimulator 
+        // Prediction: read Data.csv once and share with ScenarioSimulator
         predictionData = new DataReader();
         // predictionData.readData();   // TODO: enable after Prediction team finalizes file
         predictionModule = new ScenarioSimulator(predictionData);
@@ -57,10 +65,10 @@ public class ModuleHub {
         //  Reports
         reportsModule = new ReportManager();
 
-        // Validation 
+        // Validation
         validationModule = new ValidationEngine();
 
-        // Error handling 
+        // Error handling
         errorHandler = new ErrorHandler();
     }
 
@@ -104,34 +112,64 @@ public class ModuleHub {
      * Generates a financial report by loading the CSV data, creating summaries,
      * and printing a clean formatted report to the console.
      *
-     * For alpha, this is hard-coded to year 2024 since that’s what Data.csv contains.
+     * For alpha, the user is prompted for a CSV file name. If  blank,
+     * the default "Data.csv" is used.
      *
      * @param reportType the type of report requested (example "monthly", "annual")
      * @param username   the username requesting the report (for display only)
+     * @param in         shared Scanner from MainMenu for console input
      * @return a status message indicating success or failure
      */
-    public String callReports(String reportType, String username) {
+    public String callReports(String reportType, String username, Scanner in) {
         if (reportType == null) {
             return "[ModuleHub] reportType cannot be null.";
         }
 
         try {
-            // loads CSV 
-            ArrayList<ReportManager.FinancialRecord> records =
-                    loadReportCsv("Data.csv");
+            // Ask user which CSV file to use
+            System.out.println("\n---CSV Loader ---");
+            System.out.println("Please enter the name of the CSV file to load.");
+            System.out.println("• If the CSV is in the same folder as the JAR, just type:   Data.csv");
+            System.out.println("• If it’s somewhere else, provide the full path.");
+            System.out.print("CSV filename (press Enter to use default: Data.csv): ");
 
-            // pass records to the Reports module
+            String fileName = in.nextLine().trim();
+            if (fileName.isEmpty()) {
+                fileName = "Data.csv";
+            }
+            // missing file
+            File f = new File(fileName);
+            if (!f.exists()) {
+                System.out.println("[Reports] File not found: " + fileName);
+                return "[ModuleHub] CSV file not found.";
+            }
+
+            System.out.println("\n[Reports] Loading file: " + fileName);
+
+            // Load records from the chosen CSV
+            ArrayList<ReportManager.FinancialRecord> records = loadReportCsv(fileName);
+
+            if (records.isEmpty()) {
+                System.out.println("[Reports] No records were loaded from " + fileName + ".");
+                return "[ModuleHub] No data to report.";
+            }
+
+            // Use the year from the first record (assuming all rows are same year)
+            int year = records.get(0).getYear();
+
+            // --- Beta scaffolding: remember last used file + year ---
+            lastReportFileName = fileName; // TODO (Beta): let Storage/Prediction reuse this
+            lastReportYear     = year;     // TODO (Beta): use when user chooses among uploaded years
+
+            // Pass records to the Reports module
             reportsModule.setFinancialRecords(records);
 
-            // for alpha, we only support year 2024 (matches Data.csv)
-            int year = 2024;
-
-            // generates summaries
+            // Generate summaries
             ReportManager.YearlySummary yearly  = reportsModule.generateYearlySummary(year);
             ArrayList<String> monthly           = reportsModule.generateMonthlySummary(year);
             ArrayList<String> categorySummaries = reportsModule.generateCategorySummary(year);
 
-            // prints the formatted report block
+            // Print the formatted report block
             printFormattedReport(year, yearly, monthly, categorySummaries);
 
             return "Report generated for " + username
@@ -262,8 +300,20 @@ public class ModuleHub {
         }
 
         try {
+            // Alpha: DataReader always reads "Data.csv" internally.
+            // TODO (Beta): once Prediction supports readData(String fileName),
+            //              call it here using lastReportFileName / year.
+            if (!predictionDataLoaded) {
+                predictionData.readData();  // current API: no filename parameter
+                predictionDataLoaded = true;
+            }
+
             if ("summary".equalsIgnoreCase(scenarioType)) {
-                return predictionData.createSummaryReport();
+                String report = predictionData.createSummaryReport();
+                System.out.println("\n--- Prediction Summary (from DataReader) ---");
+                System.out.println(report);
+                return "Prediction summary generated (see console output).";
+
             } else if ("compare-demo".equalsIgnoreCase(scenarioType)) {
                 predictionModule.createScenario("BaseScenario");
                 predictionModule.createScenario("AdjustedScenario");
@@ -384,7 +434,7 @@ public class ModuleHub {
      * @param password       desired password
      * @param secretQuestion recovery question
      * @param secretAnswer   recovery answer
-     * @return true if registration succeeds, false otherwise 
+     * @return true if registration succeeds, false otherwise
      */
     public boolean registerUser(String username,
                                 String password,
@@ -421,7 +471,7 @@ public class ModuleHub {
             return false;
         }
     }
-    
+
     /**
      * Deletes the currently signed-in user account.
      *
@@ -440,4 +490,14 @@ public class ModuleHub {
             return false;
         }
     }
+    // These getters are for the Beta build so Prediction/Storage
+    // can access whichever file the user last loaded.
+    public String getLastReportFileName() {
+        return lastReportFileName;
+    }
+
+    public int getLastReportYear() {
+        return lastReportYear;
+    }
+
 }
