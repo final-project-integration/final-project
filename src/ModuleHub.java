@@ -1,8 +1,6 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 
 /**
  * ModuleHub is the traffic controller: it routes requests to the proper team module.
@@ -18,59 +16,57 @@ import java.util.Scanner;
  */
 public class ModuleHub {
 
-    //  Authentication + Accounts stack
+    //  Authentication + Accounts stack 
     private final Storage authStorage;
     private final Authentication authModule;
     private final Accounts accountsModule;
 
-    // Budget storage (CSV / Budget)
+    // Budget storage (CSV / Budget) 
     private final StorageManager storageModule;
 
-    //  Prediction (DataReader + ScenarioSimulator)
+    // Prediction (DataReader + ScenarioSimulator)
     private final DataReader predictionData;
     private final ScenarioSimulator predictionModule;
 
-    //  Reports
+    // Reports
     private final ReportManager reportsModule;
 
-    // Validation
+    //  Validation 
     private final ValidationEngine validationModule;
 
-    //  Error handling
+    // Error handling 
     private final ErrorHandler errorHandler;
 
     /**
      * Default constructor for ModuleHub. Wires all modules together.
      */
     public ModuleHub() {
-
-        // ---- Auth + Accounts ----
+        // Auth + Accounts 
         authStorage    = new Storage();
         authModule     = new Authentication(authStorage);
         accountsModule = new Accounts(authModule, authStorage);
 
-        // ---- Budget storage (CSV files under /data) ----
+        // Budget storage (CSV files under /data) 
         storageModule = new StorageManager();
 
-        // ---- Prediction: read Data.csv once and share with ScenarioSimulator ----
+        // Prediction: read Data.csv once and share with ScenarioSimulator 
         predictionData = new DataReader();
-        //predictionData.readData();       //  TODO: enable after Prediction team finalizes file prints errors if CSV missing or bad
+        // predictionData.readData();   // TODO: enable after Prediction team finalizes file
         predictionModule = new ScenarioSimulator(predictionData);
 
-        // ---- Reports ----
+        //  Reports
         reportsModule = new ReportManager();
 
-        // ---- Validation ----
+        // Validation 
         validationModule = new ValidationEngine();
 
-        // ---- Error handling ----
+        // Error handling 
         errorHandler = new ErrorHandler();
     }
 
-
     /**
      * Calls the Storage team to load, delete, or list budget data.
-     * For alpha, only actions that do NOT require a Budget object are supported.
+     * For alpha, only actions that don't require a Budget object are supported.
      *
      * @param action   "load", "delete", or "listyears"
      * @param username user whose data we want
@@ -88,15 +84,12 @@ public class ModuleHub {
                 case "load":
                     storageModule.loadUserData(username, year);
                     return true;
-
                 case "delete":
                     storageModule.deleteUserData(username, year);
                     return true;
-
                 case "listyears":
                     storageModule.listAvailableYears(username);
                     return true;
-
                 default:
                     System.out.println("[ModuleHub] Unknown storage action: " + action);
                     return false;
@@ -111,7 +104,9 @@ public class ModuleHub {
      * Generates a financial report by loading the CSV data, creating summaries,
      * and printing a clean formatted report to the console.
      *
-     * @param reportType the type of report requested (e.g., "monthly", "annual")
+     * For alpha, this is hard-coded to year 2024 since that’s what Data.csv contains.
+     *
+     * @param reportType the type of report requested (example "monthly", "annual")
      * @param username   the username requesting the report (for display only)
      * @return a status message indicating success or failure
      */
@@ -121,22 +116,22 @@ public class ModuleHub {
         }
 
         try {
-            // 1) Load CSV → list of FinancialRecord objects
+            // loads CSV 
             ArrayList<ReportManager.FinancialRecord> records =
                     loadReportCsv("Data.csv");
 
-            // Pass records to the Reports module
+            // pass records to the Reports module
             reportsModule.setFinancialRecords(records);
 
-            // 2) For alpha, we only support year 2024 (matches Data.csv)
+            // for alpha, we only support year 2024 (matches Data.csv)
             int year = 2024;
 
-            // Generate summaries
+            // generates summaries
             ReportManager.YearlySummary yearly  = reportsModule.generateYearlySummary(year);
             ArrayList<String> monthly           = reportsModule.generateMonthlySummary(year);
             ArrayList<String> categorySummaries = reportsModule.generateCategorySummary(year);
 
-            // 3) Print the formatted report block
+            // prints rint the formatted report block
             printFormattedReport(year, yearly, monthly, categorySummaries);
 
             return "Report generated for " + username
@@ -148,15 +143,9 @@ public class ModuleHub {
         }
     }
 
-
     /**
      * Prints a nicely formatted financial report section to the console.
      * Keeps formatting separate from logic so the main report method stays clean.
-     *
-     * @param year the year to display
-     * @param yearly the yearly totals
-     * @param monthly list of monthly summary strings
-     * @param categorySummaries list of category summary strings
      */
     private void printFormattedReport(int year,
                                       ReportManager.YearlySummary yearly,
@@ -185,26 +174,6 @@ public class ModuleHub {
         }
 
         System.out.println("────────────────────────────────────────────────────\n");
-    }
-
-
-    /**
-     * Centers text by padding spaces on both sides.
-     * Used only for visual formatting of the report header.
-     *
-     * @param text  the text to center
-     * @param width the total width of the line
-     * @return the centered text
-     */
-    private String centerText(String text, int width) {
-        if (text == null) text = "";
-        if (text.length() >= width) return text;
-
-        int totalSpaces = width - text.length();
-        int left = totalSpaces / 2;
-        int right = totalSpaces - left;
-
-        return " ".repeat(left) + text + " ".repeat(right);
     }
 
     /**
@@ -241,7 +210,7 @@ public class ModuleHub {
                     continue; // skip bad lines
                 }
 
-                String date      = parts[0].trim(); // MM/DD/YYYY
+                String date      = parts[0].trim(); // mm/dd/yyyy
                 String category  = parts[1].trim();
                 String amountStr = parts[2].trim();
 
@@ -279,10 +248,10 @@ public class ModuleHub {
      * Calls the Prediction module to run what-if scenarios.
      *
      * Alpha supports:
-     *   summary report from DataReader
-     *   demo comparison between two scenarios
+     *   summary      :summary report from DataReader
+     *   compare-demo :demo comparison between two scenarios
      *
-     * @param scenarioType type of prediction (summary, compare-demo)
+     * @param scenarioType type of prediction ("summary", "compare-demo")
      * @param username     user (not used in alpha)
      * @param year         year (not used in alpha)
      * @return prediction result text
@@ -295,9 +264,7 @@ public class ModuleHub {
         try {
             if ("summary".equalsIgnoreCase(scenarioType)) {
                 return predictionData.createSummaryReport();
-            }
-
-            else if ("compare-demo".equalsIgnoreCase(scenarioType)) {
+            } else if ("compare-demo".equalsIgnoreCase(scenarioType)) {
                 predictionModule.createScenario("BaseScenario");
                 predictionModule.createScenario("AdjustedScenario");
                 predictionModule.applyExpenseChange("AdjustedScenario", "Entertainment", 50.0);
@@ -373,10 +340,8 @@ public class ModuleHub {
             switch (action.toLowerCase()) {
                 case "logout":
                     return accountsModule.signOut();
-
                 case "deleteaccount":
                     return accountsModule.deleteUser(username);
-
                 default:
                     System.out.println("[ModuleHub] Unknown accounts action: " + action);
                     return false;
@@ -387,7 +352,6 @@ public class ModuleHub {
             return false;
         }
     }
-
 
     /**
      * Attempts to log a user in using the Accounts module.
@@ -414,14 +378,13 @@ public class ModuleHub {
         }
     }
 
-    /**
-     * Registers a new user account.
-     *
+   /**
+     * Registers a new user account
      * @param username       desired username
      * @param password       desired password
      * @param secretQuestion recovery question
      * @param secretAnswer   recovery answer
-     * @return true if registration succeeds, false otherwise
+     * @return true if registration aucceeds, false otherwise 
      */
     public boolean registerUser(String username,
                                 String password,
@@ -458,7 +421,7 @@ public class ModuleHub {
             return false;
         }
     }
-
+    
     /**
      * Deletes the currently signed-in user account.
      *
