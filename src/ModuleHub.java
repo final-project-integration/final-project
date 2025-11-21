@@ -131,7 +131,7 @@ public class ModuleHub {
             ArrayList<String> monthly           = reportsModule.generateMonthlySummary(year);
             ArrayList<String> categorySummaries = reportsModule.generateCategorySummary(year);
 
-            // prints rint the formatted report block
+            // prints the formatted report block
             printFormattedReport(year, yearly, monthly, categorySummaries);
 
             return "Report generated for " + username
@@ -330,7 +330,7 @@ public class ModuleHub {
      * @param username the account username
      * @return true if successful
      */
-    public boolean callAccounts(String action, String username, String password) {
+    public boolean callAccounts(String action, String username)  {
         if (action == null) {
             System.out.println("[ModuleHub] accounts action cannot be null.");
             return false;
@@ -338,14 +338,14 @@ public class ModuleHub {
 
         try {
             switch (action.toLowerCase()) {
-                case "logout":
-                    return accountsModule.signOut();
-                case "deleteaccount":
-                    return accountsModule.deleteUser(username);
-                default:
-                    System.out.println("[ModuleHub] Unknown accounts action: " + action);
-                    return false;
-            }
+    case "logout":
+        return accountsModule.signOut();
+    case "deleteaccount":
+        return accountsModule.deleteUser(username);
+    default:
+        System.out.println("[ModuleHub] Unknown accounts action: " + action);
+        return false;
+}
 
         } catch (Exception e) {
             errorHandler.handleModuleError("Accounts", e);
@@ -384,7 +384,7 @@ public class ModuleHub {
      * @param password       desired password
      * @param secretQuestion recovery question
      * @param secretAnswer   recovery answer
-     * @return true if registration aucceeds, false otherwise 
+     * @return true if registration succeeds, false otherwise 
      */
     public boolean registerUser(String username,
                                 String password,
