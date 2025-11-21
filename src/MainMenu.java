@@ -79,8 +79,7 @@ public class MainMenu {
                 }
                 
             } catch(NumberFormatException e) {
-                System.out.print("Please enter a valid number associated with an option displayed in the main menu (1-"+ numChoices+"):");
-                scanner.nextLine();
+                System.out.print("Please enter a valid number associated with an option displayed in the main menu (1-"+ numChoices+"): ");
             }
         }
     }
@@ -189,12 +188,15 @@ public class MainMenu {
      */
     public int toModules() {
     	// Return to modules list
-    	System.out.println("Table of Modules");
+    	System.out.println("Table of Contents:");
     	System.out.println("  1. Reports");
     	System.out.println("  2. Prediction");
+    	System.out.println("  3. Back to Main Menu");
     	System.out.print("Please enter the number associated with your desired option: ");
     	
-    	int tableChoice = getUserChoice(2);
+    	int tableChoice = getUserChoice(3);
+    	
+    	System.out.println();
     	
     	return tableChoice;
     }
@@ -211,37 +213,46 @@ public class MainMenu {
     	
     	enter();
     	
-    	int mainMenuChoice = toMenu();
-    	switch (mainMenuChoice) {
-        case 1:
-            toModules();
-            break; 
-        case 2:
-            displayAccountSettings();
-            break;
-        case 3:
-        	exitProgram();
-        	break;
-        default:
-        	System.out.print("Something went wrong. You shouldn't be here!");
-    	}
-    	
-    	int tableChoice = toModules();
-    	switch (tableChoice) {
-        case 1:
-            //Make a call to reports that gets its files from storage
-            break; 
-        case 2:
-            //Make a call to predictions 
-            break;
-        case 3:
-        	exitProgram();
-        	break;
-        default:
-        	System.out.print("Something went wrong. You shouldn't be here!");
-    	}
-    	
-    	getUserChoice(3);
+    	boolean running = true;
+
+        while (running) {
+            int mainMenuChoice = toMenu();
+            switch (mainMenuChoice) {
+                case 1:
+                    boolean inModules = true;
+                    
+                    while (inModules) {
+                        int tableChoice = toModules();
+                        
+                        switch (tableChoice) {
+                            case 1:
+                                System.out.println("=== Reports Module ===");
+                                System.out.println("Returning to Table of Contents...\n");
+                                break;
+
+                            case 2:
+                                System.out.println("=== Prediction Module ===");
+                                System.out.println("Returning to Table of Contents...\n");
+                                break;
+
+                            case 3:
+                                inModules = false;
+                                break;
+                        }
+                    }
+                    break;
+
+                case 2: 
+                    displayAccountSettings();
+                    break;
+
+                case 3: 
+                    running = false;
+                    break;
+            }
+        }
+
+        exitProgram();
     }
 
 
