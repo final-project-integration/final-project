@@ -57,12 +57,13 @@ public class DataReader {
     /**
      * Reads stored budget data from the file provided. This method does not
      * return a value but prepares the data for further processing.
-     *
+     *  @param fileName the path to the CSV file to load
+     *  @bug Fixed: added ability for user to use different file names instead of hardcoding it
      * @author Jessica Barrera Saguay
      */
-    public void readData() {
+    public void readData(String fileName) {
 
-        File file = new File("src/Data.csv");
+        File file = new File(fileName);
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String headerLine = br.readLine(); // Read the first line
