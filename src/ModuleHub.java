@@ -113,7 +113,7 @@ public class ModuleHub {
      * and printing a clean formatted report to the console.
      *
      * For alpha, the user is prompted for a CSV file name. If  blank,
-     * the default "Data.csv" is used.
+     * the default "data.csv" is used.
      *
      * @param reportType the type of report requested (example "monthly", "annual")
      * @param username   the username requesting the report (for display only)
@@ -135,7 +135,7 @@ public class ModuleHub {
 
             String fileName = in.nextLine().trim();
             if (fileName.isEmpty()) {
-                fileName = "Data.csv";
+                fileName = "data.csv";
             }
             // missing file
             File f = new File(fileName);
@@ -224,7 +224,7 @@ public class ModuleHub {
      *
      * Amount is parsed as double, and isIncome is true if amount > 0.
      *
-     * @param path path to the CSV file ("Data.csv")
+     * @param path path to the CSV file ("data.csv")
      * @return list of FinancialRecord objects
      */
     private ArrayList<ReportManager.FinancialRecord> loadReportCsv(String path) {
