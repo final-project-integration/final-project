@@ -228,7 +228,7 @@ public class MainMenu {
 					switch (tableChoice) {
 					case 1:
 						// Reports (alpha: single hard-coded report)
-						moduleHub.callReports("monthly", currentUser);
+						moduleHub.callReports("monthly", currentUser, scanner);
 						break;
 					case 2:
 						// Prediction (alpha: simple summary scenario)
