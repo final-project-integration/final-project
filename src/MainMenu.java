@@ -80,7 +80,7 @@ public class MainMenu {
 			System.out.println(" 2. Create a new account");
 			System.out.print("Please enter the number associated with your desired option: ");
 			int userChoice = getUserChoice(2);
-			System.out.println();
+			clearConsole();
 
 			switch (userChoice) {
 			case 1:
@@ -94,7 +94,7 @@ public class MainMenu {
 
 					boolean validLogin = moduleHub.loginUser(loginUsername, loginPassword);
 					if (validLogin) {
-						System.out.println();
+						clearConsole();
 						return (loginUsername);
 					} else {
 						System.out.println("Your username or password was incorrect or that account does not exist.");
@@ -104,7 +104,7 @@ public class MainMenu {
 						System.out.println(" 2. Create a New Account");
 						System.out.print("Please enter the number associated with your desired option: ");
 						int retryChoice = getUserChoice(2);
-						System.out.println();
+						clearConsole();
 						if (retryChoice == 2) {
 							// this code breaks out of sign-in while loop and
 							// since case 1 doesn't end in a break,
@@ -136,7 +136,9 @@ public class MainMenu {
 
 					boolean isValidAccount = moduleHub.registerUser(registerUsername, registerPassword,
 							registerSecretQuestion, registerSecretAnswer);
-
+					
+					clearConsole();
+					
 					if ((surety == 1) && isValidAccount) {
 						areYouSure = true;
 						System.out.println(
@@ -147,7 +149,7 @@ public class MainMenu {
 						System.out.println("Please follow the required format and try again.");
 						System.out.println();
 					} else {
-						System.out.println();
+						clearConsole();
 					}
 				}
 				continue;// After successful registration, loop back and show the Sign In / Create menu again
@@ -171,7 +173,7 @@ public class MainMenu {
 		System.out.print("Please enter the number associated with your desired option: ");
 
 		int mainMenuChoice = getUserChoice(3);
-		System.out.println();
+		clearConsole();
 		return mainMenuChoice;
 	}
 
@@ -191,7 +193,7 @@ public class MainMenu {
 		System.out.println("  3. Back to Main Menu");
 		System.out.print("Please enter the number associated with your desired option: ");
 		int tableChoice = getUserChoice(3);
-		System.out.println();
+		clearConsole();
 		return tableChoice;
 	}
 
@@ -213,7 +215,7 @@ public class MainMenu {
 		System.out.println("  5. Return to Main Menu");
 		System.out.print("Please enter the number associated with your desired option: ");
 		int settingsChoice = getUserChoice(5);
-		System.out.println();
+		clearConsole();
 		return settingsChoice;
 	}
 
@@ -221,6 +223,7 @@ public class MainMenu {
 	 * Runs the entire program
 	 */
 	public void start() {
+		clearConsole();
 		System.out.println("Hamilton Heights Presents");
 		System.out.println("Personal Finance Manager");
 		System.out.println();
@@ -260,6 +263,8 @@ public class MainMenu {
 				boolean inSettings = true;
 				while (inSettings){
 					int settingsChoice = displayAccountSettings(currentUser);
+					clearConsole();
+					
 					switch (settingsChoice){
 					case 1:
 						System.out.println("Change Password(coming soon for beta).");
@@ -273,6 +278,7 @@ public class MainMenu {
 						System.out.println(" 2. No");
 						System.out.print("Please enter the number associated with your desired option: ");
 						int sureDelAccount = getUserChoice(2);
+						clearConsole();
 						
 						if (sureDelAccount == 1) {
 							moduleHub.callAccounts("deleteaccount", currentUser);
