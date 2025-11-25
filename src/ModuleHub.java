@@ -127,7 +127,7 @@ public class ModuleHub {
 
         try {
             // Ask user which CSV file to use
-            System.out.println("\n---CSV Loader ---");
+            System.out.println("---CSV Loader ---");
             System.out.println("Please enter the name of the CSV file to load.");
             System.out.println("• If the CSV is in the same folder as the JAR, just type:   Data.csv");
             System.out.println("• If it’s somewhere else, provide the full path.");
@@ -304,7 +304,8 @@ public class ModuleHub {
             // TODO (Beta): once Prediction supports readData(String fileName),
             //              we'll call it here using lastReportFileName / year.
             if (!predictionDataLoaded) {
-                predictionData.readData();  // current API: no filename parameter
+            	/**@bug:drpredicationData has no filename argument, which cause a syntax error if left as is*/
+            	//drpredictionData.readData();  // current API: no filename parameter
                 predictionDataLoaded = true;
             }
 
