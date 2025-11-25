@@ -57,7 +57,7 @@ public class ModuleHub {
         // Budget storage (CSV files under /data)
         storageModule = new StorageManager();
 
-        // Prediction: read Data.csv once and share with ScenarioSimulator
+        // Prediction: read data.csv once and share with ScenarioSimulator
         predictionData = new DataReader();
         // predictionData.readData();   // TODO: enable after Prediction team finalizes file
         predictionModule = new ScenarioSimulator(predictionData);
@@ -129,9 +129,9 @@ public class ModuleHub {
             // Ask user which CSV file to use
             System.out.println("---CSV Loader ---");
             System.out.println("Please enter the name of the CSV file to load.");
-            System.out.println("• If the CSV is in the same folder as the JAR, just type:   Data.csv");
+            System.out.println("• If the CSV is in the same folder as the JAR, just type:   data.csv");
             System.out.println("• If it’s somewhere else, provide the full path.");
-            System.out.print("CSV filename (press Enter to use default: Data.csv): ");
+            System.out.print("CSV filename (press Enter to use default: data.csv): ");
 
             String fileName = in.nextLine().trim();
             if (fileName.isEmpty()) {
@@ -154,7 +154,7 @@ public class ModuleHub {
                 return "[ModuleHub] No data to report.";
             }
 
-            // Use the year from the first record (assuming all rows are same year)
+            // Use the year from the first record (assuming all rows are the same year)
             int year = records.get(0).getYear();
 
             //  Beta skeleton: remember last used file + year ---
@@ -300,7 +300,7 @@ public class ModuleHub {
         }
 
         try {
-            // Alpha: DataReader always reads "Data.csv" internally.
+            // Alpha: DataReader always reads "data.csv" internally.
             // TODO (Beta): once Prediction supports readData(String fileName),
             //              we'll call it here using lastReportFileName / year.
             if (!predictionDataLoaded) {
