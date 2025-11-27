@@ -299,14 +299,17 @@ public class ModuleHub {
             return "[ModuleHub] scenarioType cannot be null.";
         }
 
-        try {
             
-            // TODO (Beta): once Prediction supports readData(String fileName),
-            //              we'll call it here using lastReportFileName / year.
-           if (!predictionDataLoaded) {
-             predictionData.readData();      
-             predictionDataLoaded = true;
-               }
+         try {
+             // Load prediction data once, using the same file the user picked for Reports
+            if (!predictionDataLoaded) {
+            // Prefer the file the user actually used for reports (if any),
+            // otherwise fall back to the default Data.csv next to the JAR.
+            String csvToUse = (lastReportFileName != null ? lastReportFileName : "data.csv");
+            predictionData.readData(csvToUse);
+            predictionDataLoaded = true;
+            }
+
 
             if ("summary".equalsIgnoreCase(scenarioType)) {
                 String report = predictionData.createSummaryReport();
