@@ -301,14 +301,16 @@ public class ModuleHub {
 
             
          try {
-             // Load prediction data once, using the same file the user picked for Reports
-            if (!predictionDataLoaded) {
-            // Prefer the file the user actually used for reports (if any),
-            // otherwise fall back to the default Data.csv next to the JAR.
-            String csvToUse = (lastReportFileName != null ? lastReportFileName : "data.csv");
-            predictionData.readData(csvToUse);
+        // Decide which CSV file Prediction should read.
+        // If the user already generated a report, reuse that file.
+        String fileToUse = (lastReportFileName != null && !lastReportFileName.isEmpty())
+                ? lastReportFileName
+                : "data.csv";
+
+        if (!predictionDataLoaded) {
+            predictionData.readData(fileToUse);
             predictionDataLoaded = true;
-            }
+        }
 
 
             if ("summary".equalsIgnoreCase(scenarioType)) {
