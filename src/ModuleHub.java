@@ -300,11 +300,11 @@ public class ModuleHub {
         }
 
         try {
-            // Alpha: DataReader always reads "data.csv" internally.
+            
             // TODO (Beta): once Prediction supports readData(String fileName),
             //              we'll call it here using lastReportFileName / year.
            if (!predictionDataLoaded) {
-             predictionData.readData();      // this method really exists and takes no args
+             predictionData.readData();      
              predictionDataLoaded = true;
                }
 
