@@ -303,11 +303,10 @@ public class ModuleHub {
             // Alpha: DataReader always reads "data.csv" internally.
             // TODO (Beta): once Prediction supports readData(String fileName),
             //              we'll call it here using lastReportFileName / year.
-            if (!predictionDataLoaded) {
-            	/**@bug:drpredicationData has no filename argument, which cause a syntax error if left as is*/
-            	//drpredictionData.readData();  // current API: no filename parameter
-                predictionDataLoaded = true;
-            }
+           if (!predictionDataLoaded) {
+             predictionData.readData();      // this method really exists and takes no args
+             predictionDataLoaded = true;
+               }
 
             if ("summary".equalsIgnoreCase(scenarioType)) {
                 String report = predictionData.createSummaryReport();
