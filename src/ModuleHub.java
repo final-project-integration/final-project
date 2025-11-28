@@ -52,6 +52,8 @@ public class ModuleHub {
 
     /**
      * Default constructor for ModuleHub. Wires all modules together.
+     *
+     * @author Denisa Cakoni
      */
     public ModuleHub() {
         // Auth + Accounts
@@ -82,12 +84,14 @@ public class ModuleHub {
 
     /**
      * Calls the Storage team to load, delete, or list budget data.
-     * For alpha, only actions that don't require a Budget object are supported.
-     *
+     * This method is the single integration point from Integration/MainMenu
+     * into the StorageManager for user budgets.
      * @param action   "load", "delete", or "listyears"
      * @param username user whose data we want
      * @param year     the year to load/delete/list
      * @return true if successful, false otherwise
+     *
+     * @author Denisa Cakoni
      */
     public boolean callStorage(String action, String username, int year) {
         if (action == null) {
@@ -119,6 +123,8 @@ public class ModuleHub {
 
     /**
      * Gets the Budget for a given user and year.
+     *
+     * @author Denisa Cakoni
      */
     public Budget getUserBudget(String username, int year) {
         try {
@@ -131,6 +137,8 @@ public class ModuleHub {
 
     /**
      * Saves the provided Budget data for the user and year.
+     *
+     * @author Denisa Cakoni
      */
     public boolean saveUserBudget(String username, int year, Budget budget) {
         try {
@@ -145,6 +153,8 @@ public class ModuleHub {
     /**
      * Updates the user’s Budget for a given year.
      * Equivalent to save, but mapped to StorageManager.updateUserBudget().
+     *
+     * @author Denisa Cakoni
      */
     public boolean updateUserBudget(String username, int year, Budget budget) {
         try {
@@ -164,10 +174,13 @@ public class ModuleHub {
      * The user is prompted for a CSV filename. If the input is blank,
      * the default "data.csv" is used. The selected file and year are also
      * stored so that Prediction and later modules can reuse them.
+     *
      * @param reportType the type of report requested (e.g., "monthly", "annual")
      * @param username   the username requesting the report (for display only)
      * @param in         shared Scanner from MainMenu for console input
      * @return a status message indicating success or failure
+     *
+     * @author Denisa Cakoni
      */
     public String callReports(String reportType, String username, Scanner in) {
         if (reportType == null) {
@@ -268,6 +281,8 @@ public class ModuleHub {
     /**
      * Prints a nicely formatted financial report section to the console.
      * Keeps formatting separate from logic so the main report method stays clean.
+     *
+     * @author Denisa Cakoni
      */
     private void printFormattedReport(int year,
                                       ReportManager.YearlySummary yearly,
@@ -310,6 +325,8 @@ public class ModuleHub {
      *
      * @param path path to the CSV file ("data.csv")
      * @return list of FinancialRecord objects
+     *
+     * @author Denisa Cakoni
      */
     private ArrayList<ReportManager.FinancialRecord> loadReportCsv(String path) {
         ArrayList<ReportManager.FinancialRecord> list = new ArrayList<>();
@@ -377,24 +394,26 @@ public class ModuleHub {
      * @param username     user (not used in alpha)
      * @param year         year (not used in alpha)
      * @return prediction result text
+     *
+     * @author Denisa Cakoni
      */
     public String callPrediction(String scenarioType, String username, int year) {
         if (scenarioType == null) {
             return "[ModuleHub] scenarioType cannot be null.";
         }
 
-            
-         try {
-        // Decide which CSV file Prediction should read.
-        // If the user already generated a report, reuse that file.
-        String fileToUse = (lastReportFileName != null && !lastReportFileName.isEmpty())
-                ? lastReportFileName
-                : "data.csv";
 
-        if (!predictionDataLoaded) {
-            predictionData.readData(fileToUse);
-            predictionDataLoaded = true;
-        }
+        try {
+            // Decide which CSV file Prediction should read.
+            // If the user already generated a report, reuse that file.
+            String fileToUse = (lastReportFileName != null && !lastReportFileName.isEmpty())
+                    ? lastReportFileName
+                    : "data.csv";
+
+            if (!predictionDataLoaded) {
+                predictionData.readData(fileToUse);
+                predictionDataLoaded = true;
+            }
 
 
             if ("summary".equalsIgnoreCase(scenarioType)) {
@@ -438,6 +457,8 @@ public class ModuleHub {
      * @param validationType type of validation ("userinput", "text")
      * @param dataToValidate input data
      * @return true if input is valid
+     *
+     * @author Denisa Cakoni
      */
     public boolean callValidation(String validationType, String dataToValidate) {
         if (validationType == null) {
@@ -474,6 +495,8 @@ public class ModuleHub {
     /**
      * Validates a generic user input field and returns the full ValidationResult,
      * so callers can inspect errors and warnings.
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult validateUserField(String fieldName, String value) {
         try {
@@ -488,6 +511,8 @@ public class ModuleHub {
 
     /**
      * Validates a transaction using the ValidationEngine.
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult validateTransaction(Object transactionDto) {
         try {
@@ -502,6 +527,8 @@ public class ModuleHub {
 
     /**
      * Validates a budget line item DTO using the ValidationEngine.
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult validateBudgetLineItem(Object budgetItemDto) {
         try {
@@ -516,6 +543,8 @@ public class ModuleHub {
 
     /**
      * Validates report criteria DTO using the ValidationEngine.
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult validateReportCriteria(Object reportCriteriaDto) {
         try {
@@ -530,6 +559,8 @@ public class ModuleHub {
 
     /**
      * combines multiple ValidationResult objects into one.
+     *
+     * @author Denisa Cakoni
      */
 
     public ValidationResult aggregateValidationResults(ValidationResult... results) {
@@ -545,6 +576,8 @@ public class ModuleHub {
 
     /**
      * cross field validation: ensure startDate <= endDate
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult validateDateRange(String startDate, String endDate) {
         try {
@@ -559,6 +592,8 @@ public class ModuleHub {
 
     /**
      * cross field validation: ensure the budget's total equals the sum of its categories.
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult validateBudgetBalance(Object budgetDto) {
         try {
@@ -573,6 +608,8 @@ public class ModuleHub {
 
     /**
      * cross field validation: check that income is positive and expense is negative.
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult validateIncomeVsExpense(Object transactionDto) {
         try {
@@ -587,6 +624,8 @@ public class ModuleHub {
 
     /**
      * cross field validation: detect duplicate transactions
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult detectDuplicateTransactions(List<Object> transactions) {
         try {
@@ -601,6 +640,8 @@ public class ModuleHub {
 
     /**
      * cross field validation: validate categories like "Food:Groceries" or "Transport:Subway".
+     *
+     * @author Denisa Cakoni
      */
     public ValidationResult validateCategoryHierarchy(Object categoryObj) {
         try {
@@ -621,6 +662,8 @@ public class ModuleHub {
      * @param action   "logout" or "deleteAccount"
      * @param username the account username
      * @return true if successful
+     *
+     * @author Denisa Cakoni
      */
     public boolean callAccounts(String action, String username)  {
         if (action == null) {
@@ -630,14 +673,14 @@ public class ModuleHub {
 
         try {
             switch (action.toLowerCase()) {
-    case "logout":
-        return accountsModule.signOut();
-    case "deleteaccount":
-        return accountsModule.deleteUser(username);
-    default:
-        System.out.println("[ModuleHub] Unknown accounts action: " + action);
-        return false;
-}
+                case "logout":
+                    return accountsModule.signOut();
+                case "deleteaccount":
+                    return accountsModule.deleteUser(username);
+                default:
+                    System.out.println("[ModuleHub] Unknown accounts action: " + action);
+                    return false;
+            }
 
         } catch (Exception e) {
             errorHandler.handleModuleError("Accounts", e);
@@ -647,6 +690,8 @@ public class ModuleHub {
 
     /**
      * Logs a user in.
+     *
+     * @author Denisa Cakoni
      */
     public boolean loginUser(String username, String password) {
         if (username == null || password == null) {
@@ -668,6 +713,8 @@ public class ModuleHub {
 
     /**
      * Registers a new user.
+     *
+     * @author Denisa Cakoni
      */
     public boolean registerUser(String username,
                                 String password,
@@ -687,6 +734,8 @@ public class ModuleHub {
 
     /**
      * Logs out the current user.
+     *
+     * @author Denisa Cakoni
      */
     public boolean logoutUser() {
         try {
@@ -703,6 +752,8 @@ public class ModuleHub {
 
     /**
      * Deletes the currently logged-in user’s account.
+     *
+     * @author Denisa Cakoni
      */
     public boolean deleteUserAccount(String username) {
         try {
@@ -719,6 +770,8 @@ public class ModuleHub {
 
     /**
      * Retrieves a user's secret question for password recovery.
+     *
+     * @author Denisa Cakoni
      */
     public String getUserSecretQuestion(String username) {
         try {
@@ -731,6 +784,8 @@ public class ModuleHub {
 
     /**
      * Verifies a user's answer to their secret question.
+     *
+     * @author Denisa Cakoni
      */
     public boolean verifyUserSecretAnswer(String username, String secretAnswer) {
         try {
@@ -747,6 +802,8 @@ public class ModuleHub {
 
     /**
      * Resets a user's password after recovery (no old password required).
+     *
+     * @author Denisa Cakoni
      */
     public boolean resetUserPassword(String username, String newPassword) {
         try {
@@ -762,12 +819,22 @@ public class ModuleHub {
     }
 
 
-    // These getters are for the Beta build so Prediction/Storage
-    // can access whichever file the user last loaded.
+    /**
+     * Getter for lastReportFileName used in Beta build so Prediction/Storage
+     * can access whichever file the user last loaded.
+     *
+     * @author Denisa Cakoni
+     */
     public String getLastReportFileName() {
         return lastReportFileName;
     }
 
+    /**
+     * Getter for lastReportYear used in Beta build so Prediction/Storage
+     * can access whichever year the user last used.
+     *
+     * @author Denisa Cakoni
+     */
     public int getLastReportYear() {
         return lastReportYear;
     }
