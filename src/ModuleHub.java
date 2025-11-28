@@ -1,6 +1,8 @@
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.List;
+
 
 /**
  * ModuleHub is the traffic controller: it routes requests to the proper team module.
@@ -31,9 +33,12 @@ public class ModuleHub {
     private boolean predictionDataLoaded = false;
     // Reports
     private final ReportManager reportsModule;
+    private final ReportAnalyzer reportAnalyzer;
+    private final ReportFormatter reportFormatter;
 
     //  Validation
     private final ValidationEngine validationModule;
+    private final CrossFieldValidator crossFieldValidator;
 
     // Error handling
     private final ErrorHandler errorHandler;
@@ -64,9 +69,12 @@ public class ModuleHub {
 
         //  Reports
         reportsModule = new ReportManager();
+        reportAnalyzer = new ReportAnalyzer();
+        reportFormatter = new ReportFormatter();
 
         // Validation
         validationModule = new ValidationEngine();
+        crossFieldValidator = new CrossFieldValidator();
 
         // Error handling
         errorHandler = new ErrorHandler();
@@ -86,6 +94,7 @@ public class ModuleHub {
             System.out.println("[ModuleHub] storage action cannot be null.");
             return false;
         }
+
 
         try {
             switch (action.toLowerCase()) {
@@ -109,13 +118,53 @@ public class ModuleHub {
     }
 
     /**
-     * Generates a financial report by loading the CSV data, creating summaries,
-     * and printing a clean formatted report to the console.
+     * Gets the Budget for a given user and year.
+     */
+    public Budget getUserBudget(String username, int year) {
+        try {
+            return storageModule.getUserBudget(username, year);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Storage", e);
+            return null;
+        }
+    }
+
+    /**
+     * Saves the provided Budget data for the user and year.
+     */
+    public boolean saveUserBudget(String username, int year, Budget budget) {
+        try {
+            storageModule.saveUserData(username, year, budget);
+            return true;
+        }catch (Exception e) {
+            errorHandler.handleModuleError("Storage", e);
+            return false;
+        }
+    }
+
+    /**
+     * Updates the user’s Budget for a given year.
+     * Equivalent to save, but mapped to StorageManager.updateUserBudget().
+     */
+    public boolean updateUserBudget(String username, int year, Budget budget) {
+        try {
+            storageModule.updateUserBudget(username, year, budget);
+            return true;
+        }catch (Exception e) {
+            errorHandler.handleModuleError("Storage", e);
+            return false;
+        }
+    }
+
+
+    /**
+     * Generates a financial report by loading the selected CSV data,
+     * producing summaries, and printing a formatted report to the console.
      *
-     * For alpha, the user is prompted for a CSV file name. If  blank,
-     * the default "data.csv" is used.
-     *
-     * @param reportType the type of report requested (example "monthly", "annual")
+     * The user is prompted for a CSV filename. If the input is blank,
+     * the default "data.csv" is used. The selected file and year are also
+     * stored so that Prediction and later modules can reuse them.
+     * @param reportType the type of report requested (e.g., "monthly", "annual")
      * @param username   the username requesting the report (for display only)
      * @param in         shared Scanner from MainMenu for console input
      * @return a status message indicating success or failure
@@ -163,6 +212,7 @@ public class ModuleHub {
 
             // Pass records to the Reports module
             reportsModule.setFinancialRecords(records);
+            reportAnalyzer.setRecords(records);
 
             // Generate summaries
             ReportManager.YearlySummary yearly  = reportsModule.generateYearlySummary(year);
@@ -171,6 +221,40 @@ public class ModuleHub {
 
             // Print the formatted report block
             printFormattedReport(year, yearly, monthly, categorySummaries);
+
+            String analysisBanner= reportFormatter.printHeaderFooter(
+                    "Additional Analysis",
+                    "End of analysis"
+            );
+            System.out.println(analysisBanner);
+
+            //use ReportAnalyzer on the same records/year
+
+            String highestMonth= reportAnalyzer.findHighestSpendingMonth(year);
+            String topSpendingCategory = reportAnalyzer.findTopSpendingCategory(year);
+            ArrayList<String> negativeBalanceMonths= reportAnalyzer.listNegativeBalanceMonths(year);
+
+            //calculateBalance from ReportManager
+            String netBalance = reportsModule.calculateBalance(year);
+
+            //formatted currency using ReportFormatter
+            String netBalancePretty= reportFormatter.formatCurrency(netBalance, "$");
+
+
+            System.out.println("Highest spending month: " + highestMonth);
+            System.out.println("Top spending category: " + topSpendingCategory);
+            System.out.println("Overall net balance: " + netBalancePretty);
+
+            if (negativeBalanceMonths.isEmpty()) {
+                System.out.println("No months with negative balance. ");
+            } else{
+                System.out.println("Months with negative balance: ");
+                for (String month : negativeBalanceMonths) {
+                    System.out.println(month);
+                }
+
+            }
+
 
             return "Report generated for " + username
                     + " (" + year + "), type: " + reportType;
@@ -324,7 +408,20 @@ public class ModuleHub {
                 predictionModule.createScenario("AdjustedScenario");
                 predictionModule.applyExpenseChange("AdjustedScenario", "Entertainment", 50.0);
                 predictionModule.compareScenarios("BaseScenario", "AdjustedScenario");
-                return "Prediction scenario comparison complete (see console).";
+                return "Prediction scenario comparison complete (see console output).";
+
+            } else if("deficit".equalsIgnoreCase(scenarioType)) {
+                DeficitSolver ds= new DeficitSolver(predictionData);
+                System.out.println("\n--- Deficit Prediction ---");
+                System.out.println(ds.generateSummary());
+                return "Deficit prediction generated (see console output).";
+
+            }else if ("surplus".equalsIgnoreCase(scenarioType)) {
+                SurplusOptimizer so= new SurplusOptimizer(predictionData);
+                System.out.print("\n--- Surplus Prediction ---\n");
+                System.out.println(so.surplusTracker());
+                System.out.print(so.surplusSuggestion());
+                return "Surplus prediction generated (see console output).";
             }
 
             return "[ModuleHub] Unknown prediction scenarioType: " + scenarioType;
@@ -375,6 +472,149 @@ public class ModuleHub {
     }
 
     /**
+     * Validates a generic user input field and returns the full ValidationResult,
+     * so callers can inspect errors and warnings.
+     */
+    public ValidationResult validateUserField(String fieldName, String value) {
+        try {
+            return validationModule.validateUserInput(fieldName, value);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal validation error for field '" + fieldName + "'.");
+            return vr;
+        }
+    }
+
+    /**
+     * Validates a transaction using the ValidationEngine.
+     */
+    public ValidationResult validateTransaction(Object transactionDto) {
+        try {
+            return validationModule.validateTransaction(transactionDto);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while validating transaction.");
+            return vr;
+        }
+    }
+
+    /**
+     * Validates a budget line item DTO using the ValidationEngine.
+     */
+    public ValidationResult validateBudgetLineItem(Object budgetItemDto) {
+        try {
+            return validationModule.validateBudgetLineItem(budgetItemDto);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while validating budget line item.");
+            return vr;
+        }
+    }
+
+    /**
+     * Validates report criteria DTO using the ValidationEngine.
+     */
+    public ValidationResult validateReportCriteria(Object reportCriteriaDto) {
+        try {
+            return validationModule.validateReportCriteria(reportCriteriaDto);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while validating report criteria.");
+            return vr;
+        }
+    }
+
+    /**
+     * combines multiple ValidationResult objects into one.
+     */
+
+    public ValidationResult aggregateValidationResults(ValidationResult... results) {
+        try {
+            return validationModule.aggregateResults(results);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while aggregating validation results.");
+            return vr;
+        }
+    }
+
+    /**
+     * cross field validation: ensure startDate <= endDate
+     */
+    public ValidationResult validateDateRange(String startDate, String endDate) {
+        try {
+            return crossFieldValidator.validateDateRange(startDate, endDate);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while validating date range.");
+            return vr;
+        }
+    }
+
+    /**
+     * cross field validation: ensure the budget's total equals the sum of its categories.
+     */
+    public ValidationResult validateBudgetBalance(Object budgetDto) {
+        try {
+            return crossFieldValidator.validateBudgetBalance(budgetDto);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while validating budget balance.");
+            return vr;
+        }
+    }
+
+    /**
+     * cross field validation: check that income is positive and expense is negative.
+     */
+    public ValidationResult validateIncomeVsExpense(Object transactionDto) {
+        try {
+            return crossFieldValidator.validateIncomeVsExpense(transactionDto);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while validating income vs expense.");
+            return vr;
+        }
+    }
+
+    /**
+     * cross field validation: detect duplicate transactions
+     */
+    public ValidationResult detectDuplicateTransactions(List<Object> transactions) {
+        try {
+            return crossFieldValidator.detectDuplicateTransactions(transactions);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while checking duplicate transactions.");
+            return vr;
+        }
+    }
+
+    /**
+     * cross field validation: validate categories like "Food:Groceries" or "Transport:Subway".
+     */
+    public ValidationResult validateCategoryHierarchy(Object categoryObj) {
+        try {
+            return crossFieldValidator.validateCategoryHierarchy(categoryObj);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Validation", e);
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while validating category hierarchy.");
+            return vr;
+        }
+    }
+
+
+    /**
      * Calls the Accounts module for login/logout/deletion.
      *
      *
@@ -406,11 +646,7 @@ public class ModuleHub {
     }
 
     /**
-     * Attempts to log a user in using the Accounts module.
-     *
-     * @param username the username entered by the user
-     * @param password the password entered by the user
-     * @return true if login succeeds, false otherwise
+     * Logs a user in.
      */
     public boolean loginUser(String username, String password) {
         if (username == null || password == null) {
@@ -430,22 +666,15 @@ public class ModuleHub {
         }
     }
 
-   /**
-     * Registers a new user account
-     * @param username       desired username
-     * @param password       desired password
-     * @param secretQuestion recovery question
-     * @param secretAnswer   recovery answer
-     * @return true if registration succeeds, false otherwise
+    /**
+     * Registers a new user.
      */
     public boolean registerUser(String username,
                                 String password,
                                 String secretQuestion,
                                 String secretAnswer) {
         try {
-            boolean ok = accountsModule.registerAccount(
-                    username, password, secretQuestion, secretAnswer
-            );
+            boolean ok = accountsModule.registerAccount(username, password, secretQuestion, secretAnswer);
             if (!ok) {
                 System.out.println("[ModuleHub] Registration failed: invalid data or username already exists.");
             }
@@ -457,9 +686,7 @@ public class ModuleHub {
     }
 
     /**
-     * Logs the current user out.
-     *
-     * @return true if logout succeeded, false otherwise
+     * Logs out the current user.
      */
     public boolean logoutUser() {
         try {
@@ -475,10 +702,7 @@ public class ModuleHub {
     }
 
     /**
-     * Deletes the currently signed-in user account.
-     *
-     * @param username the username to delete (should match signed-in user)
-     * @return true if deletion succeeded, false otherwise
+     * Deletes the currently logged-in user’s account.
      */
     public boolean deleteUserAccount(String username) {
         try {
@@ -492,6 +716,52 @@ public class ModuleHub {
             return false;
         }
     }
+
+    /**
+     * Retrieves a user's secret question for password recovery.
+     */
+    public String getUserSecretQuestion(String username) {
+        try {
+            return accountsModule.getSecretQuestion(username);
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Accounts", e);
+            return null;
+        }
+    }
+
+    /**
+     * Verifies a user's answer to their secret question.
+     */
+    public boolean verifyUserSecretAnswer(String username, String secretAnswer) {
+        try {
+            boolean ok = accountsModule.verifySecretAnswer(username, secretAnswer);
+            if (!ok) {
+                System.out.println("[ModuleHub] Verify secret answer failed.");
+            }
+            return ok;
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Accounts", e);
+            return false;
+        }
+    }
+
+    /**
+     * Resets a user's password after recovery (no old password required).
+     */
+    public boolean resetUserPassword(String username, String newPassword) {
+        try {
+            boolean ok = accountsModule.resetPassword(username, newPassword);
+            if (!ok) {
+                System.out.println("[ModuleHub] Password reset failed (user may not exist).");
+            }
+            return ok;
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Accounts", e);
+            return false;
+        }
+    }
+
+
     // These getters are for the Beta build so Prediction/Storage
     // can access whichever file the user last loaded.
     public String getLastReportFileName() {
