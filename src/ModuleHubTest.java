@@ -3,9 +3,13 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Simple console test harness for ModuleHub.
- * Lets you exercise core flows without going through MainMenu.
+ * Simple test file for ModuleHub.
+ * This lets us quickly try out different parts of the system
+ * (Accounts, Storage, Reports, Prediction, Validation)
+ * without having to go through MainMenu every time.
  *
+ * Basically this is just a sandbox to make sure all the modules
+ * respond correctly and nothing crashes.
  * @author Denisa Cakoni
  */
 public class ModuleHubTest {
@@ -16,7 +20,9 @@ public class ModuleHubTest {
 
         System.out.println("=== ModuleHub Test Harness ===");
 
-        // 1) Quick Accounts / Auth test
+        // Accounts / Authentication Test 
+        // Register a user, log in, and check that everything works normally.
+        // Good for confirming basic account flow before using the real MainMenu.
         System.out.println("\n--- Accounts / Authentication test ---");
         String username = "testuser";
         String password = "password123";
@@ -34,13 +40,17 @@ public class ModuleHubTest {
         boolean loginOk = hub.loginUser(username, password);
         System.out.println("loginUser -> " + loginOk);
 
-        // 2) Storage basic calls (these will depend on your StorageManager internals)
+        // Storage Test 
+        // not creating real Budget objects here yet, but we can at least
+        // check that listing/loading/deleting years doesn't crash.
         System.out.println("\n--- Storage test (no Budget object yet) ---");
         System.out.println("Listing years for user: " + username);
         boolean listYearsOk = hub.callStorage("listyears", username, 0);
         System.out.println("callStorage(listyears) -> " + listYearsOk);
 
-        // 3) Validation basic test
+        // Validation (Single-Field) Test 
+        // Try validating empty text vs normal text.
+        // Should show an error on the empty one and pass the valid one.
         System.out.println("\n--- Validation test ---");
         ValidationResult val1 = hub.validateUserField("amount", "");
         System.out.println("validateUserField('amount', '') -> hasErrors=" + val1.hasErrors());
@@ -52,10 +62,13 @@ public class ModuleHubTest {
         ValidationResult val2 = hub.validateUserField("notes", "This is a valid note.");
         System.out.println("\nvalidateUserField('notes', 'This is a valid note.') -> hasErrors=" + val2.hasErrors());
 
+        //  Validation Combine Test 
+        // Make sure multiple ValidationResult objects can be merged together
+        // and that the combined result reports the expected number of errors.
         ValidationResult combined = hub.aggregateValidationResults(val1, val2);
         System.out.println("\naggregateValidationResults(val1, val2) -> " + combined.summary());
 
-        // 4) Cross-field validation examples
+        //  Cross-field validation examples
         System.out.println("\n--- Cross-field Validation test ---");
         ValidationResult dateOk = hub.validateDateRange("2025-01-01", "2025-12-31");
         System.out.println("validateDateRange(2025-01-01, 2025-12-31) -> hasErrors=" + dateOk.hasErrors());
@@ -66,7 +79,9 @@ public class ModuleHubTest {
             System.out.println("  " + msg);
         }
 
-        // 5) Reports & Prediction (will ask for CSV name)
+        // Reports Test 
+        // This part loads a CSV and generates a formatted report.
+        // You’ll need a real data.csv file next to the project for this to work.
         System.out.println("\n--- Reports test ---");
         System.out.println("Make sure there is a data.csv (or your test CSV) available.");
         System.out.println("When prompted, press Enter to use default data.csv,");
@@ -75,11 +90,16 @@ public class ModuleHubTest {
         String reportStatus = hub.callReports("annual", username, in);
         System.out.println("callReports -> " + reportStatus);
 
+        // Prediction Test 
+        // Runs a basic summary prediction to make sure the Prediction team’s
+        // data reader and simulator connect correctly through ModuleHub.
         System.out.println("\n--- Prediction test (summary) ---");
         String predStatus = hub.callPrediction("summary", username, 0);
         System.out.println("callPrediction('summary') -> " + predStatus);
 
-        // 6) Accounts clean-up (optional)
+        //  Accounts Cleanup Test 
+        // Just verifying secret question, answer check, password reset,
+        // and deleting the account at the end.
         System.out.println("\n--- Accounts clean-up test ---");
         String secretQuestion = hub.getUserSecretQuestion(username);
         System.out.println("getUserSecretQuestion -> " + secretQuestion);
