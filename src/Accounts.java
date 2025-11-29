@@ -1,5 +1,6 @@
 
 /** 
+ * TEAM: ACCOUNTS
  * Accounts manages user data management, including the creation, modification, and deletion
  * of stored users. It interacts with the Authentication class to securely handle user 
  * information and verification.
@@ -33,7 +34,14 @@ public class Accounts {
    }
 
     /**
-     * Registers a new user account.
+     * Registers a new user account with early validation and secure data handling.
+     * This method performs step by step validation before creating an account:
+     * Rejects the username immediately if it is blank or already taken
+     * Rejects the username if it contains any non-alphanumeric characters
+     * Rejects the password, secret question, or secret answer if any are blank.
+     * If all validation passes, the password and secret answer are hashed
+     * using SHA-256 and stored inside a new AuthRecord object. The record is then
+     * saved to persistent storage.
      *
      * @param username the new user's username
      * @param password the chosen password
@@ -42,15 +50,27 @@ public class Accounts {
      * @return true if registration is successful, or false otherwise
      * @author Zhengjun Xie
      */
+   
    public boolean registerAccount(String username, String password, String secretQuestion, String secretAnswer) {
 
-       //Username already exists
-       if (authenticator.checkUsername(username))
-           return false;
+	   //Reject username instantly if blank or taken
+	   if (authenticator.isInvalidUsername(username)) {
+	       return false;
+	   }
+	  	   
+	   //Reject usernames with non-alphanumeric characters
+	   if (authenticator.hasInvalidCharacters(username)) {
+	       return false;
+	   }
 
-       //Validate fields
-       if (!authenticator.validateUserInfo(username, password, secretQuestion, secretAnswer))
-           return false;
+
+
+	   //Reject blank password/question/answer
+	   if (authenticator.isBlankField(password) ||
+	       authenticator.isBlankField(secretQuestion) ||
+	       authenticator.isBlankField(secretAnswer)) {
+	       return false;
+	   }
 
        //Hash sensitive data
        String hashedPassword = authenticator.hashPassword(password);
@@ -191,29 +211,33 @@ public class Accounts {
      *
      * @param username the username of the account
      * @param answer the plain-text answer entered by the user
-     * @return true if the answer matches; false otherwise
+     * @return true if the answer matches, or false otherwise
      * @author Zhengjun Xie
      */
    public boolean verifySecretAnswer(String username, String answer) {
        return authenticator.checkSecretAnswer(username, answer);
    }
    
-    /**
-     * Removes a user account and all associated records from the system. 
-     *
-     * @param username the username of the account
-     * @return true if the deletion is successful, or false otherwise
-     * @author Jessica Ramirez
-     */
+   /**
+    * Deletes the currently signed in user’s account.
+    *
+    * This operation requires the user to be logged in. Accounts cannot be deleted
+    * after logging out, since identity has be verified before removal.
+    *
+    * After deletion is completed, the account is removed from Storage and the user 
+    * is automatically signed out.
+    *
+    * @param username the username of the account 
+    * @return true if the user was signed in and the account was deleted, or false otherwise
+    * @author Jessica Ramirez
+    */
+   
+   public boolean deleteUser(String username) {
+       if (!signedIn || !this.username.equals(username))
+           return false;
 
-	public boolean deleteUser(String username) {
-		if (!signedIn || !this.username.equals(username))
-			return false;
-
-		storage.removeAccount(username);
-		signOut();
-		return true;
-		}
+       storage.removeAccount(username);
+       signOut();
+       return true;
+   		}
 	}
-
-
