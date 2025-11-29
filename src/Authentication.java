@@ -1,22 +1,36 @@
 import java.security.MessageDigest;
 
-/**The Authentication class handles all security-related functionality for user accounts,
+/**
+ * TEAM: ACCOUNTS
+ * The Authentication class handles all security-related functionality for user accounts,
  * including verifying credentials, hashing passwords and secret answers, validating user input,
  * and retrieving authentication records from Storage. It ensures that no sensitive information
- * such as passwords or secret answers are ever stored in plain text.
+ * such as passwords or secret answers is ever stored in plain text.
  * Authentication uses SHA-256 hashing to secure all sensitive fields.
- 
  * @author  Zhengjun Xie
  * @author  Andony Ariza
  * @author  Jessica Ramirez
  * @author  Guarav Banepali
  * @since   2025-11-19
- *  **/
+ *  */
 
 
 public class Authentication {
 
     private Storage storage;
+    
+    /** 
+     * Tracks the username currently authenticated in the session.
+     * This is updated on successful login and cleared on logout.
+     */
+    private String currentUser = null;
+
+    /**
+     * Indicates whether there is an active authenticated session.
+     * Becomes true after a successful login, and false after logout.
+     */
+    private boolean activeSession = false;
+
     
     /**
      * Creates a new Authentication object linked to a Storage instance.
@@ -33,9 +47,12 @@ public class Authentication {
      * Validates user credentials by comparing the stored hashed password
      * with a hashed version of the provided plain-text password.
      *
-     * @param username the username being authenticated
-     * @param password the plain-text password entered by the user
-     * @return true if the credentials match or false otherwise
+     * If validation succeeds, this method also updates the internal session
+     * state by setting the current user and marking the session as active.
+     *
+     * @param username the username of the account
+     * @param password the plain text password entered by the user
+     * @return true if the credentials match, or false otherwise
      * @author Zhengjun Xie
      */
 
@@ -44,8 +61,16 @@ public class Authentication {
         if (rec == null) return false;
 
         String hashedInput = hashPassword(password);
-        return rec.getHashedPassword().equals(hashedInput);
+        boolean valid = rec.getHashedPassword().equals(hashedInput);
+
+        if (valid) {
+            currentUser = username;
+            activeSession = true;
+        }
+
+        return valid;
     }
+
 
     /**
      * Checks whether the provided password matches the stored hashed password
@@ -137,6 +162,50 @@ public class Authentication {
     private boolean isBlank(String text) {
         return (text == null || text.isBlank());
     }
+    
+    /**
+     * Checks if a field is blank (null, empty, or only whitespace).
+     * This supports early validation so the user is immediately notified
+     * when attempting to enter incomplete form data.
+     *
+     * @param field the text to check
+     * @return true if the field is blank, false otherwise
+     * @author Jessica Ramirez
+     */
+
+    public boolean isBlankField(String field) {
+        return field == null || field.isBlank();
+    }
+
+    /**
+     * Determines whether a username is invalid for account creation.
+     * A username is considered invalid if it is blank or already taken.
+     * This method supports early validation so the user is notified
+     * immediately before entering additional account fields.
+     *
+     * @param username the username of the account
+     * @return true if the username is invalid (blank or duplicate), false otherwise
+     * @author Jessica Ramirez
+     */
+    public boolean isInvalidUsername(String username) {
+        return isBlankField(username) || checkUsername(username);
+    }
+    
+    
+    /**
+     * Checks whether a username contains only valid alphanumeric characters.
+     * Usernames may ONLY contain A–Z, a–z, and 0–9.
+     * @param username the username to validate
+     * @return true if the username contains invalid characters, false otherwise
+     * @author Jessica Ramirez
+     */
+    
+    public boolean hasInvalidCharacters(String username) {
+    if (username == null) return true;
+    return !username.matches("[A-Za-z0-9]+");
+    }
+
+    
 
     /**
      * Resets a user's password after verification, hashing the new password
@@ -157,17 +226,20 @@ public class Authentication {
         storage.addAuthRecord(username, rec);
         return true;
     }
-
-    /**
-     * Clears session related authentication data.
-     * Future Editing
+    
+     /**
+     * Clears all authentication related session data.
+     * This resets the current authenticated user and marks the session
+     * as inactive. Called automatically by Accounts.signOut().
      *
-     * @author Zhengjun Xie
+     * @author Jessica Ramirez
      */
 
     public void clearSession() {
-        // Future use
+        currentUser = null;
+        activeSession = false;
     }
+
 
     /**
      * Hashes a plain-text string (password or secret answer) using SHA-256.
@@ -312,7 +384,3 @@ public class Authentication {
         return false;
     }
 }
-
-
-
-
