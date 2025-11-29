@@ -840,3 +840,52 @@ public class ModuleHub {
     }
 
 }
+/**
+ * ErrorHandler manages all error handling and recovery operations for the application.
+ * Logs errors, displays user-friendly error messages, and recovers from errors gracefully
+ * to prevent application crashes.
+ *
+ *
+ * @author Kapil Tamang
+ */
+class ErrorHandler {
+
+    /**
+     * Default constructor for ErrorHandler.
+     */
+    public ErrorHandler() {}
+
+    /**
+     * Handles errors that occur when calling other team modules.
+     * Catches exceptions, displays appropriate messages, and recovers gracefully.
+     *
+     * @param moduleName the name of the module where the error occurred
+     * @param error the exception that was thrown
+     * @author Kapil Tamang
+     */
+    public void handleModuleError(String moduleName, Exception error) {
+        // Handle and log module errors
+        displayError("An error has occured in the " + moduleName + " module.");
+        logError("Error in " + moduleName, error);
+        recoverToMenu();
+    }
+
+    public void recoverToMenu() {
+        System.out.println("Restoring main menu.");
+    }
+
+    public void logError(String errorMessage, Exception error) {
+        System.err.println("ERROR");
+        System.err.println("Time: " + java.time.LocalDateTime.now());
+        System.err.println("Message: " + errorMessage);
+        System.err.println("Exception Type: " + error.getClass().getName());
+        System.err.println("Stack Trace:");
+        error.printStackTrace(System.err);
+    }
+
+    public void displayError(String message) {
+        System.out.println("ERROR");
+        System.out.println(message);
+        System.out.println("Please try again.");
+    }
+}
