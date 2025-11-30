@@ -12,7 +12,7 @@ import java.util.Scanner;
  */
 public class MainMenu {
     private final Scanner scanner = new Scanner(System.in);
-
+;
     // Single integration point to the rest of the system
     private final ModuleHub moduleHub;
 
@@ -80,7 +80,7 @@ public class MainMenu {
             System.out.println(" 2. Create a new account");
             System.out.print("Please enter the number associated with your desired option: ");
             int userChoice = getUserChoice(2);
-            clearConsole();
+            //clearConsole();
 
             switch (userChoice) {
                 case 1:
@@ -167,17 +167,20 @@ public class MainMenu {
     public int toMenu() {
         // Return to main menu
         System.out.println("Main Menu: ");
-        System.out.println("  1. Table of Contents");
+        System.out.println("  1. Financial Data");
         System.out.println("  2. Settings");
-        System.out.println("  3. Quit Program");
+        System.out.println("  3. Sign Out");
+        System.out.println("  4. Quit Program");
         System.out.print("Please enter the number associated with your desired option: ");
 
-        int mainMenuChoice = getUserChoice(3);
+        int mainMenuChoice = getUserChoice(4);
         clearConsole();
         return mainMenuChoice;
     }
 
     /**
+     *	NOTE: This method is deprecated. New module menu is handled by financialMenu
+     * 
      * Return the user to a table of contents of modules. If they are within a
      * module and would like to go to a different module, then they can return to
      * the list of modules and select the next module that they would like to view.
@@ -187,11 +190,12 @@ public class MainMenu {
 
     public int toModules() {
         // Return to modules list
-        System.out.println("Table of Contents:");
+        System.out.println("Financial Data:");
         System.out.println("  1. Reports");
         System.out.println("  2. Prediction");
         System.out.println("  3. Back to Main Menu");
         System.out.print("Please enter the number associated with your desired option: ");
+        
         int tableChoice = getUserChoice(3);
         clearConsole();
         return tableChoice;
@@ -210,7 +214,7 @@ public class MainMenu {
         System.out.println("Settings:");
         System.out.println("  1. Change Password");
         System.out.println("  2. Reset Password");
-        System.out.println("  3. Reset Secret Question and Answer");
+        System.out.println("  3. Reset Secret Question and Answer (unfinished)");
         System.out.println("  4. Delete Account");
         System.out.println("  5. Return to Main Menu");
         System.out.print("Please enter the number associated with your desired option: ");
@@ -223,7 +227,7 @@ public class MainMenu {
      * Runs the entire program
      */
     public void start() {
-        clearConsole();
+        //clearConsole();
         System.out.println("Hamilton Heights Presents");
         System.out.println("Personal Finance Manager");
         System.out.println();
@@ -236,28 +240,9 @@ public class MainMenu {
             int mainMenuChoice = toMenu();
 
             switch (mainMenuChoice) {
-                case 1: // Table of contents → table of contents
-                    boolean inModules = true;
-
-                    while (inModules) {
-                        int tableChoice = toModules();
-
-                        switch (tableChoice) {
-                            case 1:
-                                // Reports (alpha: single hard-coded report)
-                                moduleHub.callReports("monthly", currentUser, scanner);
-                                break;
-                            case 2:
-                                // Prediction (alpha: simple summary scenario)
-                                moduleHub.callPrediction("summary", currentUser, 2024);
-                                break;
-                            case 3:
-                                inModules = false;
-                                break;
-                        }
-                    }
-                    break;
-
+                case 1: // Table of contents → table of contents / Now being changed to Financial Menu
+                	financialMenu(currentUser);
+                	break;
                 case 2:
                     // Settings stub; can later use moduleHub + Accounts for password / recovery changes
                     boolean inSettings = true;
@@ -267,11 +252,138 @@ public class MainMenu {
 
                         switch (settingsChoice){
                             case 1:
-                                System.out.println("Change Password(coming soon for beta).");
+                            	
+                            	System.out.println("Currently signed in as: " + currentUser);
+                            	System.out.println();
+                                System.out.print("Before changing your password, please enter your current password: ");                              
+                                
+                                String currentPass = scanner.nextLine();
+                                
+                                boolean retry1 = true;
+                                
+                                while(true) {
+                                	clearConsole();
+                                	if(retry1) {
+		                                if(moduleHub.loginUser(currentUser, currentPass)) {
+		                                	
+		                                    System.out.print("Please enter your new password: ");		                                    
+		                                    String newPass = scanner.nextLine();
+		                                    
+		                                    moduleHub.resetUserPassword(currentUser, newPass);
+		                                    
+		                                    clearConsole();
+		                                    System.out.println("Password successfully changed! \n");
+		                                    
+		                                	break;
+		                                } else {
+		                                      System.out.println("The password you entered is incorrect. Would you like to try again?");
+		                                      System.out.println(" 1. Yes \n 2. No");
+		                                      System.out.print("Please enter the number associated with your desired option: ");
+		
+		                                     int newChoice = getUserChoice(2);
+		                                     clearConsole();
+		                                     switch (newChoice) {
+		                                     	case 1:
+		                                     		System.out.print("Please enter your current password: ");  
+		                                     		currentPass = scanner.nextLine();
+		                                     		
+		                                     		continue;                                 	
+		                                     	case 2:
+		                                     		retry1 = false;
+		                                     		break;
+		                                     }
+		                                }
+                                	} else { break; }
+                                }
+                                continue;
+                                                            
                             case 2:
-                                System.out.println("Reset Password(coming soon for beta).");
+                            	System.out.println("To reset your password, please answer the following question:");                          	
+                            	System.out.println(moduleHub.getUserSecretQuestion(currentUser));
+                            	
+                            	String answer = scanner.nextLine();
+                            	boolean retry2 = true;
+                            	
+                            	while(true) { 
+                            		clearConsole();
+	                            	if(retry2) {	    
+	                            		
+	                            		if(moduleHub.verifyUserSecretAnswer(currentUser, answer)) {
+	                            			System.out.print("Your password has been reset. What would you like to set your new password to be? \n Password: ");                            			
+	                            			String newPass = scanner.nextLine();
+		                                    
+		                                    moduleHub.resetUserPassword(currentUser, newPass);
+		                                    System.out.println("Password successfully changed!");		                                    
+		                                    clearConsole();
+		                                    break;
+	                            		} else {
+	                            			System.out.println("The answer you entered is incorrect. Would you like to try again?");
+	                            			System.out.println(" 1. Yes \n 2. No");
+	                            			System.out.print("Please enter the number associated with your desired option: ");
+	                            			
+	                            			int choice = getUserChoice(2);
+	                            			clearConsole();
+		                                    switch (choice) {
+		                                    	case 1:
+		                                    		System.out.println(moduleHub.getUserSecretQuestion(currentUser));  
+		                                     		currentPass = scanner.nextLine();
+		                                     		continue;                                 	
+		                                    	case 2:
+		                                    		retry2 = false;
+		                                    		break;
+		                                    }
+	                            		}
+	                            		
+	                            	} else { break; }	                                                       	
+                            	}
+                            	
+                            	continue;
+                                
                             case 3:
-                                System.out.println("Reset Secret Question and Answer(coming soon for beta).");
+                            	System.out.print("To reset your recovery question, please enter your password: ");    
+                            	
+                            	 String currentPassword = scanner.nextLine();
+                                 
+                                 boolean retry3 = true;
+                                 
+                                 while(true) {
+                                 	clearConsole();
+                                 	if(retry3) {
+ 		                                if(moduleHub.loginUser(currentUser, currentPassword)) {
+ 		                                	System.out.print("What would you like your recovery question to be? ");
+ 		                                	String registerSecretQuestion = scanner.nextLine();
+ 		                                	System.out.print("What would you like your recovery question answer to be? ");
+ 		                                	String registerSecretAnswer = scanner.nextLine();
+ 		                                    
+ 		                                	// TODO: Add a method in moduleHub to set the user's secret question and answer
+ 		                                    //moduleHub.setUserSecretQuestionAndAnswer(currentUser, registerSecretQuestion, registerSecretAnswer);
+ 		                                    
+ 		                                    clearConsole();
+ 		                                    System.out.println("Recovery question successfully changed! \n");
+ 		                                    
+ 		                                	break;
+ 		                                } else {
+ 		                                      System.out.println("The password you entered is incorrect. Would you like to try again?");
+ 		                                      System.out.println(" 1. Yes \n 2. No");
+ 		                                     System.out.print("Please enter the number associated with your desired option: ");
+ 		
+ 		                                     int newChoice = getUserChoice(2);
+ 		                                     clearConsole();
+ 		                                     switch (newChoice) {
+ 		                                     	case 1:
+ 		                                     		System.out.print("Please enter your current password: ");  
+ 		                                     		currentPassword = scanner.nextLine();
+ 		                                     		
+ 		                                     		continue;                                 	
+ 		                                     	case 2:
+ 		                                     		retry3 = false;
+ 		                                     		break;
+ 		                                     }
+ 		                                }
+                                 	} else { break; }
+                                 }
+                                 continue;
+                                
                             case 4:
                                 System.out.println("Are you sure you want to delete this account: "+ currentUser + "? ");
                                 System.out.println(" 1. Yes");
@@ -296,14 +408,210 @@ public class MainMenu {
                         }
                     }
                     break;
-                case 3:
+                case 3: 
+                	moduleHub.logoutUser();
+                	// Return to the while loop and restart the program
+                	return;
+                case 4:
                     running = false;
                     break;
             }
         }
         exitProgram();
     }
+    
+    /**
+     * Used for validating a date from user input.
+     * Currently used in financialMenu and ReportsMenu
+     * 
+     * @return the year or month
+     * @param the type of date yow need. (e.g. year or month)
+     * @author Aaron Madou
+     */ 
+    private int getUserDate(String type) {
+    	int date;
+  		while (true) {
+   			try {
+  				date = Integer.parseInt(scanner.nextLine());
+  				return date;
+   			} catch (NumberFormatException e) {
+   				clearConsole();
+   				System.out.print("Please enter a valid " + type + " : ");
+   			}
+   		}
+    }
+    
+    /**
+     * Handles the Financial Reports menu
+     * 
+     * @param currentUser - username of the currently signed-in user
+     * @author Aaron Madou
+     */ 
+    public void financialMenu(String currentUser) {
+    	while(true) {
+    		 System.out.println("Financial Data: ");
+    	     System.out.println("  1. Upload CSV");
+    	     System.out.println("  2. Reports");
+    	     System.out.println("  3. Predictions");
+    	     System.out.println("  4. Manage Data (unfinished)");
+    	     System.out.println("  5. Back");
+    	     System.out.print("Please enter the number associated with your desired option: ");
 
+  	        int userChoice = getUserChoice(5);
+   	        clearConsole();
+   	        
+   	        switch (userChoice) {
+   	        	case 1:
+   	        		System.out.println("---CSV Loader ---");
+   	             
+   	        		System.out.print("Please enter the year this CSV file is for: ");
+   	        		int year = getUserDate("year");
+   	          
+   	             System.out.println("\nPlease enter the name of the CSV file to load.");
+   	             System.out.println("• If the CSV is in the same folder as the JAR, just type:   data.csv");
+   	             System.out.println("• If it’s somewhere else, provide the full path.");
+   	             System.out.print("File name: ");
+   	             String csvPath = scanner.nextLine();
+   	             
+   	             clearConsole();
+  	             moduleHub.uploadCSVData(currentUser, csvPath, year);	             
+  	             break;
+  	             
+   	        	case 2: 
+   	        		if(reportsMenu(currentUser)) {
+   	        			return;
+   	        		} 
+   	        		continue;
+   	        	case 3: 
+   	        		if(predictionMenu(currentUser)) {
+   	        			return;
+   	        		}
+   	        		continue;
+   	        	case 4:
+   	        		continue;
+   	        	case 5:
+   	        		return;
+   	        }
+    	}
+    }
+    
+    /**
+     * Handles the Reports Menu
+     * 
+     * @return Determines if user wants to go to the back to Financial Data or to the Main Menu
+     * @param currentUser - username of the currently signed-in user
+     * @author Aaron Madou
+     */ 
+    public boolean reportsMenu(String currentUser) {
+    	while(true) {
+    		System.out.println("Reports Menu: ");
+    		System.out.println("Available years: (Unfinished)");
+    		System.out.println("  1. Yearly Summary");
+    		System.out.println("  2. Month Breakdown");
+    		System.out.println("  3. Category Analysis");
+    		System.out.println("  4. Full Report");
+   	    	System.out.println("  5. Back");
+   	    	System.out.print("Please enter the number associated with your desired option: ");
+
+   	    	int userChoice = getUserChoice(5);
+   	    	clearConsole();
+   	    	if(userChoice == 5) { return false; }
+   	    	
+   	    	System.out.print("Please enter the year you would like to view: ");
+   			int year = getUserDate("year");
+   			clearConsole();
+  	        
+   	    	switch (userChoice) {
+   	    		case 1:
+   	    			moduleHub.viewReport(currentUser, year, "yearly");
+   	    			break;
+   	    			
+   	    		case 2: 
+   	    			moduleHub.viewReport(currentUser, year, "monthly");
+   	    			break;
+   	    		case 3: 
+   	    			moduleHub.viewReport(currentUser, year, "category");
+	        		break;
+	        	case 4:
+	        		moduleHub.viewReport(currentUser, year, "full");
+	        		break;
+   	    	}
+   	    	
+ 			System.out.println("\nWhat would you like to do next?");
+   			System.out.println(" 1. View another report \n 2. Back to Financial Data \n 3. Back to Main Menu");
+   			System.out.print("Please enter the number associated with your desired option: ");
+   			
+   			userChoice = getUserChoice(3);
+   	    	clearConsole();
+   	    	switch (userChoice) {
+   	    		case 1: 
+   	    			continue;
+   	    		case 2: 
+   	    			return false; 
+   	    		case 3:
+   	    			return true;
+   	    	}
+    	}
+    }
+    
+    /**
+     * Handles the Prediction Menu
+     * 
+     * @return Determines if user wants to go to the back to Financial Data or to the Main Menu
+     * @param currentUser - username of the currently signed-in user
+     * @author Aaron Madou
+     */ 
+    public boolean predictionMenu(String currentUser) {
+    	while(true) {
+    		System.out.println("Prediction Menu: ");
+    		System.out.println("  1. Summary Report");
+    		System.out.println("  2. Deficit Analysis");
+    		System.out.println("  3. Surplus Analysis");
+    		System.out.println("  4. Compare Senarios");
+   	    	System.out.println("  5. Back");
+   	    	System.out.print("Please enter the number associated with your desired option: ");
+
+   	    	int userChoice = getUserChoice(5);
+   	    	clearConsole();
+   	    	if(userChoice == 5) { return false; }
+   	    	
+   	    	System.out.print("Please enter the year you would like to view: ");
+   			int year = getUserDate("year");
+   			clearConsole();
+  	        
+   	    	switch (userChoice) {
+   	    		case 1:
+   	    			moduleHub.runPrediction(currentUser, year, "summary");
+   	    			break;
+   	    			
+   	    		case 2: 
+   	    			moduleHub.runPrediction(currentUser, year, "deficit");
+   	    			break;
+   	    		case 3: 
+   	    			moduleHub.runPrediction(currentUser, year, "surplus");
+	        		break;
+	        	case 4:
+	        		moduleHub.runPrediction(currentUser, year, "compare-demo");
+	        		break;
+   	    	}
+   	    	
+ 			System.out.println("\nWhat would you like to do next?");
+   			System.out.println(" 1. View another prediction (analysis?) \n 2. Back to Financial Data \n 3. Back to Main Menu");
+   			System.out.print("Please enter the number associated with your desired option: ");
+   			
+   			userChoice = getUserChoice(3);
+   	    	clearConsole();
+   	    	switch (userChoice) {
+   	    		case 1: 
+   	    			continue;
+   	    		case 2: 
+   	    			return false; 
+   	    		case 3:
+   	    			return true;
+   	    	}
+    	}
+    }
+    
     /**
      * Lets the user exit the program to desktop from anywhere within the code.
      */
@@ -315,6 +623,8 @@ public class MainMenu {
 
     public static void main(String[] args) {
         MainMenu programMenu = new MainMenu();
-        programMenu.start();
+        while(true) {
+        	programMenu.start();
+        }
     }
 }
