@@ -30,20 +30,27 @@ public class CSVHandler {
 		ArrayList<Transaction> transactions = new ArrayList<>();
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-			String line;
+			String line = br.readLine();
 			
-			while((line = br.readLine()) != null) {
-				String[] parts = line.split(",");
+			if (line != null && isHeaderLine(line)) {
+				line = br.readLine();
+			}
+			
+			while (line != null) {
+				if (!line.trim().isEmpty()) {
+					String[] parts = line.split(",");
 				
-				if (parts.length != 3) {
-					throw new IOException("Invalid line: " + line);
-				}
+					if (parts.length != 3) {
+						throw new IOException("Invalid line: " + line);
+					}	
 				
-				String date = parts[0];
-				String category = parts[1];
-				double amount = Double.parseDouble(parts[2]);
+					String date = parts[0];
+					String category = parts[1];
+					double amount = Double.parseDouble(parts[2]);
 					
-				transactions.add(new Transaction(date, category, amount));
+					transactions.add(new Transaction(date, category, amount));
+				}
+				line = br.readLine();
 			}
 		}
 		return transactions;
@@ -58,6 +65,9 @@ public class CSVHandler {
 	 */
 	public void writeCSV(String file, ArrayList<Transaction> transactions) throws IOException {
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+			bw.write("Date,Category,Amount");
+			bw.newLine();
+			
 			for (Transaction t : transactions) {
 				bw.write(t.getDate() + "," + t.getCategory() + "," + t.getAmount());
 				bw.newLine();
@@ -97,5 +107,16 @@ public class CSVHandler {
 	 */
 	public void overwriteCSV(String file, ArrayList<Transaction> transactions) throws IOException {
 		writeCSV(file, transactions);
+	}
+	
+	/**
+	 * Helper method that detects whether the given line from a CSV file is a header row
+	 * @param line the line of a CSV file to check
+	 * @return true if the line being checked is a header and false otherwise
+	 * @author Eddie Zhu
+	 */
+	private boolean isHeaderLine(String line) {
+		String header = line.toLowerCase().replace(" ", "");
+		return header.contains("date") && header.contains("category") && header.contains("amount");
 	}
 }
