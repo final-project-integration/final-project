@@ -425,7 +425,7 @@ public class MainMenu {
      * Currently used in financialMenu and ReportsMenu
      * 
      * @return the year or month
-     * @param   type of date you need. (e.g. year or month)
+     * @param the type of date yow need. (e.g. year or month)
      * @author Aaron Madou
      */ 
     private int getUserDate(String type) {
@@ -589,6 +589,7 @@ public class MainMenu {
    	    		case 3: 
    	    			moduleHub.runPrediction(currentUser, year, "surplus");
 	        		break;
+
    	    	}
    	    	
  			System.out.println("\nWhat would you like to do next?");
