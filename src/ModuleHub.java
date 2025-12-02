@@ -1144,27 +1144,56 @@ public class ModuleHub {
 
 
 
+
 /**
  * ErrorHandler manages all error handling and recovery operations for the application.
- * Logs errors, displays user-friendly error messages, and recovers from errors gracefully
- * to prevent application crashes.
+ * It receives exceptions thrown by other modules, logs the details for debugging,
+ * displays user-friendly messages, and safely recovers control back to the main menu.
+ *
+ * This prevents the application from crashing on unexpected errors.
  *
  * @author Kapil Tamang
  */
 class ErrorHandler {
 
+    /**
+     * Creates a new ErrorHandler instance.
+     * The handler provides a centralized way to display, log, and recover
+     * from errors across all modules.
+     */
     public ErrorHandler() {}
 
+    /**
+     * Handles an exception that was thrown by a module.
+     *
+     * This method does *not* catch exceptions itself.
+     * Instead, exceptions are passed into this method after being caught
+     * in ModuleHub or other components.
+     *
+     * @param moduleName the name of the module where the error occurred
+     * @param error      the exception that was thrown
+     */
     public void handleModuleError(String moduleName, Exception error) {
-        displayError("An error has occured in the " + moduleName + " module.");
+        displayError("An error has occurred in the " + moduleName + " module.");
         logError("Error in " + moduleName, error);
         recoverToMenu();
     }
 
+    /**
+     * Displays a message indicating the system is returning to the main menu.
+     * This keeps the program usable after an error.
+     */
     public void recoverToMenu() {
         System.out.println("Restoring main menu.");
     }
 
+    /**
+     * Logs detailed debugging information about an error.
+     * This includes the timestamp, message, exception type, and full stack trace.
+     *
+     * @param errorMessage a brief description of the error context
+     * @param error        the exception thrown
+     */
     public void logError(String errorMessage, Exception error) {
         System.err.println("ERROR");
         System.err.println("Time: " + java.time.LocalDateTime.now());
@@ -1174,6 +1203,13 @@ class ErrorHandler {
         error.printStackTrace(System.err);
     }
 
+    /**
+     * Displays a user-friendly error message to the console.
+     * This avoids exposing technical details to the user while still informing them
+     * that something went wrong.
+     *
+     * @param message the error message to display
+     */
     public void displayError(String message) {
         System.out.println("ERROR");
         System.out.println(message);
