@@ -16,11 +16,11 @@ import java.util.Map;
 public class DeficitSolver {
 
     private final double income;
+    private final double overallDeficit;
 
     // corresponding lists for categories and expense amounts
     private final ArrayList<String> categories;
     private final ArrayList<Double> expenses;
-
     // stores the last round of adjustments, used to undo
     private final ArrayList<Double> lastAdjustments;
 
@@ -37,53 +37,61 @@ public class DeficitSolver {
         this.expenses = new ArrayList<>();
         this.lastAdjustments = new ArrayList<>();
 
+        // NEW: compute overall deficit from ALL expenses (fixed + adjustable)
+        int totalIncomeAll   = reader.getTotalIncome();
+        int totalExpensesNeg = reader.getTotalExpenses(); // negative
+        int net              = totalIncomeAll + totalExpensesNeg;
+        this.overallDeficit  = (net < 0) ? -net : 0.0;
+
         List<String> allCategories = reader.getCategories();
         List<Integer> allAmounts   = reader.getAmounts();
 
-        // Aggregate expenses by category
+        // (keep your existing adjustable-category aggregation logic)
         Map<String, Double> expenseTotals = new HashMap<>();
-
         for (int i = 0; i < allCategories.size(); i++) {
-            String cat   = allCategories.get(i);
-            int amount   = allAmounts.get(i);
+            String cat = allCategories.get(i);
+            int amount = allAmounts.get(i);
 
-            // Only track expenses (amount < 0) that are valid expense categories
             if (amount < 0 && DataReader.isExpenseCategory(cat)) {
-
-                // Skip fixed categories that we never want to cut
-                if (cat.equalsIgnoreCase("Rent") || cat.equalsIgnoreCase("Home") || cat.equalsIgnoreCase("Utilities")|| cat.equalsIgnoreCase("Work")) {
-                    continue;
+                if (cat.equalsIgnoreCase("Rent")
+                        || cat.equalsIgnoreCase("Home")
+                        || cat.equalsIgnoreCase("Utilities")
+                        || cat.equalsIgnoreCase("Work")) {
+                    continue; // skip fixed
                 }
-                double positiveExpense = -1.0 * amount; // store as positive
-                // Combine duplicate categories (Food + Food, etc.)
+                double positiveExpense = -1.0 * amount;
                 expenseTotals.merge(cat, positiveExpense, Double::sum);
             }
         }
-        
-        // Flatten the map into our parallel lists
+
         for (Map.Entry<String, Double> entry : expenseTotals.entrySet()) {
             categories.add(entry.getKey());
             expenses.add(entry.getValue());
         }
     }
 
-
     /**
-     * Calculates the user's total financial deficit.
+     * Calculates how much deficit must be covered by adjustable categories.
      *
-     * @return the total deficit amount; returns 0 if there is no deficit
-     * @author Sahadat Amzad
+     * This uses the overallDeficit (from all income and expenses) and limits it
+     * to what we actually spend in the adjustable categories tracked in this solver.
+     *
+     * @return the deficit amount to be covered by adjustable categories; 0 if none
      */
     public double calculateDeficit() {
-        double total = 0;
-
+        double totalAdjustable = 0.0;
         for (double cost : expenses) {
-            total += cost;
+            totalAdjustable += Math.abs(cost); // expenses are already positive, but abs is safe
         }
 
-        double deficit = total - income;
-        return Math.max(deficit, 0);
+        if (overallDeficit <= 0.0 || totalAdjustable <= 0.0) {
+            return 0.0;
+        }
+
+        // We can’t cut more than we spend in adjustable categories.
+        return Math.min(overallDeficit, totalAdjustable);
     }
+
 
     /**
      * Identifies possible adjustments to reduce expenses and eliminate the
@@ -124,31 +132,31 @@ public class DeficitSolver {
      * @return string detailing a summary of the deficit and adjustment plan
      * @author Sahadat Amzad
      */
-    public String generateSummary() {
-        double deficit = calculateDeficit();
-        StringBuilder sb = new StringBuilder();
+    // public String generateSummary() {
+    //     double deficit = calculateDeficit();
+    //     StringBuilder sb = new StringBuilder();
 
-        sb.append("=== Financial Deficit Summary ===\n");
-        sb.append("Income: $").append(income).append("\n");
+    //     sb.append("=== Financial Deficit Summary ===\n");
+    //     sb.append("Income: $").append(income).append("\n");
 
-        double total = 0;
-        for (double e : expenses) {
-            total += e;
-        }
-        sb.append("Total Expenses: $").append(total).append("\n");
-        sb.append("Deficit: $").append(deficit).append("\n\n");
+    //     double total = 0;
+    //     for (double e : expenses) {
+    //         total += e;
+    //     }
+    //     sb.append("Total Expenses: $").append(total).append("\n");
+    //     sb.append("Deficit: $").append(deficit).append("\n\n");
 
-        ArrayList<Double> recs = identifyAdjustments();
-        sb.append("Recommended Adjustments:\n");
+    //     ArrayList<Double> recs = identifyAdjustments();
+    //     sb.append("Recommended Adjustments:\n");
 
-        for (int i = 0; i < recs.size(); i++) {
-            if (recs.get(i) > 0) {
-                sb.append(" - ").append(categories.get(i)).append(": reduce by $").append(recs.get(i)).append("\n");
-            }
-        }
+    //     for (int i = 0; i < recs.size(); i++) {
+    //         if (recs.get(i) > 0) {
+    //             sb.append(" - ").append(categories.get(i)).append(": reduce by $").append(recs.get(i)).append("\n");
+    //         }
+    //     }
 
-        return sb.toString();
-    }
+    //     return sb.toString();
+    // }
 
     /**
      * Applies adjustments to the user's expense data. By default, uses simple
@@ -157,9 +165,9 @@ public class DeficitSolver {
      * @return true if adjustments were applied, false otherwise
      * @author Sahadat Amzad
      */
-    public boolean applyAdjustments() {
-        return applyAdjustments(false); // default = simple 10% reduction
-    }
+    // public boolean applyAdjustments() {
+    //     return applyAdjustments(false); // default = simple 10% reduction
+    // }
 
     /**
      * Applies adjustments to the user's expense data.
@@ -169,30 +177,30 @@ public class DeficitSolver {
      * @return true if adjustments were applied, false otherwise
      * @author Sahadat Amzad
      */
-    public boolean applyAdjustments(boolean useProportional) {
-        ArrayList<Double> adjustments = useProportional ? proportionalReductions() : identifyAdjustments();
+    // public boolean applyAdjustments(boolean useProportional) {
+    //     ArrayList<Double> adjustments = useProportional ? proportionalReductions() : identifyAdjustments();
 
-        boolean hasAdjustments = false;
-        for (double a : adjustments) {
-            if (a > 0) {
-                hasAdjustments = true;
-                break;
-            }
-        }
+    //     boolean hasAdjustments = false;
+    //     for (double a : adjustments) {
+    //         if (a > 0) {
+    //             hasAdjustments = true;
+    //             break;
+    //         }
+    //     }
 
-        if (!hasAdjustments) {
-            return false;
-        }
+    //     if (!hasAdjustments) {
+    //         return false;
+    //     }
 
-        lastAdjustments.clear();
+    //     lastAdjustments.clear();
 
-        for (int i = 0; i < expenses.size(); i++) {
-            lastAdjustments.add(adjustments.get(i));
-            expenses.set(i, expenses.get(i) - adjustments.get(i));
-        }
+    //     for (int i = 0; i < expenses.size(); i++) {
+    //         lastAdjustments.add(adjustments.get(i));
+    //         expenses.set(i, expenses.get(i) - adjustments.get(i));
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
     /**
      * Reverts previously applied adjustments to restore the original expense
@@ -201,18 +209,18 @@ public class DeficitSolver {
      * @return true if the adjustments are successfully undone; false otherwise
      * @author Sahadat Amzad
      */
-    public boolean undoAdjustment() {
-        if (lastAdjustments.isEmpty()) {
-            return false;
-        }
+    // public boolean undoAdjustment() {
+    //     if (lastAdjustments.isEmpty()) {
+    //         return false;
+    //     }
 
-        for (int i = 0; i < expenses.size(); i++) {
-            expenses.set(i, expenses.get(i) + lastAdjustments.get(i));
-        }
+    //     for (int i = 0; i < expenses.size(); i++) {
+    //         expenses.set(i, expenses.get(i) + lastAdjustments.get(i));
+    //     }
 
-        lastAdjustments.clear();
-        return true;
-    }
+    //     lastAdjustments.clear();
+    //     return true;
+    // }
 
     /**
      * Returns the total expense amount for a given category.
@@ -258,34 +266,34 @@ public class DeficitSolver {
      * @author Sahadat Amzad
      */
     public ArrayList<Double> proportionalReductions() {
-        double deficit = calculateDeficit();
         ArrayList<Double> reductions = new ArrayList<>();
-        if (deficit == 0) {
+
+        // If there is no overall deficit, or no adjustable spending,
+        // then there is nothing to cut.
+        double totalAdjustable = 0.0;
+        for (double e : expenses) {
+            totalAdjustable += e;
+        }
+
+        if (overallDeficit <= 0.0 || totalAdjustable <= 0.0) {
             for (int i = 0; i < categories.size(); i++) {
                 reductions.add(0.0);
             }
             return reductions;
         }
 
-        double totalExpenses = 0.0;
-        for (int i = 0; i < categories.size(); i++) {
-            if (!categories.get(i).equalsIgnoreCase("Rent")) {
-                totalExpenses += expenses.get(i);
-            }
-        }
+        // We cannot cut more than we spend in adjustable categories.
+        double amountToCut = Math.min(overallDeficit, totalAdjustable);
 
+        // Distribute amountToCut proportional to each category's share
         for (int i = 0; i < categories.size(); i++) {
-            String name = categories.get(i);
-            if (name.equalsIgnoreCase("Rent")) {
-                reductions.add(0.0);
-            } else {
-                double share = expenses.get(i) / totalExpenses;
-                reductions.add(share * deficit);
-            }
+            double share = expenses.get(i) / totalAdjustable;
+            reductions.add(share * amountToCut);
         }
 
         return reductions;
     }
+
 
     /**
      * Generates a human-readable What-If scenario for reducing a single
