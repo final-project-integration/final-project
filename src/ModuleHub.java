@@ -1140,6 +1140,30 @@ public class ModuleHub {
             return false;
         }
     }
+
+    /**
+     * Updates a user's secrete question and answer using the Accounts module.
+     * Any failure is reported through the console.
+     *
+     * @param username    the username whose password should be reset
+     * @param newQuestion the new secrert question to set
+     * @param newAnswer   the new secrert answer to set
+     * @return true if the security question & answer reset succeeds, false otherwise
+     *
+     * @author Aaron Madou
+     */
+	public boolean updateUserSecretQuestionAndAnswer(String username, String newQuestion, String newAnswer) {
+		try {
+			boolean ok = accountsModule.setSecretQuestionAndAnswer(username, newQuestion, newAnswer);
+			if(!ok) {
+				System.out.println("[ModuleHub] Password reset failed (user may not exist).");
+			}
+			return ok;
+		} catch (Exception e) {
+			errorHandler.handleModuleError("Accounts", e);
+			return false;
+		}
+	}
 }
 
 
