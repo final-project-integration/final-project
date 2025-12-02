@@ -171,4 +171,32 @@ public class StorageManager {
 
 		return budget;
 	}
+
+	/**
+	 * Imports a CSV file from an external location, converts it into a Budget,
+	 * saves it into the user's storage directory, and returns the Budget.
+	 *
+	 * This ensures ModuleHub does NOT need to parse CSVs anymore.
+	 *
+	 * @param username the user who owns the budget
+	 * @param year     the year the imported CSV represents
+	 * @param csvFilePath the full path to the external CSV file to import
+	 * @author Farhan Chowdhury
+	 * @return a fully populated Budget object
+	 * @throws IOException if the CSV cannot be read
+	*/
+
+	public Budget importCSV(String username, int year, String csvFilePath) throws IOException {
+		ArrayList<Transaction> transactions = csvHandler.readCSV(csvFilePath);
+		Budget budget = new Budget();
+
+		for (Transaction t : transactions) {
+			budget.addTransaction(t.getDate(), t.getCategory(), t.getAmount());
+		}
+
+		saveUserData(username, year, budget);
+
+		return budget;
+	}
 }
+
