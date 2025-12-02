@@ -1,156 +1,386 @@
+import java.security.MessageDigest;
+
 /**
- * Authentication handles all security related functionality, including password hashing and
- * user verification. It ensures that sensitive information dealt with in the Accounts class
- * is never stored in plain text.
- * 
- * 
+ * TEAM: ACCOUNTS
+ * The Authentication class handles all security-related functionality for user accounts,
+ * including verifying credentials, hashing passwords and secret answers, validating user input,
+ * and retrieving authentication records from Storage. It ensures that no sensitive information
+ * such as passwords or secret answers is ever stored in plain text.
+ * Authentication uses SHA-256 hashing to secure all sensitive fields.
  * @author  Zhengjun Xie
- * @author	Andony Ariza
- * @author	Jessica Ramirez
- * @author	Guarav Banepali
- * @author	Steven Farell
- * @since   2025-11-06
- */
+ * @author  Andony Ariza
+ * @author  Jessica Ramirez
+ * @author  Guarav Banepali
+ * @since   2025-11-19
+ *  */
 
- public class Authentication{
 
-    /**
-    * Constructs a new Authentication object.
-    * This default constructor initializes Authentication class (no parameters).
-    * 
-    * @author Jessica Ramirez
-    */
-   public Authentication() { //Default constructor.
-   }
+public class Authentication {
 
-    /**
-     * Verifies whether the provided username and password.
-     *
-     * @param username the username entered by the user
-     * @param password the password entered by the user
-     * @return true if authentication is successful
-     * @author Zhengjun Xie
+    private Storage storage;
+    
+    /** 
+     * Tracks the username currently authenticated in the session.
+     * This is updated on successful login and cleared on logout.
      */
-    public boolean validateCredentials(String username, String password){
-        return false;
+    private String currentUser = null;
+
+    /**
+     * Indicates whether there is an active authenticated session.
+     * Becomes true after a successful login, and false after logout.
+     */
+    private boolean activeSession = false;
+
+    
+    /**
+     * Creates a new Authentication object linked to a Storage instance.
+     *
+     * @param storage the Storage instance containing all authentication records
+     * @author Jessica Ramirez
+     */
+
+    public Authentication(Storage storage) {
+        this.storage = storage;
     }
 
     /**
-     * Compares a user’s plain-text password to the stored hashed password.
+     * Validates user credentials by comparing the stored hashed password
+     * with a hashed version of the provided plain-text password.
      *
-     * @param password the plain-text password to compare
-     * @return true if the password matches the stored hash 
+     * If validation succeeds, this method also updates the internal session
+     * state by setting the current user and marking the session as active.
+     *
+     * @param username the username of the account
+     * @param password the plain text password entered by the user
+     * @return true if the credentials match, or false otherwise
      * @author Zhengjun Xie
      */
-    public boolean checkPassword(String password) {
-        return false;
+
+    public boolean validateCredentials(String username, String password) {
+        AuthRecord rec = storage.getAuthInfo(username);
+        if (rec == null) return false;
+
+        String hashedInput = hashPassword(password);
+        boolean valid = rec.getHashedPassword().equals(hashedInput);
+
+        if (valid) {
+            currentUser = username;
+            activeSession = true;
+        }
+
+        return valid;
+    }
+
+
+    /**
+     * Checks whether the provided password matches the stored hashed password
+     * for the given username.
+     *
+     * @param username the username whose password is being checked
+     * @param password the plain-text password entered by the user
+     * @return true if the password matches the stored hash or false otherwise
+     * @author Zhengjun Xie
+     */
+
+    public boolean checkPassword(String username, String password) {
+        AuthRecord rec = storage.getAuthInfo(username);
+        if (rec == null) return false;
+
+        return rec.getHashedPassword().equals(hashPassword(password));
     }
 
     /**
-     * Checks whether a given username exists in the system.
+     * Checks whether the given username exists in Storage.
      *
-     * @param username the username to check
-     * @return true if the username exists
+     * @param username the username to look up
+     * @return true if the username exists, or false otherwise
      * @author Zhengjun Xie
      */
+
+    
     public boolean checkUsername(String username) {
-        return false;
+        return storage.getAuthInfo(username) != null;
     }
 
     /**
-     * Validates the secret answer provided by the user during account recovery.
+     * Validates a user's secret answer by hashing the user's answer and comparing
+     * it with the stored hashed secret answer.
      *
-     * @param username the username associated with the account
-     * @param answer the plain-text answer entered by the user
-     * @return true if the answer matches the stored hash
+     * @param username the username of the account
+     * @param answer   the plain-text secret answer entered by the user
+     * @return true if the hashed answers match; false otherwise
      * @author Zhengjun Xie
      */
+
     public boolean checkSecretAnswer(String username, String answer) {
-        return false;
+        AuthRecord rec = storage.getAuthInfo(username);
+        if (rec == null) return false;
+
+        return rec.getHashedSecretAnswer().equals(hashPassword(answer));
     }
 
     /**
-     * Validates that the provided user information.
+     * Retrieves a user's stored secret question for password recovery.
      *
-     * @param username the username to validate
+     * @param username the username whose secret question is requested
+     * @return the stored secret question, or null if the user DNE
+     * @author Zhengjun Xie
+     */
+
+    
+    public String getSecretQuestion(String username) {
+        AuthRecord rec = storage.getAuthInfo(username);
+        if (rec == null) return null;
+        return rec.getSecretQuestion();
+
+    }
+
+    /**
+     * Validates registration input by ensuring no field is null or blank.
+     *
+     * @param username the username of the account
      * @param password the password to validate
-     * @param secretQuestion the secret question text
-     * @param secretAnswer the secret answer text
-     * @return true if all inputs are valid 
+     * @param secretQuestion the recovery question to validate
+     * @param secretAnswer the recovery answer to validate
+     * @return true if all fields are valid, or false otherwise
      * @author Zhengjun Xie
      */
+
     public boolean validateUserInfo(String username, String password, String secretQuestion, String secretAnswer) {
-        return false;
+    	
+        return !(isBlank(username) || isBlank(password) || isBlank(secretQuestion) || isBlank(secretAnswer));
     }
 
     /**
-     * Resets the user’s password after successful identity verification.
-     * 
-     * 
-     * @param username the username associated with the account
-     * @param newPassword the new password to set
-     * @return true if the password was successfully reset 
+     * Determines whether a given text value is null, empty, or with whitespace.
+     *
+     * @param text the input string to check
+     * @return true if the text is blank, or false otherwise
      * @author Zhengjun Xie
      */
+
+    private boolean isBlank(String text) {
+        return (text == null || text.isBlank());
+    }
+    
+    /**
+     * Checks if a field is blank (null, empty, or only whitespace).
+     * This supports early validation so the user is immediately notified
+     * when attempting to enter incomplete form data.
+     *
+     * @param field the text to check
+     * @return true if the field is blank, false otherwise
+     * @author Jessica Ramirez
+     */
+
+    public boolean isBlankField(String field) {
+        return field == null || field.isBlank();
+    }
+
+    /**
+     * Determines whether a username is invalid for account creation.
+     * A username is considered invalid if it is blank or already taken.
+     * This method supports early validation so the user is notified
+     * immediately before entering additional account fields.
+     *
+     * @param username the username of the account
+     * @return true if the username is invalid (blank or duplicate), false otherwise
+     * @author Jessica Ramirez
+     */
+    public boolean isInvalidUsername(String username) {
+        return isBlankField(username) || checkUsername(username);
+    }
+    
+    
+    /**
+     * Checks whether a username contains only valid alphanumeric characters.
+     * Usernames may ONLY contain A–Z, a–z, and 0–9.
+     * @param username the username to validate
+     * @return true if the username contains invalid characters, false otherwise
+     * @author Jessica Ramirez
+     */
+    
+    public boolean hasInvalidCharacters(String username) {
+    if (username == null) return true;
+    return !username.matches("[A-Za-z0-9]+");
+    }
+
+    
+
+    /**
+     * Resets a user's password after verification, hashing the new password
+     * before saving it to Storage.
+     *
+     * @param username the username whose password will be reset
+     * @param newPassword the new plain-text password to hash and store
+     * @return true if the password was successfully reset, or false otherwise
+     * @author Zhengjun Xie
+     */
+
+    
     public boolean recoverPassword(String username, String newPassword) {
-        return false;
-    }
+        AuthRecord rec = storage.getAuthInfo(username);
+        if (rec == null) return false;
 
-    /**
-     * Clears all in-memory authentication and session data to prevent.
-     * 
-     * @author Zhengjun Xie
+        rec.setHashedPassword(hashPassword(newPassword));
+        storage.addAuthRecord(username, rec);
+        return true;
+    }
+    
+     /**
+     * Clears all authentication related session data.
+     * This resets the current authenticated user and marks the session
+     * as inactive. Called automatically by Accounts.signOut().
+     *
+     * @author Jessica Ramirez
      */
+
     public void clearSession() {
-        // Implementation clears current session or token cache
+        currentUser = null;
+        activeSession = false;
     }
 
+
     /**
-     * Hashes a plain-text password or secret answer.
+     * Hashes a plain-text string (password or secret answer) using SHA-256.
      *
      * @param plain the plain-text string to be hashed
-     * @return a hashed version of the input string
+     * @return the hashed output in hexadecimal format
      * @author Zhengjun Xie
      */
+
+ 
     public String hashPassword(String plain) {
-        return "";
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(plain.getBytes());
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02x", b));
+
+            return sb.toString();
+
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /**
-     * Retrieves the stored secret question for a given username.
+     * Stores authentication related data for a single user, including the hashed
+     * password, the secret question, and the hashed secret answer.
+     * No sensitive information is kept in plain text.
      *
-     * @param username the username associated with the account
-     * @return the stored secret question
      * @author Zhengjun Xie
      */
-    public String getSecretQuestion(String username) {
-        return "";
+
+    
+    public static class AuthRecord {
+        private String hashedPassword;
+        private String secretQuestion;
+        private String hashedSecretAnswer;
+
+        public AuthRecord(String hp, String sq, String hsa) {
+            this.hashedPassword = hp;
+            this.secretQuestion = sq;
+            this.hashedSecretAnswer = hsa;
+        }
+
+        public String getHashedPassword() { 
+            return hashedPassword; 
+        }
+        public String getSecretQuestion() { 
+            return secretQuestion; 
+        }
+        public String getHashedSecretAnswer() { 
+            return hashedSecretAnswer; 
+        }
+
+        public void setHashedPassword(String hashed) {
+            this.hashedPassword = hashed;
+        }
+
+        public void setSecretQuestion(String question) {
+            this.secretQuestion = question;
+        }
+
+        public void setHashedSecretAnswer(String answer) {
+            this.hashedSecretAnswer = answer;
+        }
     }
 
     /**
-     * Sets or updates the secret question for a given user.
+     * Returns true if the credentials are invalid.
+     * Used for detecting failed login attempts.
      *
      * @param username the username of the account
-     * @param secretQuestion the secret question to store
-     * @return true if the question is saved successfully 
-     * @author Zhengjun Xie
+     * @param password the password entered
+     * @return true if credentials are invalid; false otherwise
+     * @author Jessica Ramirez
      */
-    public boolean setSecretQuestion(String username, String secretQuestion) {
-        return false;
-    }
 
+
+    public boolean checkInvalidCredentials(String username, String password) {
+    return !validateCredentials(username, password);
+    }
+    
     /**
-     * Sets or updates the secret answer for a given user.
+     * Checks whether a username already exists in the system.
      *
      * @param username the username of the account
-     * @param secretAnswer the plain-text secret answer to store
-     * @return true if the answer is saved successfully 
-     * @author Zhengjun Xie
+     * @return true if the username already exists, or false otherwise
+     * @author Jessica Ramirez
      */
-    public boolean setSecretAnswer(String username, String secretAnswer) {
+
+
+    public boolean isDuplicateUsername(String username) {
+        return checkUsername(username);
+    }
+    
+    /**
+     * Detects edge-case inputs such as invalid characters, surrounding whitespace,
+     * or improper formatting.
+     *
+     * @param username the username of the account
+     * @param password the password entered
+     * @return true if any edge-case condition is detected, or false otherwise
+     * @author Jessica Ramirez
+     */
+
+
+    public boolean checkEdgeCases(String username, String password) {
+        if (username == null || password == null) 
+            return true;
+
+        if (username.trim().isEmpty() || password.trim().isEmpty()) 
+            return true;
+
+        if (!username.equals(username.trim()) || !password.equals(password.trim())) 
+            return true;
+
+        if (!username.matches("[A-Za-z0-9]+"))
+            return true;
+
+        if (username.length() < 3 || password.length() < 5) 
+            return true;
+
         return false;
     }
+    
+    /**
+     * Checks whether required login or registration fields are empty.
+     *
+     * @param username the username of the account
+     * @param password the password entered
+     * @return true if any required field is missing, or false otherwise
+     * @author Jessica Ramirez
+     */
 
- }
 
-
+    public boolean checkIncompleteForm(String username, String password) {
+        if (username == null || username.trim().isEmpty()) 
+            return true;
+        if (password == null || password.trim().isEmpty()) 
+            return true;
+        return false;
+    }
+}

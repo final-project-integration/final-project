@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * This class is part of the Storage module and is responsible for maintaining
  * the user's financial data between program sessions.
  *
- * author Emmanuel
+ * @author Emmanuel
  * @version 11/4/2025
  */
 public class Budget {
@@ -59,7 +59,10 @@ public class Budget {
      * @param newCategory       the updated category name
      * @param newAmount         the updated amount (positive for income, negative for expense)
      */
-    public void updateTransaction(int transactionIndex, String newDate, String newCategory, double newAmount) {
+    public void updateTransaction(int transactionIndex,
+                                  String newDate,
+                                  String newCategory,
+                                  double newAmount) {
         if (transactionIndex >= 0 && transactionIndex < transactions.size()) {
             transactions.get(transactionIndex).update(newDate, newCategory, newAmount);
         } else {
@@ -176,10 +179,11 @@ public class Budget {
         double expenses = 0;
 
         for (Transaction t : transactions) {
-            if (t.getAmount() > 0)
+            if (t.getAmount() > 0) {
                 income += t.getAmount();
-            else
+            } else {
                 expenses += t.getAmount();
+            }
         }
 
         double net = income + expenses;
@@ -204,5 +208,14 @@ public class Budget {
                 System.out.println(i + ": " + transactions.get(i));
             }
         }
+    }
+
+    /**
+     * Returns all transactions stored in this budget.
+     *
+     * @return an ArrayList of all Transaction objects
+     */
+    public ArrayList<Transaction> getAllTransactions() {
+        return this.transactions;
     }
 }
