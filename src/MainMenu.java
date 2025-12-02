@@ -425,7 +425,7 @@ public class MainMenu {
      * Currently used in financialMenu and ReportsMenu
      * 
      * @return the year or month
-     * @param the type of date yow need. (e.g. year or month)
+     * @param   type of date you need. (e.g. year or month)
      * @author Aaron Madou
      */ 
     private int getUserDate(String type) {
@@ -567,13 +567,12 @@ public class MainMenu {
     		System.out.println("  1. Summary Report");
     		System.out.println("  2. Deficit Analysis");
     		System.out.println("  3. Surplus Analysis");
-    		System.out.println("  4. Compare Senarios");
    	    	System.out.println("  5. Back");
    	    	System.out.print("Please enter the number associated with your desired option: ");
 
-   	    	int userChoice = getUserChoice(5);
+   	    	int userChoice = getUserChoice(4);
    	    	clearConsole();
-   	    	if(userChoice == 5) { return false; }
+   	    	if(userChoice == 4) { return false; }
    	    	
    	    	System.out.print("Please enter the year you would like to view: ");
    			int year = getUserDate("year");
@@ -589,9 +588,6 @@ public class MainMenu {
    	    			break;
    	    		case 3: 
    	    			moduleHub.runPrediction(currentUser, year, "surplus");
-	        		break;
-	        	case 4:
-	        		moduleHub.runPrediction(currentUser, year, "compare-demo");
 	        		break;
    	    	}
    	    	

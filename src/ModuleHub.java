@@ -674,6 +674,7 @@ public class ModuleHub {
                             "Budget deficit detected. Suggested proportional reduction plan:");
                     System.out.println();
                     String plan = predictionModule.buildDeficitProportionalPlan();
+
                     System.out.println(BeautifulDisplay.BRIGHT_WHITE + plan + BeautifulDisplay.RESET);
                     BeautifulDisplay.printGradientDivider(70);
                     return "Deficit analysis completed for " + year + ".";
