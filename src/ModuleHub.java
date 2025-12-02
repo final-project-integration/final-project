@@ -1,9 +1,6 @@
 import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * ModuleHub is the integration layer and traffic controller for the application.
@@ -230,19 +227,26 @@ public class ModuleHub {
         try {
             System.out.println("[ModuleHub] Reading CSV file: " + csvFilePath);
 
-            ArrayList<ReportManager.FinancialRecord> records = parseCSVFile(csvFilePath);
+            // using CSVHandler to read the file into Transaction objects
+            CSVHandler csvHandler = new CSVHandler();
+            ArrayList<Transaction> transactions = csvHandler.readCSV(csvFilePath);
 
-            if (records.isEmpty()) {
-                System.out.println("[ModuleHub] No valid records found in CSV.");
+            if (transactions.isEmpty()) {
+                System.out.println("[ModuleHub] No valid transactions found in CSV.");
                 return false;
             }
 
-            Budget budget = convertRecordsToBudget(records, year);
+            // building a Budget from the Transaction list
+            Budget budget = new Budget();
+            for (Transaction t : transactions) {
+                budget.addTransaction(t.getDate(), t.getCategory(), t.getAmount());
+            }
 
+            // saving through StorageManager
             storageModule.saveUserData(username, year, budget);
 
             System.out.println("[ModuleHub] ✓ Successfully uploaded data for year " + year);
-            System.out.println("[ModuleHub] ✓ " + records.size() + " transactions stored");
+            System.out.println("[ModuleHub] ✓ " + transactions.size() + " transactions stored");
 
             return true;
 
@@ -250,100 +254,6 @@ public class ModuleHub {
             errorHandler.handleModuleError("CSV Upload", e);
             return false;
         }
-    }
-
-    /**
-     * Parses a CSV file containing financial data into a list of FinancialRecord objects.
-     * This helper translates external CSV data into an internal representation understood by the Reports module.
-     * @param csvPath the path to the CSV file that should be parsed
-     * @return a list of FinancialRecord objects representing valid rows in the CSV
-     *
-     * @author Denisa Cakoni
-     */
-    private ArrayList<ReportManager.FinancialRecord> parseCSVFile(String csvPath) {
-        ArrayList<ReportManager.FinancialRecord> list = new ArrayList<>();
-
-        try (Scanner sc = new Scanner(new File(csvPath))) {
-            if (!sc.hasNextLine()) {
-                return list;
-            }
-            sc.nextLine(); // skip header line
-
-            while (sc.hasNextLine()) {
-                String line = sc.nextLine().trim();
-                if (line.isEmpty()) {
-                    continue;
-                }
-
-                String[] parts = line.split(",");
-                if (parts.length != 3) {
-                    System.err.println("[ModuleHub] Skipping invalid line: " + line);
-                    continue;
-                }
-
-                String date      = parts[0].trim(); // MM/DD/YYYY
-                String category  = parts[1].trim();
-                String amountStr = parts[2].trim();
-
-                String[] dateParts = date.split("/");
-                if (dateParts.length != 3) {
-                    System.err.println("[ModuleHub] Invalid date format: " + date);
-                    continue;
-                }
-
-                int month = Integer.parseInt(dateParts[0]) - 1; // 0-based month index
-                int year  = Integer.parseInt(dateParts[2]);
-
-                double amount = Double.parseDouble(amountStr);
-                boolean isIncome = amount > 0;
-
-                ReportManager.FinancialRecord rec =
-                        new ReportManager.FinancialRecord(
-                                amountStr,
-                                category,
-                                month,
-                                year,
-                                isIncome
-                        );
-
-                list.add(rec);
-            }
-
-        } catch (Exception e) {
-            System.err.println("[ModuleHub] Error reading CSV: " + e.getMessage());
-        }
-
-        return list;
-    }
-
-    /**
-     * Converts a list of FinancialRecord objects into a Budget instance.
-     * This helper is responsible for data format conversion between the reporting representation and the storage
-     * representation.
-     *
-     * For simplicity, all dates are set to the 15th of each month for the given year.
-     *
-     * @param records the list of FinancialRecord objects that should be converted
-     * @param year    the year that should be applied to the generated dates
-     * @return a Budget instance populated with transactions from the records list
-     *
-     * @author Denisa Cakoni
-     */
-    private Budget convertRecordsToBudget(
-            ArrayList<ReportManager.FinancialRecord> records, int year) {
-
-        Budget budget = new Budget();
-
-        for (ReportManager.FinancialRecord rec : records) {
-            String date = String.format("%02d/15/%d", rec.getMonth() + 1, year);
-
-            String category = rec.getCategory();
-            double amount = Double.parseDouble(rec.getAmount());
-
-            budget.addTransaction(date, category, amount);
-        }
-
-        return budget;
     }
 
 
@@ -635,21 +545,19 @@ public class ModuleHub {
     }
 
 
-    // Predictions (runs from stored data)
+    // Predictions
 
 
     /**
      * Runs a prediction scenario on previously uploaded and stored data:
      * loads the Budget for a user and year from StorageManager
-     * converts the Budget into a temporary CSV file for the Prediction module
-     * uses DataReader to read the CSV
-     * runs a specified prediction scenario
+     * passes the Budget directly into the Prediction DataReader
+     * delegates the selected scenario to ScenarioSimulator
      *
-     * supported scenario types:
-     * summary: prints a summary report using Prediction DataReader
-     * compare-demo: creates two scenarios and compares them
-     * deficit: runs the DeficitSolver to analyze overspending
-     * surplus: runs the SurplusOptimizer to analyze surplus usage
+     * Supported scenario types:
+     * summary – prints an overall income/expense/net summary
+     * deficit – checks for a deficit and prints a proportional reduction plan
+     * surplus – checks for a surplus and prints a proportional allocation plan
      *
      * @param username     the user requesting the prediction
      * @param year         the year whose data should be analyzed
@@ -677,45 +585,38 @@ public class ModuleHub {
                 return "[ModuleHub] No data available for year " + year;
             }
 
-            String tempCsvPath = createTemporaryCSVForPrediction(budget, username, year);
-
-            predictionData.readData(tempCsvPath);
+           predictionData.readFromBudget(budget);
 
             switch (scenarioType.toLowerCase()) {
 
                 case "summary": {
-                    String summary = predictionData.createSummaryReport();
+                    String summary = predictionModule.buildFinancialSummary();
                     System.out.println("\n--- Prediction Summary ---");
                     System.out.println(summary);
-                    return "Prediction summary generated.";
+                    return "Prediction summary completed for " + year + ".";
                 }
 
-                case "compare-demo": {
-                    predictionModule.createScenario("BaseScenario");
-                    predictionModule.createScenario("AdjustedScenario");
-
-                    predictionModule.applyExpenseChange(
-                            "AdjustedScenario", "Entertainment", 50.0);
-
-                    predictionModule.compareScenarios(
-                            "BaseScenario", "AdjustedScenario");
-
-                    return "Scenario comparison complete.";
-                }
 
                 case "deficit": {
-                    DeficitSolver ds = new DeficitSolver(predictionData);
                     System.out.println("\n--- Deficit Prediction ---");
-                    System.out.println(ds.generateSummary());
-                    return "Deficit prediction generated.";
+                    if (!predictionModule.hasDeficit()) {
+                        System.out.println("You do not currently have a deficit. No cuts are required.");
+                        return "No deficit detected for " + year + ".";
+                    }
+                    String plan = predictionModule.buildDeficitProportionalPlan();
+                    System.out.println(plan);
+                    return "Deficit analysis completed for " + year + ".";
                 }
 
                 case "surplus": {
-                    SurplusOptimizer so = new SurplusOptimizer(predictionData);
                     System.out.println("\n--- Surplus Prediction ---");
-                    System.out.println(so.surplusTracker());
-                    System.out.println(so.surplusSuggestion());
-                    return "Surplus prediction generated.";
+                    if (!predictionModule.hasSurplus()) {
+                        System.out.println("You do not currently have a surplus for this year.");
+                        return "No surplus detected for " + year + ".";
+                    }
+                    String plan = predictionModule.buildSurplusProportionalPlan();
+                    System.out.println(plan);
+                    return "Surplus analysis completed for " + year + ".";
                 }
 
                 default:
@@ -728,38 +629,6 @@ public class ModuleHub {
         }
     }
 
-    /**
-     * Creates a temporary CSV file that mirrors the Budget data so that the
-     * Prediction module can read it with its DataReader.
-     * amounts are cast to integers to match the Prediction team's expectations.
-     *
-     * @param budget   the budget whose transactions should be exported
-     * @param username the username (used for naming the temporary file)
-     * @param year     the year (also used for naming the file)
-     * @return the path to the newly created temporary CSV file
-     *
-     * @author Denisa Cakoni
-     */
-    private String createTemporaryCSVForPrediction(Budget budget, String username, int year) {
-        String tempFileName = "temp_prediction_" + username + "_" + year + ".csv";
-
-        try (PrintWriter writer = new PrintWriter(new FileWriter(tempFileName))) {
-            writer.println("Date,Category,Amount");
-
-            for (Transaction t : budget.getAllTransactions()) {
-                writer.println(
-                        t.getDate() + "," +
-                                t.getCategory() + "," +
-                                (int) t.getAmount()
-                );
-            }
-
-        } catch (Exception e) {
-            System.err.println("[ModuleHub] Error creating temp CSV: " + e.getMessage());
-        }
-
-        return tempFileName;
-    }
 
 
     // Validation
