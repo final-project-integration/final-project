@@ -93,7 +93,7 @@ public class BeautifulDisplay {
         return repeat(" ", left) + text + repeat(" ", right);
     }
 
-    // ===== HEADERS / DIVIDERS =====
+    //HEADERS/DIVIDERS 
 
     /**
      * Prints a fancy top-level header with a box and accent colors.
@@ -129,7 +129,7 @@ public class BeautifulDisplay {
         System.out.println(DIM + repeat("─", width) + RESET);
     }
 
-    //BOXES / LISTS 
+    //BOXES/LISTS 
 
     /**
      * Prints a key/value table inside a colored box.
@@ -183,7 +183,7 @@ public class BeautifulDisplay {
         }
     }
 
-    //STATUS / MESSAGES
+    //STATUS/MESSAGES
 
     public static void printSuccess(String message) {
         System.out.println(BRIGHT_GREEN + "✔ " + message + RESET);
