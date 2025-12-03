@@ -130,7 +130,7 @@ public class MainMenu {
                         System.out.print("Please enter the number associated with your desired option: ");
                         int surety = getUserChoice(2);
 
-                        boolean isValidAccount = moduleHub.registerUser(registerUsername, registerPassword, registerSecretQuestion, registerSecretAnswer);
+                        boolean isValidAccount = moduleHub.registerUser(registerUsername, registerPassword, registerSecretQuestion, registerSecretAnswer, true);
                         if (!isValidAccount) {
                         	clearConsole();
                             System.out.println("The account details you entered were invalid or the username already exists.");
