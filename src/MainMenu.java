@@ -336,7 +336,7 @@ public class MainMenu {
 	    		System.out.println("  2. Deficit Analysis");
 	    		System.out.println("  3. Surplus Analysis");
 	    		System.out.println("Controls:");
-	    		System.out.println("  4. View the predictions for another year");
+	    		System.out.println("  4. View the Predictions for another year");
 	    		System.out.println("  5. Return to Finances Menu");
 	    		System.out.println("  6. Return to Main Menu");
 	   	    	System.out.print("Please enter the number associated with your desired option: ");
