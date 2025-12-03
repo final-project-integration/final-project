@@ -134,8 +134,13 @@ public class MainMenu {
                         System.out.print("Please enter the number associated with your desired option: ");
                         int surety = getUserChoice(2);
 
-                        boolean isValidAccount = moduleHub.registerUser(registerUsername, registerPassword,
-                                registerSecretQuestion, registerSecretAnswer);
+                        boolean isValidAccount = moduleHub.registerUser(
+                                registerUsername,
+                                registerPassword,
+                                registerSecretQuestion,
+                                registerSecretAnswer,
+                                (surety == 1)   // true if user chose “Yes”
+                        );
 
                         clearConsole();
 
@@ -266,13 +271,18 @@ public class MainMenu {
                                 	if(retry1) {
 		                                if(moduleHub.loginUser(currentUser, currentPass)) {
 		                                	
-		                                    System.out.print("Please enter your new password: ");		                                    
-		                                    String newPass = scanner.nextLine();
-		                                    
-		                                    moduleHub.resetUserPassword(currentUser, newPass);
-		                                    
-		                                    clearConsole();
-		                                    System.out.println("Password successfully changed! \n");
+		                                    System.out.print("Please enter your new password: ");
+                                            String newPass = scanner.nextLine();
+
+                                            //necessary for accoutns team keep
+                                            System.out.println("For security, please answer your recovery question:");
+                                            System.out.println(moduleHub.getUserSecretQuestion(currentUser));
+                                            String secretAnswer = scanner.nextLine();
+
+                                            moduleHub.resetUserPassword(currentUser, secretAnswer, newPass);
+
+                                            clearConsole();
+                                            System.out.println("Password successfully changed! \n");
 		                                    
 		                                	break;
 		                                } else {
@@ -306,17 +316,17 @@ public class MainMenu {
                             	
                             	while(true) { 
                             		clearConsole();
-	                            	if(retry2) {	    
-	                            		
-	                            		if(moduleHub.verifyUserSecretAnswer(currentUser, answer)) {
-	                            			System.out.print("Your password has been reset. What would you like to set your new password to be? \n Password: ");                            			
-	                            			String newPass = scanner.nextLine();
-		                                    
-		                                    moduleHub.resetUserPassword(currentUser, newPass);
-		                                    System.out.println("Password successfully changed!");		                                    
-		                                    clearConsole();
-		                                    break;
-	                            		} else {
+	                            	if(retry2) {
+                                    //necessary for accoutns team keep
+                                        if (moduleHub.verifyUserSecretAnswer(currentUser, answer)) {
+                                            System.out.print("Your password has been reset. What would you like to set your new password to be? \n Password: ");
+                                            String newPass = scanner.nextLine();
+
+                                            moduleHub.resetUserPassword(currentUser, answer, newPass);
+                                            System.out.println("Password successfully changed!");
+                                            clearConsole();
+                                            break;
+                                        }else {
 	                            			System.out.println("The answer you entered is incorrect. Would you like to try again?");
 	                            			System.out.println(" 1. Yes \n 2. No");
 	                            			System.out.print("Please enter the number associated with your desired option: ");
