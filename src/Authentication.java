@@ -130,18 +130,6 @@ public class Authentication {
     public boolean isBlankField(String field) {
         return field == null || field.isBlank();
     }
-
-    /**
-     * Determines whether a username is invalid for account creation.
-     * A username is considered invalid if it is blank.
-     *
-     * @param username the username of the account
-     * @return true if the username is invalid (blank), or false otherwise
-     * @author Jessica Ramirez
-     */
-    public boolean isBlankUsername(String username) {
-        return isBlankField(username);
-    }
         
     /**
      * Hashes a plain-text string (password or secret answer) using SHA-256.
