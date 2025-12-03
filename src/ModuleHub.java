@@ -65,6 +65,50 @@ public class ModuleHub {
     private final ErrorHandler errorHandler;
 
     /**
+     * Prints a colored header with horizontal lines of a fixed width,
+     * so the colored header bars line up with the white dividers (e.g. width 70).
+     *
+     * @param title text to show in the center
+     * @param color ANSI color from BeautifulDisplay
+     * @param width total width of the header line
+     * @author Denisa Cakoni
+     */
+    private void printFixedWidthHeader(String title, String color, int width) {
+        if (title == null) {
+            title = "";
+        }
+
+        // Ensure width is at least slightly wider than the title
+        if (width < title.length() + 4) {
+            width = title.length() + 4;
+        }
+
+        // Build the top/bottom horizontal line
+        StringBuilder line = new StringBuilder();
+        for (int i = 0; i < width; i++) {
+            line.append('─');
+        }
+
+        // Center the title in a line of length `width`
+        int padding = width - title.length();
+        int left = padding / 2;
+        int right = padding - left;
+
+        StringBuilder middle = new StringBuilder();
+        for (int i = 0; i < left; i++) {
+            middle.append(' ');
+        }
+        middle.append(title);
+        for (int i = 0; i < right; i++) {
+            middle.append(' ');
+        }
+
+        System.out.println(color + line.toString() + BeautifulDisplay.RESET);
+        System.out.println(color + middle.toString() + BeautifulDisplay.RESET);
+        System.out.println(color + line.toString() + BeautifulDisplay.RESET);
+    }
+
+    /**
      * Default constructor for ModuleHub.
      * Wires together all dependent modules and prepares the integration layer.
      *
@@ -503,8 +547,10 @@ public class ModuleHub {
      * @author Denisa Cakoni-Kapil Tamang
      */
     private void printMonthlySection(int year, ArrayList<String> monthly) {
-        BeautifulDisplay.printSectionHeader("MONTHLY BREAKDOWN - " + year,
-                BeautifulDisplay.BRIGHT_MAGENTA);
+        // Colored header bar that matches width 70, just like the white divider
+        printFixedWidthHeader("MONTHLY BREAKDOWN - " + year,
+                BeautifulDisplay.BRIGHT_MAGENTA,
+                70);
 
             System.out.println("┌──────────────┬──────────────┬───────────────┬───────────────┐");
             System.out.printf("│ %-12s │ %-12s │ %-13s │ %-13s │%n",
@@ -589,11 +635,81 @@ public class ModuleHub {
      * @author Denisa Cakoni
      */
     private void printCategorySection(int year, ArrayList<String> categorySummaries) {
-        BeautifulDisplay.printSectionHeader("CATEGORY SUMMARY - " + year,
-                BeautifulDisplay.BRIGHT_YELLOW);
+        // Use our fixed-width colorful header so the lines match the white borders.
+        printFixedWidthHeader("CATEGORY SUMMARY - " + year,
+                BeautifulDisplay.BRIGHT_YELLOW, 70);
 
-        String[] categoryArray = categorySummaries.toArray(new String[0]);
-        BeautifulDisplay.printColorfulList(categoryArray, BeautifulDisplay.BRIGHT_YELLOW);
+        if (categorySummaries == null || categorySummaries.isEmpty()) {
+            System.out.println("No category data available for this year.");
+            BeautifulDisplay.printGradientDivider(70);
+            return;
+        }
+
+        // Parse "Category: $123.45" into name + amount (string)
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<String> amounts = new ArrayList<>();
+
+        for (String line : categorySummaries) {
+            if (line == null || line.trim().isEmpty()) {
+                continue;
+            }
+
+            String text = line.trim();
+            String name = text;
+            String amount = "";
+
+            int colonIndex = text.indexOf(':');
+            if (colonIndex >= 0) {
+                name = text.substring(0, colonIndex).trim();
+                amount = text.substring(colonIndex + 1).trim();
+            }
+
+            // DISPLAY ONLY:
+            // remove minus sign from things like "-$500.00" or "$-500.00"
+            amount = amount.replace("-$", "$");
+            amount = amount.replace("$-", "$");
+            if (amount.startsWith("-")) {
+                amount = amount.substring(1).trim();
+            }
+
+            names.add(name);
+            amounts.add(amount);
+        }
+
+        // Compute column widths
+        int nameWidth = "Category".length();
+        int amountWidth = "Amount".length();
+
+        for (String n : names) {
+            if (n.length() > nameWidth) {
+                nameWidth = n.length();
+            }
+        }
+        for (String a : amounts) {
+            if (a.length() > amountWidth) {
+                amountWidth = a.length();
+            }
+        }
+
+        // Build header line and borders based on its length
+        String header = String.format("│ %-3s │ %-" + nameWidth + "s │ %" + amountWidth + "s │",
+                "#", "Category", "Amount");
+        String border = "─".repeat(header.length() - 2); // minus the two side bars
+
+        String borderColor = BeautifulDisplay.BRIGHT_WHITE;
+
+        System.out.println(borderColor + "┌" + border + "┐" + BeautifulDisplay.RESET);
+        System.out.println(borderColor + header + BeautifulDisplay.RESET);
+        System.out.println(borderColor + "├" + border + "┤" + BeautifulDisplay.RESET);
+
+        // Body rows
+        for (int i = 0; i < names.size(); i++) {
+            String row = String.format("│ %3d │ %-" + nameWidth + "s │ %" + amountWidth + "s │",
+                    (i + 1), names.get(i), amounts.get(i));
+            System.out.println(borderColor + row + BeautifulDisplay.RESET);
+        }
+
+        System.out.println(borderColor + "└" + border + "┘" + BeautifulDisplay.RESET);
         BeautifulDisplay.printGradientDivider(70);
     }
 
@@ -640,8 +756,10 @@ public class ModuleHub {
                                       boolean includeBanner) {
 
         if (includeBanner) {
-            BeautifulDisplay.printSectionHeader("FINANCIAL INSIGHTS",
-                    BeautifulDisplay.BRIGHT_GREEN);
+            // Colored header with same width as dividers (70)
+            printFixedWidthHeader("FINANCIAL INSIGHTS",
+                    BeautifulDisplay.BRIGHT_GREEN,
+                    70);
         }
 
         String[] insights = {
