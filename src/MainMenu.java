@@ -149,12 +149,12 @@ public class MainMenu {
                             	clearConsole();
                                 System.out.println("The account details you entered were invalid or the username already exists.");
                                 System.out.println("Please try entering different credentials and try again.");
-                                System.out.println("Press enter when you are ready to try again...");
+                                System.out.print("Press enter when you are ready to try again...");
                                 scanner.nextLine();
                             } else {
                                 clearConsole();
                                 System.out.println("Your account has been succesffuly created.");
-                                System.out.println("Press enter when you are ready to sign in with your new credentials...");
+                                System.out.print("Press enter when you are ready to sign in with your new credentials...");
                                 scanner.nextLine();
                                 createdAccount = true;
                             }
@@ -163,7 +163,7 @@ public class MainMenu {
                             // User said "No"
                             clearConsole();
                             System.out.println("Let's try creating an account again, shall we?");
-                            System.out.println("Press enter when you are ready to try again...");
+                            System.out.print("Press enter when you are ready to try again...");
                             scanner.nextLine();
                         }
 
@@ -623,18 +623,18 @@ public class MainMenu {
                             moduleHub.logoutUser();
 
                             System.out.println("Your account has been terminated.");
-                            System.out.println("Press enter when you are ready to return to the login page...");
+                            System.out.print("Press enter when you are ready to return to the login page...");
                             scanner.nextLine();
                             // Tell main() that the user is NO LONGER logged in
                             return false;
                         } else {
                             System.out.println("Account deletion failed. Your account was not removed.");
-                            System.out.println("Press enter when you are to ready return to user settings...");
+                            System.out.print("Press enter when you are to ready return to user settings...");
                             scanner.nextLine();
                             break;  // stay logged in / in settings
                         }
                     } else {
-                        System.out.println("Press enter when you are ready to return to user settings...");
+                        System.out.print("Press enter when you are ready to return to user settings...");
                         scanner.nextLine();
                         break;
                     }
