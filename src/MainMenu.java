@@ -62,6 +62,11 @@ public class MainMenu {
         }
     }
     
+    public void moveOn() {
+    	System.out.print("Press enter when you are ready to move on...");
+    	scanner.nextLine();    
+    	}
+    
     /**
      * Handles the initial entry flow: - Ask whether the user wants to sign in or
      * create an account - Loop until we have a successful sign-in
@@ -270,18 +275,22 @@ public class MainMenu {
    	    		case 1:
    	    			clearConsole();
    	    			moduleHub.viewReport(currentUser, year, "yearly");
+   	    			moveOn();
    	    			break;	
    	    		case 2: 
    	    			clearConsole();
    	    			moduleHub.viewReport(currentUser, year, "monthly");
+   	    			moveOn();
    	    			break;
    	    		case 3:
    	    			clearConsole();
    	    			moduleHub.viewReport(currentUser, year, "category");
+   	    			moveOn();
 	        		break;
 	        	case 4:
 	        		clearConsole();
 	        		moduleHub.viewReport(currentUser, year, "full");
+	        		moveOn();
 	        		break;
 	        	case 5:
 	        		continue;
@@ -339,14 +348,17 @@ public class MainMenu {
    	    		case 1:
    	    			clearConsole();
    	    			moduleHub.runPrediction(currentUser, year, "summary");
+   	    			moveOn();
    	    			break;	
    	    		case 2: 
    	    			clearConsole();
    	    			moduleHub.runPrediction(currentUser, year, "deficit");
+   	    			moveOn();
    	    			break;
    	    		case 3: 
    	    			clearConsole();
    	    			moduleHub.runPrediction(currentUser, year, "surplus");
+   	    			moveOn();
 	        		break;
    	    		case 4:
    	    			continue;
