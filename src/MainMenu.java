@@ -512,7 +512,7 @@ public class MainMenu {
                 		if(retry2) {
                             //necessary for accounts team keep
                                 if (moduleHub.verifyUserSecretAnswer(currentUser, answer)) {
-                                	System.out.print("Your password has been reset. What would you like to set your new password to be? \n Password: ");
+                                	System.out.print("Your password has been reset. What would you like to set your new password to be? ");
                                     String newPass = scanner.nextLine();
 
                                     moduleHub.resetUserPassword(currentUser, answer, newPass);
@@ -565,7 +565,8 @@ public class MainMenu {
                              	moduleHub.updateUserSecretQuestionAndAnswer(currentUser, registerSecretQuestion,registerSecretAnswer);
 
                                 clearConsole();
-                                System.out.println("Recovery question successfully changed! \n");
+                                System.out.println("Recovery question successfully changed!");
+								System.out.prinln();
 
                              	break;
                              } 
