@@ -495,27 +495,30 @@ public class MainMenu {
                                  moduleHub.resetUserPassword(currentUser, secretAnswer, newPass);
 
                                  clearConsole();
-                                 System.out.println("Password successfully changed! \n");
+                                 System.out.println("Password successfully changed!");
                             	break;
                             } else {
                                   System.out.println("The password you entered is incorrect. Would you like to try again?");
-                                  System.out.println(" 1. Yes \n 2. No");
+                                  System.out.println("  1. Yes");
+                                  System.out.println("  2. No");
                                   System.out.print("Please enter the number associated with your desired option: ");
-
-                                 int newChoice = getUserChoice(2);
-                                 clearConsole();
-                                 switch (newChoice) {
-                                 	case 1:
-                                 		System.out.print("Please enter your current password: ");
-                                 		currentPass = scanner.nextLine();
-
-                                 		continue;
-                                 	case 2:
-                                 		retry1 = false;
-                                 		break;
-                                 }
-                            }
-                    	} else { break; }
+                                  int newChoice = getUserChoice(2);
+                                 
+                                  clearConsole();
+                                  switch (newChoice) {
+                                  case 1:
+                                	  System.out.print("Please enter your current password: ");
+                                	  currentPass = scanner.nextLine();
+                                	  continue;
+                                  case 2:
+                                	  retry1 = false;
+                                	  break;
+                                	  }
+                                  }
+                            } 
+                    	else { 
+                    		break; 
+                    		}
                     }
                     continue;
 
@@ -531,7 +534,7 @@ public class MainMenu {
                 		if(retry2) {
                             //necessary for accounts team keep
                                 if (moduleHub.verifyUserSecretAnswer(currentUser, answer)) {
-                                    System.out.print("Your password has been reset. What would you like to set your new password to be? \n Password: ");
+                                	System.out.print("Your password has been reset. What would you like to set your new password to be? \n Password: ");
                                     String newPass = scanner.nextLine();
 
                                     moduleHub.resetUserPassword(currentUser, answer, newPass);
@@ -540,7 +543,8 @@ public class MainMenu {
                                     break;
                                 }else {
                     			System.out.println("The answer you entered is incorrect. Would you like to try again?");
-                    			System.out.println(" 1. Yes \n 2. No");
+                    			System.out.println("  1. Yes");
+                    			System.out.println("  2. No");
                     			System.out.print("Please enter the number associated with your desired option: ");
 
                     			int choice = getUserChoice(2);
@@ -554,11 +558,13 @@ public class MainMenu {
                                 		retry2 = false;
                                 		break;
                                 }
-                    		}
+                            }
 
-                    	} else { break; }
+                    	} 
+                		else{ 
+                			break; 
+                		}
                 	}
-
                 	continue;
 
                 case 3:
@@ -584,14 +590,16 @@ public class MainMenu {
                                 System.out.println("Recovery question successfully changed! \n");
 
                              	break;
-                             } else {
-                                   System.out.println("The password you entered is incorrect. Would you like to try again?");
-                                   System.out.println(" 1. Yes \n 2. No");
-                                  System.out.print("Please enter the number associated with your desired option: ");
-                                  int newChoice = getUserChoice(2);
+                             } 
+                             else {
+                            	 System.out.println("The password you entered is incorrect. Would you like to try again?");
+                            	 System.out.println("  1. Yes");
+                            	 System.out.println("  2. No");
+                            	 System.out.print("Please enter the number associated with your desired option: ");
+                            	 int newChoice = getUserChoice(2);
                                   
-                                  clearConsole();
-                                  switch (newChoice) {
+                            	 clearConsole();
+                            	 switch (newChoice) {
                                   	case 1:
                                   		System.out.print("Please enter your current password: ");
                                   		currentPassword = scanner.nextLine();
@@ -602,9 +610,13 @@ public class MainMenu {
                                   		break;
                                   }
                              }
-                     	} else { break; }
+                     	} 
+                     	else { 
+                     		break; 
+                     	}
                      }
                      continue;
+                     
                 case 4:
                     clearConsole();
                     System.out.println("Are you sure you want to delete this account: " + currentUser + "? ");
