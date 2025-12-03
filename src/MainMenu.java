@@ -442,7 +442,7 @@ public class MainMenu {
         System.out.println("Settings:");
         System.out.println("  1. Change Password");
         System.out.println("  2. Reset Password");
-        System.out.println("  3. Reset Secret Question and Answer (unfinished)");
+        System.out.println("  3. Reset Secret Question and Answer");
         System.out.println("  4. Delete Account");
         System.out.println("  5. Return to Main Menu");
         System.out.println("Please enter the number associated with your desired option: ");
