@@ -35,13 +35,13 @@ public class Accounts {
 
     /**
      * Registers a new user account with early validation and secure data handling.
-     * This method performs validation before creating an account:
+     * This method performs step by step validation before creating an account:
      * Rejects the username immediately if is already taken
      * Rejects the username if it contains any non-alphanumeric characters
      * Rejects the password, secret question, or secret answer if any are blank.
      * If all validation passes, the password and secret answer are hashed
      * using SHA-256 and stored inside a new AuthRecord object. The record is then
-     * saved to storage.
+     * saved to persistent storage.
      *
      * @param username the new user's username
      * @param password the chosen password
@@ -56,13 +56,9 @@ public class Accounts {
    
    public boolean registerAccount(String username, String password, String secretQuestion, String secretAnswer, boolean confirm) {
 
-	   // Username cannot be blank
-       if (authenticator.isBlankUsername(username)) {
-           return false;
-       }
-
        // Username formatting must be valid (must: be non-null, 
-       // contain only alphanumeric characters, no blank spaces, and at least 3 characters long
+       // contain only alphanumeric characters, no blank spaces, and 3 to 20 chars long
+	  
        if (authenticator.isInvalidUsernameFormat(username)) {
            return false;
        }
@@ -107,7 +103,7 @@ public class Accounts {
      * Rejects blank usernames or passwords.
      * Rejects improperly formatted usernames (non-alphanumeric characters,
      * blank spaces, or fewer than 3 characters)
-     * Rejects improperly formatted passwords (blanks, whitespace, or fewer 
+     * Rejects improperly formatted passwords (blank, whitespace, or fewer 
      * than the minimum required length).
      * Validates the credentials by comparing the stored hashed password with 
      * the hash of the provided password.
@@ -121,6 +117,11 @@ public class Accounts {
      */
    
    public boolean signIn(String username, String password) {
+	   
+	   // Trim username only for login (prevents accidental trailing spaces)
+	   if (username != null) {
+	        username = username.trim();
+	    }
 	   
 	   // Username and password must not be blank.
 	   if (authenticator.isBlankField(username) || authenticator.isBlankField(password)) {
@@ -165,7 +166,7 @@ public class Accounts {
     /**
      * Change the user’s password after: verifying the old password, checking
      * if the user is signed in, ensuring the username matches the logged-in user, 
-     * proper format entered, and the old password is correct. 
+     * and the old password is correct. 
      * 
      * @param username the username of the account
      * @param oldPassword the current password
@@ -185,6 +186,7 @@ public class Accounts {
            return false;
        }
      
+
        // Validate new password formatting
        if (authenticator.isInvalidPasswordFormat(newPassword)) {
            return false;
