@@ -445,7 +445,7 @@ public class MainMenu {
         System.out.println("  3. Reset Secret Question and Answer");
         System.out.println("  4. Delete Account");
         System.out.println("  5. Return to Main Menu");
-        System.out.println("Please enter the number associated with your desired option: ");
+        System.out.print("Please enter the number associated with your desired option: ");
         int settingsChoice = getUserChoice(5);
         
         boolean inSettings = true;
