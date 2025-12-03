@@ -129,39 +129,38 @@ public class MainMenu {
                         String registerSecretAnswer = scanner.nextLine();
                         
                         clearConsole();
-                        System.out.println("Are you sure about your username, password, recovery question, and recovery question answer for your new account? ");
+                        System.out.println("Confirm account creation with this username, password, recovery question, and recovery question answer? ");
                         System.out.println(" 1. Yes");
                         System.out.println(" 2. No");
                         System.out.print("Please enter the number associated with your desired option: ");
+
                         int surety = getUserChoice(2);
 
-                        System.out.print("Confirm account creation? (Y/N): ");
-                        String confirmInput = scanner.nextLine().trim().toLowerCase();
-                        boolean registerConfirm =
-                                confirmInput.equals("y") || confirmInput.equals("yes");
+                        if (surety == 1) {
+                            // User confirmed → proceed with registration
+                            boolean isValidAccount = moduleHub.registerUser(
+                                    registerUsername,
+                                    registerPassword,
+                                    registerSecretQuestion,
+                                    registerSecretAnswer,
+                                    true
+                            );
 
-                        boolean isValidAccount = moduleHub.registerUser(
-                                registerUsername,
-                                registerPassword,
-                                registerSecretQuestion,
-                                registerSecretAnswer,
-                                registerConfirm
-                        );
+                            if (!isValidAccount) {
+                                System.out.println("The account details you entered were invalid or the username already exists.");
+                                System.out.println("Please try entering different credentials and try again.");
+                            } else {
+                                clearConsole();
+                                System.out.println("Your account has been created. Please sign in with your new credentials.");
+                                createdAccount = true;
+                            }
 
-                        if (!isValidAccount) {
-                        	clearConsole();
-                            System.out.println("The account details you entered were invalid or the username already exists.");
-                            System.out.println("Please try entering different credentials and try again.");
-                        } 
-                        else if (isValidAccount && (surety == 1)) {
+                        } else {
+                            // User said "No"
                             clearConsole();
-                            System.out.println("Your account has been created. Please sign in with your new credentials.");
-                            createdAccount = true;
-                        }  
-                        else {
-                        	clearConsole();
-                        	System.out.println("Let's try that again, shall we?");
+                            System.out.println("Let's try that again, shall we?");
                         }
+
                     }
                     continue;// After successful registration, loop back and show the Sign In / Create menu again
             }
