@@ -263,64 +263,53 @@ public class MainMenu {
    			int year = getUserYear();
    			
    			boolean isWorkingWithYear = true;
-   			clearConsole();
-   			System.out.println("What kind of information would you like about data from " + year + "?");
-   			System.out.println("Available Reports for " + year +":");
-    		System.out.println("  1. Yearly Summary");
-    		System.out.println("  2. Month Breakdown");
-    		System.out.println("  3. Category Analysis");
-    		System.out.println("  4. Full Report");
-    		System.out.println("  5. Enter a different year");
-    		System.out.println("  6. Back to Finances Menu");
-   	    	System.out.println("  7. Return to Main Menu");
-   	    	System.out.print("Please enter the number associated with your desired option: ");
-   	    	int userChoice = getUserChoice(7);
-   			
-   	    	switch (userChoice) {
-   	    		case 1:
-   	    			clearConsole();
-   	    			moduleHub.viewReport(currentUser, year, "yearly");
-   	    			moveOn();
-   	    			break;	
-   	    		case 2: 
-   	    			clearConsole();
-   	    			moduleHub.viewReport(currentUser, year, "monthly");
-   	    			moveOn();
-   	    			break;
-   	    		case 3:
-   	    			clearConsole();
-   	    			moduleHub.viewReport(currentUser, year, "category");
-   	    			moveOn();
-	        		break;
-	        	case 4:
-	        		clearConsole();
-	        		moduleHub.viewReport(currentUser, year, "full");
-	        		moveOn();
-	        		break;
-	        	case 5:
-	        		continue;
-	        	case 6:
-	        		return false;
-	        	case 7:
-	        		return true;
+   			int userChoice;
+   			while (isWorkingWithYear) {
+	   			clearConsole();
+	   			System.out.println("What kind of information would you like about data from " + year + "?");
+	   			System.out.println("Available Reports for " + year +":");
+	    		System.out.println("  1. Yearly Summary");
+	    		System.out.println("  2. Month Breakdown");
+	    		System.out.println("  3. Category Analysis");
+	    		System.out.println("  4. Full Report");
+	    		System.out.println("Controls:");
+	    		System.out.println("  5. View the Reports for another year");
+	    		System.out.println("  6. Return to Finances Menu");
+	    		System.out.println("  7. Return to Main Menu");
+	   	    	System.out.print("Please enter the number associated with your desired option: ");
+	   	    	userChoice = getUserChoice(7);
+	   			
+	   	    	switch (userChoice) {
+	   	    		case 1:
+	   	    			clearConsole();
+	   	    			moduleHub.viewReport(currentUser, year, "yearly");
+	   	    			moveOn();
+	   	    			break;	
+	   	    		case 2: 
+	   	    			clearConsole();
+	   	    			moduleHub.viewReport(currentUser, year, "monthly");
+	   	    			moveOn();
+	   	    			break;
+	   	    		case 3:
+	   	    			clearConsole();
+	   	    			moduleHub.viewReport(currentUser, year, "category");
+	   	    			moveOn();
+		        		break;
+		        	case 4:
+		        		clearConsole();
+		        		moduleHub.viewReport(currentUser, year, "full");
+		        		moveOn();
+		        		break;
+		        	case 5:
+		        		isWorkingWithYear = false;
+		        		break;
+		        	case 6: 
+	   	    			return false; 
+	   	    		case 7:
+	   	    			return true;
+   	    		}
    	    	}
 
-   	    	clearConsole();
- 			System.out.println("What would you like to do next?");
-   			System.out.println("  1. View Reports for another year");
-   			System.out.println("  2. Back to Finances Menu");
-   			System.out.println("  3. Back to Main Menu");
-   			System.out.print("Please enter the number associated with your desired option: ");
-   			userChoice = getUserChoice(3);
-   			
-   	    	switch (userChoice) {
-   	    		case 1: 
-   	    			continue;
-   	    		case 2: 
-   	    			return false; 
-   	    		case 3:
-   	    			return true;
-   	    	}
     	}
     }
     
@@ -337,58 +326,47 @@ public class MainMenu {
    	    	System.out.print("Please enter the year you would like predictions about: ");
    			int year = getUserYear();
    			
-    		clearConsole();
-   			System.out.println("What kind of Predictions would you like about the data from " + year + "?");
-   			System.out.println("Available Predictions for " + year + ":");
-    		System.out.println("  1. Summary Report");
-    		System.out.println("  2. Deficit Analysis");
-    		System.out.println("  3. Surplus Analysis");
-    		System.out.println("  4. Enter a different year");
-    		System.out.println("  5. Back to Finances Menu");
-   	    	System.out.println("  6. Return to Main Menu");
-   	    	System.out.print("Please enter the number associated with your desired option: ");
-   	    	int userChoice = getUserChoice(6);
-   			
-   	    	switch (userChoice) {
-   	    		case 1:
-   	    			clearConsole();
-   	    			moduleHub.runPrediction(currentUser, year, "summary");
-   	    			moveOn();
-   	    			break;	
-   	    		case 2: 
-   	    			clearConsole();
-   	    			moduleHub.runPrediction(currentUser, year, "deficit");
-   	    			moveOn();
-   	    			break;
-   	    		case 3: 
-   	    			clearConsole();
-   	    			moduleHub.runPrediction(currentUser, year, "surplus");
-   	    			moveOn();
-	        		break;
-   	    		case 4:
-   	    			continue;
-   	    		case 5:
-   	    			return false;
-   	    		case 6:
-   	    			return true;
-   	    	}
-   	    	
-   	    	clearConsole();
- 			System.out.println("What would you like to do next?");
-   			System.out.println("  1. View Predictions for another year");
-   			System.out.println("  2. Back to Finances Menu");
-   			System.out.println("  3. Back to Main Menu");
-   			System.out.print("Please enter the number associated with your desired option: ");
-   			userChoice = getUserChoice(3);
-   	    	
-   			switch (userChoice) {
-   	    		case 1: 
-   	    			continue;
-   	    		case 2: 
-   	    			return false; 
-   	    		case 3:
-   	    			return true;
-   	    	}
+   			boolean isWorkingWithYear = true;
+   			int userChoice;
+   			while (isWorkingWithYear) {
+	    		clearConsole();
+	   			System.out.println("What kind of Predictions would you like about the data from " + year + "?");
+	   			System.out.println("Available Predictions for " + year + ":");
+	    		System.out.println("  1. Summary Report");
+	    		System.out.println("  2. Deficit Analysis");
+	    		System.out.println("  3. Surplus Analysis");
+	    		System.out.println("Controls:");
+	    		System.out.println("  4. View the predictions for another year");
+	    		System.out.println("  5. Return to Finances Menu");
+	    		System.out.println("  6. Return to Main Menu");
+	   	    	System.out.print("Please enter the number associated with your desired option: ");
+	   	    	userChoice = getUserChoice(6);
+	   			
+	   	    	switch (userChoice) {
+	   	    		case 1:
+	   	    			clearConsole();
+	   	    			moduleHub.runPrediction(currentUser, year, "summary");
+	   	    			moveOn();
+	   	    			break;	
+	   	    		case 2: 
+	   	    			clearConsole();
+	   	    			moduleHub.runPrediction(currentUser, year, "deficit");
+	   	    			moveOn();
+	   	    			break;
+	   	    		case 3: 
+	   	    			clearConsole();
+	   	    			moduleHub.runPrediction(currentUser, year, "surplus");
+	   	    			moveOn();
+		        		break;
+	   	    		case 4:
+	   	    			isWorkingWithYear = false;
+		        		break;
+	   	    		case 5: 
+	   	    			return false; 
+	   	    		case 6:
+	   	    			return true;
+	   	    	}
+   			}
     	}
     }
     
@@ -402,8 +380,8 @@ public class MainMenu {
         	clearConsole();
             System.out.println("Data Management Menu: ");
             System.out.println("  1. Delete CSV file");
-            System.out.println("  2. Back to Finances Menu");
-            System.out.println("  3. Back to Main Menu");
+            System.out.println("  2. Return to Finances Menu");
+            System.out.println("  3. Return to Main Menu");
             System.out.print("Please enter the number associated with your desired option: ");
             int userChoice = getUserChoice(3);
             
