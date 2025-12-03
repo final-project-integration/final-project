@@ -208,7 +208,7 @@ public class MainMenu {
     	     System.out.println("  2. Reports");
     	     System.out.println("  3. Predictions");
     	     System.out.println("  4. Data Management");
-    	     System.out.println("  5. Back to Main Menu");
+    	     System.out.println("  5. Return to Main Menu");
     	     System.out.print("Please enter the number associated with your desired option: ");
   	        int userChoice = getUserChoice(5);
   	        
