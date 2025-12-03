@@ -133,7 +133,6 @@ public class MainMenu {
                         System.out.println(" 1. Yes");
                         System.out.println(" 2. No");
                         System.out.print("Please enter the number associated with your desired option: ");
-
                         int surety = getUserChoice(2);
 
                         if (surety == 1) {
@@ -147,18 +146,25 @@ public class MainMenu {
                             );
 
                             if (!isValidAccount) {
+                            	clearConsole();
                                 System.out.println("The account details you entered were invalid or the username already exists.");
                                 System.out.println("Please try entering different credentials and try again.");
+                                System.out.println("Press enter when you are ready to try again...");
+                                scanner.nextLine();
                             } else {
                                 clearConsole();
-                                System.out.println("Your account has been created. Please sign in with your new credentials.");
+                                System.out.println("Your account has been succesffuly created.");
+                                System.out.println("Press enter when you are ready to sign in with your new credentials...");
+                                scanner.nextLine();
                                 createdAccount = true;
                             }
 
                         } else {
                             // User said "No"
                             clearConsole();
-                            System.out.println("Let's try that again, shall we?");
+                            System.out.println("Let's try creating an account again, shall we?");
+                            System.out.println("Press enter when you are ready to try again...");
+                            scanner.nextLine();
                         }
 
                     }
@@ -481,7 +487,7 @@ public class MainMenu {
                             	 System.out.print("Please enter your new password: ");
                                  String newPass = scanner.nextLine();
 
-                                 //necessary for accoutns team keep
+                                 //necessary for accounts team keep
                                  System.out.println("For security, please answer your recovery question:");
                                  System.out.println(moduleHub.getUserSecretQuestion(currentUser));
                                  String secretAnswer = scanner.nextLine();
@@ -582,8 +588,8 @@ public class MainMenu {
                                    System.out.println("The password you entered is incorrect. Would you like to try again?");
                                    System.out.println(" 1. Yes \n 2. No");
                                   System.out.print("Please enter the number associated with your desired option: ");
-
                                   int newChoice = getUserChoice(2);
+                                  
                                   clearConsole();
                                   switch (newChoice) {
                                   	case 1:
@@ -617,16 +623,19 @@ public class MainMenu {
                             moduleHub.logoutUser();
 
                             System.out.println("Your account has been terminated.");
-                            System.out.println("You are being returned to the login page.");
+                            System.out.println("Press enter when you are ready to return to the login page...");
+                            scanner.nextLine();
                             // Tell main() that the user is NO LONGER logged in
                             return false;
                         } else {
                             System.out.println("Account deletion failed. Your account was not removed.");
-                            System.out.println("Returning to user settings.");
+                            System.out.println("Press enter when you are to ready return to user settings...");
+                            scanner.nextLine();
                             break;  // stay logged in / in settings
                         }
                     } else {
-                        System.out.println("Returning to user settings.");
+                        System.out.println("Press enter when you are ready to return to user settings...");
+                        scanner.nextLine();
                         break;
                     }
 
