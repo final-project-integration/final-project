@@ -459,9 +459,9 @@ public class MainMenu {
                 case 1:
                 	clearConsole();
                 	System.out.println("Currently signed in as: " + currentUser);
-                    System.out.print("Before changing your password, please enter your current password: ");                              
+                    System.out.print("Before changing your password, please enter your current password: ");
                     String currentPass = scanner.nextLine();
-                    
+
                     boolean retry1 = true;
                     while(true) {
                     	clearConsole();
@@ -489,10 +489,10 @@ public class MainMenu {
                                  clearConsole();
                                  switch (newChoice) {
                                  	case 1:
-                                 		System.out.print("Please enter your current password: ");  
+                                 		System.out.print("Please enter your current password: ");
                                  		currentPass = scanner.nextLine();
-                                 		
-                                 		continue;                                 	
+
+                                 		continue;
                                  	case 2:
                                  		retry1 = false;
                                  		break;
@@ -501,15 +501,15 @@ public class MainMenu {
                     	} else { break; }
                     }
                     continue;
-                                                
+
                 case 2:
-                	System.out.println("To reset your password, please answer the following question:");                          	
+                	System.out.println("To reset your password, please answer the following question:");
                 	System.out.println(moduleHub.getUserSecretQuestion(currentUser));
-                	
+
                 	String answer = scanner.nextLine();
                 	boolean retry2 = true;
-                	
-                	while(true) { 
+
+                	while(true) {
                 		clearConsole();
                 		if(retry2) {
                             //necessary for accounts team keep
@@ -525,32 +525,32 @@ public class MainMenu {
                     			System.out.println("The answer you entered is incorrect. Would you like to try again?");
                     			System.out.println(" 1. Yes \n 2. No");
                     			System.out.print("Please enter the number associated with your desired option: ");
-                    			
+
                     			int choice = getUserChoice(2);
                     			clearConsole();
                                 switch (choice) {
                                 	case 1:
-                                		System.out.println(moduleHub.getUserSecretQuestion(currentUser));  
+                                		System.out.println(moduleHub.getUserSecretQuestion(currentUser));
                                  		currentPass = scanner.nextLine();
-                                 		continue;                                 	
+                                 		continue;
                                 	case 2:
                                 		retry2 = false;
                                 		break;
                                 }
                     		}
-                    		
-                    	} else { break; }	                                                       	
+
+                    	} else { break; }
                 	}
-                	
+
                 	continue;
-                    
+
                 case 3:
-                	System.out.print("To reset your recovery question, please enter your password: ");    
-                	
+                	System.out.print("To reset your recovery question, please enter your password: ");
+
                 	 String currentPassword = scanner.nextLine();
-                     
+
                      boolean retry3 = true;
-                     
+
                      while(true) {
                      	clearConsole();
                      	if(retry3) {
@@ -559,13 +559,13 @@ public class MainMenu {
                              	String registerSecretQuestion = scanner.nextLine();
                              	System.out.print("What would you like your recovery question answer to be? ");
                              	String registerSecretAnswer = scanner.nextLine();
-                                 
+
                              	// TODO: Add a method in moduleHub to set the user's secret question and answer
                              	moduleHub.updateUserSecretQuestionAndAnswer(currentUser, registerSecretQuestion,registerSecretAnswer);
-                                 
+
                                 clearConsole();
                                 System.out.println("Recovery question successfully changed! \n");
-                                 
+
                              	break;
                              } else {
                                    System.out.println("The password you entered is incorrect. Would you like to try again?");
@@ -576,10 +576,10 @@ public class MainMenu {
                                   clearConsole();
                                   switch (newChoice) {
                                   	case 1:
-                                  		System.out.print("Please enter your current password: ");  
+                                  		System.out.print("Please enter your current password: ");
                                   		currentPassword = scanner.nextLine();
-                                  		
-                                  		continue;                                 	
+
+                                  		continue;
                                   	case 2:
                                   		retry3 = false;
                                   		break;
@@ -588,27 +588,37 @@ public class MainMenu {
                      	} else { break; }
                      }
                      continue;
-                    
                 case 4:
-                	clearConsole();
-                    System.out.println("Are you sure you want to delete this account: "+ currentUser + "? ");
-                    System.out.println(" 1. Yes");
-                    System.out.println(" 2. No");
+                    clearConsole();
+                    System.out.println("Are you sure you want to delete this account: " + currentUser + "? ");
+                    System.out.println("  1. Yes");
+                    System.out.println("  2. No");
                     System.out.print("Please enter the number associated with your desired option: ");
                     int sureDelAccount = getUserChoice(2);
-                    
+
                     clearConsole();
                     if (sureDelAccount == 1) {
-                    	clearConsole();
-                        moduleHub.callAccounts("deleteaccount", currentUser);
-                        System.out.println("Your account has been terminated.");
-                        System.out.println("You are being returned to the login page(coming soon for beta).");
-                    } 
-                    else {
-                    	clearConsole();
+                        // Ask ModuleHub / Accounts to delete the user
+                        boolean deleted = moduleHub.callAccounts("deleteaccount", currentUser);
+
+                        if (deleted) {
+                            // Also log out this user so the session is gone
+                            moduleHub.logoutUser();
+
+                            System.out.println("Your account has been terminated.");
+                            System.out.println("You are being returned to the login page.");
+                            // Tell main() that the user is NO LONGER logged in
+                            return false;
+                        } else {
+                            System.out.println("Account deletion failed. Your account was not removed.");
+                            System.out.println("Returning to user settings.");
+                            break;  // stay logged in / in settings
+                        }
+                    } else {
                         System.out.println("Returning to user settings.");
                         break;
                     }
+
                 case 5:
                     inSettings = false;
                     break;
