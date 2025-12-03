@@ -24,6 +24,7 @@ public class Storage {
      * A map storing all authentication records, where each key is a username 
      * and each value is the corresponding AuthRecord.
      */
+	
     private Map<String, Authentication.AuthRecord> authData = new HashMap<>();
     private static final String FILE_NAME = "auth_data.csv";
     
@@ -39,15 +40,21 @@ public class Storage {
     }
 
     /**
-     * Adds or updates the authentication record for a specific username.
+     * Adds or updates the authentication record for the given username and saves
+     * the updated authentication database to disk. This method attempts to persist
+     * the new state by calling saveToFile(), and returns whether the save operation
+     * worked.
      *
      * @param username the username associated with the record
      * @param rec the AuthRecord to store or overwrite
-     * @author Zhengjun Xie
+     * @return true if the record was stored and successfully saved to disk, 
+     * or false if a file write error occurred
+     * @author Jessica Ramirez
      */
-    public void addAuthRecord(String username, Authentication.AuthRecord rec) {
+	
+    public boolean addAuthRecord(String username, Authentication.AuthRecord rec) {
         authData.put(username, rec);
-        saveToFile();
+        return saveToFile();
     }
 
     /**
@@ -68,10 +75,12 @@ public class Storage {
      * @param username the username whose authentication record should be deleted
      * @author Zhengjun Xie
      */
-    public void removeAccount(String username) {
-        authData.remove(username);
-        saveToFile();
+	
+    public boolean removeAccount(String username) {
+    	authData.remove(username);
+        return saveToFile();
     }
+
 
     /**
      * Returns a shallow copy of the authentication record map.
@@ -79,43 +88,51 @@ public class Storage {
      * @return a new Map containing all username to AuthRecord entries
      * @author Zhengjun Xie
      */
-
+	
     public Map<String, Authentication.AuthRecord> loadAllAuthRecords() {
         return new HashMap<>(authData);
     }
 
 
-/** Saves all authentication records to a CSV file
- * Has 4 columns: username, hashedPassword, secretQuestions, hashedSecretAnswer
- * @author Jessica Ramirez */
-    private void saveToFile() {
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
-
-        // CSV HEADER (optional)
-        writer.write("username,hashedPassword,secretQuestion,hashedSecretAnswer");
-        writer.newLine();
-
-        for (String username : authData.keySet()) {
-            Authentication.AuthRecord rec = authData.get(username);
-
-            // Escape commas in secret question (if they exist)
-            String question = rec.getSecretQuestion().replace(",", "\\,");
-            
-            writer.write(username + "," +
-                         rec.getHashedPassword() + "," +
-                         question + "," +
-                         rec.getHashedSecretAnswer());
+    /** 
+     * Saves all authentication records to a CSV file
+     * Has 4 columns: username, hashedPassword, secretQuestions, hashedSecretAnswer.
+     * This method attempts to write all user records to the storage file so that 
+     * account data is kept between program sessions. If any error occurs while writing 
+     * to the file, the method returns false.
+     * @return true if all records were successfully written to the file, or false if an error occurred 
+     * during saving
+     * @author Jessica Ramirez 
+     */
+    
+    private boolean saveToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
+            writer.write("username,hashedPassword,secretQuestion,hashedSecretAnswer");
             writer.newLine();
+
+            for (String username:authData.keySet()) {
+                Authentication.AuthRecord rec = authData.get(username);
+                String question = rec.getSecretQuestion().replace(",", "\\,");
+
+                writer.write(username + "," + rec.getHashedPassword() + "," 
+                + question + "," + rec.getHashedSecretAnswer());
+                writer.newLine();
+            }
+
+            return true; // success
+
+        } catch (Exception e) {
+            System.out.println("Error saving auth data: " + e.getMessage());
+            return false; // fail
         }
-
-    } catch (Exception e) {
-        System.out.println("Error saving auth data: " + e.getMessage());
     }
-}
 
-	/** Loads authentication records from the CSV file 
+
+	/** 
+	 * Loads authentication records from the CSV file 
 	 * Rebuilds all AuthRecord objects and restores them into the authData map
-	 * @author Jessica Ramirez */
+	 * @author Jessica Ramirez
+	 */
     
     private void loadFromFile() {
     File file = new File(FILE_NAME);
@@ -154,5 +171,3 @@ public class Storage {
     }
 }
 }
-
-
