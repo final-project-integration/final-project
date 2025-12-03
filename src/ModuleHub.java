@@ -1072,29 +1072,41 @@ public class ModuleHub {
         }
     }
 
-    /**
-     * Registers a new user account using the Accounts module.
-     * This method forwards all data and reports any failure back to the console.
+      /**
+     * Registers a new user account by delegating to the Accounts module.
+     * This wrapper:
+     * forwards all user-centered fields,
+     * passes along the caller's confirmation flag,
+     * and reports any failure back to the console.
      *
      * @param username       the desired username
      * @param password       the chosen password
      * @param secretQuestion the selected secret question for account recovery
      * @param secretAnswer   the answer to the secret question
-     * @return true if registration succeeds, false otherwise
+     * @param confirm        true if registration is confirmed, false otherwise
+     * @return true if the account was created and saved successfully; false if
+     * validation fails, the username is taken, the user cancels, or saving fails
      *
      * @author Denisa Cakoni
      */
     public boolean registerUser(String username,
                                 String password,
                                 String secretQuestion,
-                                String secretAnswer) {
+                                String secretAnswer,
+                                boolean confirm) {
         try {
             boolean ok = accountsModule.registerAccount(
-                    username, password, secretQuestion, secretAnswer);
+                    username, password, secretQuestion, secretAnswer, confirm
+            );
+
             if (!ok) {
-                System.out.println("[ModuleHub] Registration failed: invalid data or username already exists.");
+                System.out.println(
+                        "[ModuleHub] Registration failed: invalid data, duplicate username, or user cancelled."
+                );
             }
+
             return ok;
+
         } catch (Exception e) {
             errorHandler.handleModuleError("Accounts", e);
             return false;
@@ -1190,17 +1202,23 @@ public class ModuleHub {
      * Resets a user's password to a new value using the Accounts module.
      * Any failure is reported through the console.
      *
-     * @param username    the username whose password should be reset
-     * @param newPassword the new password to set
-     * @return true if the password reset succeeds, false otherwise
+     * @param username     the username of the account being recovered
+     * @param secretAnswer the plain-text secret answer entered by the user
+     * @param newPassword  the new password the user wishes to set
+     * @return true if the secret answer is correct, the new password is valid,
+     *         and the update is saved successfully; false otherwise
      *
      * @author Denisa Cakoni
      */
-    public boolean resetUserPassword(String username, String newPassword) {
+    public boolean resetUserPassword(String username,
+                                     String secretAnswer,
+                                     String newPassword) {
         try {
-            boolean ok = accountsModule.resetPassword(username, newPassword);
+            boolean ok = accountsModule.resetPassword(username, secretAnswer, newPassword);
             if (!ok) {
-                System.out.println("[ModuleHub] Password reset failed (user may not exist).");
+                System.out.println(
+                        "[ModuleHub] Password reset failed: invalid secret answer, invalid password, or user may not exist."
+                );
             }
             return ok;
         } catch (Exception e) {
