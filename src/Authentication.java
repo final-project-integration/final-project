@@ -14,6 +14,7 @@ import java.security.MessageDigest;
  * @since   2025-11-19
  *  */
 
+
 public class Authentication {
 
     private Storage storage;
@@ -77,6 +78,7 @@ public class Authentication {
      * @return true if the username exists, or false otherwise
      * @author Zhengjun Xie
      */
+
     
     public boolean checkUsername(String username) {
         return storage.getAuthInfo(username) != null;
@@ -106,6 +108,7 @@ public class Authentication {
      * @return the stored secret question, or null if the user DNE
      * @author Zhengjun Xie
      */
+
     
     public String getSecretQuestion(String username) {
         AuthRecord rec = storage.getAuthInfo(username);
@@ -170,7 +173,8 @@ public class Authentication {
      *
      * @author Zhengjun Xie
      */
-  
+
+    
     public static class AuthRecord {
         private String hashedPassword;
         private String secretQuestion;
@@ -214,7 +218,8 @@ public class Authentication {
      * @return true if credentials are invalid; false otherwise
      * @author Jessica Ramirez
      */
-    
+
+
     public boolean checkInvalidCredentials(String username, String password) {
     return !validateCredentials(username, password);
     }
@@ -229,6 +234,7 @@ public class Authentication {
      * @author Jessica Ramirez
      */
 
+
     public boolean isDuplicateUsername(String username) {
         return checkUsername(username);
     }
@@ -242,7 +248,6 @@ public class Authentication {
      * @return true if formatting is invalid,or false otherwise
      * @author Jessica Ramirez
      */
-    
     public boolean isInvalidUsernameFormat(String username) {
         if (username == null) return true;
 
@@ -257,6 +262,9 @@ public class Authentication {
 
         // Minimum length
         if (username.length() < 3) return true;
+        
+       // Max length check
+        if (username.length() > 20) return true;
 
         return false;
     }
@@ -282,10 +290,15 @@ public class Authentication {
 
         // Minimum length 
         if (password.length() < 5) return true;
+        
+        // Max length check (allow long passwords)
+        if (password.length() > 30) return true;
 
         return false;
     }
-  
+
+
+    
     /**
      * Checks whether required login or registration fields are empty.
      *
@@ -294,6 +307,7 @@ public class Authentication {
      * @return true if any required field is missing, or false otherwise
      * @author Jessica Ramirez
      */
+
 
     public boolean checkIncompleteForm(String username, String password) {
         if (username == null || username.trim().isEmpty()) 
