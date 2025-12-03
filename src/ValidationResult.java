@@ -1,5 +1,3 @@
-// package validation;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,10 +36,12 @@ public class ValidationResult {
             return severity;
         }
 
+        @SuppressWarnings("unused")
         public String getMessage() {
             return message;
         }
 
+        @SuppressWarnings("unused")
         public LocalDateTime getTimestamp() {
             return timestamp;
         }
