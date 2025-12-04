@@ -13,38 +13,46 @@ import java.io.File;
  * @author Aaron Madou
  */
 public class MainMenu {
+	/**
+	 * Creates a scanner that is used to handle all of the user input that is taken in and used by the program
+	 */
     private final Scanner scanner = new Scanner(System.in);
     
     /**
-    Single integration point to the rest of the system
-    */
+     * Connects the MainMenu to the rest of the functions from the accounts, reports, prediction, validation, and storage teams
+     */
     private final ModuleHub moduleHub;
     
     /**
-     * Default constructor for MainMenu. Wires in a new ModuleHub instance.
+     * Default constructor for MainMenu. Creates a new ModuleHub instance.
      */
     public MainMenu() {
         moduleHub = new ModuleHub();
     }
 
     /**
-     * Clears all text from the console screen.
-     * Provides a clean display for new menu or information screens.
-     *
-     * NOTE: ONLY WORKS IN THE TERMINAL CONSOLE, NOT ECLIPSE.
+     * Only creates a new line when the program is being run in the eclipse console
+     * Clears all everything when the program is being run in the terminal
+     * Provides a clean display for new menu or information screens
+     * 
+     * @author Aaron Madou
      */
     public void clearConsole() {
-        // Clear console screen when running in terminal and handle whitespace between "pages" when running in console
     	System.out.println();
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }
 
     /**
-     * Gets the user's choice of where they want to navigate go
+     * Grabs the user's choice of where they want to navigate to when 
+     * given a menu with numerical choices associated with choices within the menu,
+     * validates that input to make sure its a valid choice for the menu being navigated,
+     * and returns the users desired numerical choice of the menu option that they want to navigate too
      *
-     * @param numChoices - the number of valid number options the user has (1..numChoices)
-     * @return numChoice - the menu option chosen by the user
+     * @param numChoices - the number of valid number options the user has (1..numChoices) that correlate to menu choices
+     * @return numChoice - the numerical menu option chosen by the user
+     * 
+     * @author Shazadul Islam
      */
     public int getUserChoice(int numChoices) {
         // Validate and route based on user choice
@@ -63,16 +71,25 @@ public class MainMenu {
         }
     }
     
+    /**
+     * Provides a buffer for when text needs to be displayed on the console or terminal 
+     * before moving on to the next part of the program
+     * 
+     * @author Shazadul Islam
+     */
     public void moveOn() {
     	System.out.print("Press enter when you are ready to move on...");
     	scanner.nextLine();
     }
     
     /**
-     * Handles the initial entry flow: - Ask whether the user wants to sign in or
-     * create an account - Loop until we have a successful sign-in
+     * Handles the accounts creation and entry:
+     * Asks the user whether the user wants to sign in or create an account
+     * Loop until we have a successful sign-in or the user decides to exit the program
      *
      * @return loginUsername - the username of the successfully signed-in user
+     * 
+     * @author Shazadul Islam
      */
     public String enter() {
         while (true) {
@@ -187,11 +204,13 @@ public class MainMenu {
     }
     
     /**
-     * Used for validating a date from user input.
-     * Currently used in financialMenu and ReportsMenu
+     * Scans user input for a year,
+     * validates that input to make sure its a valid year,
+     * and return the valid year from the user input
      * 
-     * @return the year or month
-     * @param the type of date yow need. (e.g. year or month)
+     * @return the year entered by the user
+     * 
+     * @author Shazadul Islam
      */ 
     private int getUserYear(){
   		while (true) {
@@ -209,9 +228,12 @@ public class MainMenu {
     }
     
     /**
-     * Handles the Financial Reports menu
+     * Finances Menu
      * 
      * @param currentUser - username of the currently signed-in user
+     * 
+     * @author Aaron Madou
+     * @author Shazadul Islam
      */ 
     public void financesMenu(String currentUser) {
     	while(true) {
@@ -285,10 +307,13 @@ public class MainMenu {
     }
     
     /**
-     * Handles the Reports Menu
+     * Reports Menu
      * 
-     * @return Determines if user wants to go to the back to Financial Data or to the Main Menu
+     * @return Determines if user wants to go to the back to Finances Menu or the Main Menu
      * @param currentUser - username of the currently signed-in user
+     * 
+     * @author Aaron Madou
+     * @author Shazadul Islam
      */ 
     public boolean reportsMenu(String currentUser) {
     	while(true) {
@@ -348,10 +373,13 @@ public class MainMenu {
     }
     
     /**
-     * Handles the Prediction Menu
+     * Predictions Menu
      * 
-     * @return Determines if user wants to go to the back to Financial Data or to the Main Menu
+     * @return Determines if user wants to go to the back to the Finances Menu or the Main Menu
      * @param currentUser - username of the currently signed-in user
+     * 
+     * @author Aaron Madou
+     * @author Shazadul Islam
      */ 
     public boolean predictionMenu(String currentUser) {
     	while(true) {
@@ -405,9 +433,11 @@ public class MainMenu {
     }
     
     /**
-    Handles the Data Management Menu
-    @return Determines if user wants to go to the back to Financial Data or to the Main Menu
-    @param currentUser - username of the currently signed-in user
+     * Data Management Menu
+     * @return Determines if user wants to go to the back to the Finances Menu or the Main Menu
+     * @param currentUser - username of the currently signed-in user
+     * 
+     * @author Shazadul Islam
     */
     public boolean dataManagementMenu(String currentUser) {
         while(true) {
@@ -463,173 +493,32 @@ public class MainMenu {
         }
 
     /**
-     * Prints the settings page. For alpha, this just shows a placeholder and who is
-     * currently signed in.
+     * Account Settings Menu
      *
      * @param currentUser - username of the currently signed-in user
+     * 
+     * @author Aaron Madou
+     * @author Shazadul Islam
      */
     public boolean accountSettingsMenu(String currentUser) {
-        // Display account settings menu
     	clearConsole();
-        System.out.println("Currently signed in as: " + currentUser);
-        System.out.println("Settings:");
+        System.out.println(currentUser + " Account Settings:");
         System.out.println("  1. Change Password");
-        System.out.println("  2. Reset Password");
-        System.out.println("  3. Reset Secret Question and Answer");
-        System.out.println("  4. Delete Account");
-        System.out.println("  5. Return to Main Menu");
+        System.out.println("  2. Delete Account");
+        System.out.println("  3. Return to Main Menu");
         System.out.print("Please enter the number associated with your desired option: ");
-        int settingsChoice = getUserChoice(5);
+        int settingsChoice = getUserChoice(3);
         
         boolean inSettings = true;
         while (inSettings){
             switch (settingsChoice){
                 case 1:
                 	clearConsole();
-                	System.out.println("Currently signed in as: " + currentUser);
-                    System.out.print("Before changing your password, please enter your current password: ");
+                    System.out.println("Before you can change your password, please enter your current password. ");
+                    System.out.print("Password: ");
                     String currentPass = scanner.nextLine();
-
-                    boolean retry1 = true;
-                    while(true) {
-                    	clearConsole();
-                    	if(retry1) {
-                            if(moduleHub.loginUser(currentUser, currentPass)) {
-                            	 System.out.print("Please enter your new password: ");
-                                 String newPass = scanner.nextLine();
-
-                                 //necessary for accounts team keep
-                                 System.out.println("For security, please answer your recovery question:");
-                                 System.out.println(moduleHub.getUserSecretQuestion(currentUser));
-                                 String secretAnswer = scanner.nextLine();
-
-                                 moduleHub.resetUserPassword(currentUser, secretAnswer, newPass);
-
-                                 clearConsole();
-                                 System.out.println("Password successfully changed!");
-                            	break;
-                            } else {
-                                  System.out.println("The password you entered is incorrect. Would you like to try again?");
-                                  System.out.println("  1. Yes");
-                                  System.out.println("  2. No");
-                                  System.out.print("Please enter the number associated with your desired option: ");
-                                  int newChoice = getUserChoice(2);
-                                 
-                                  clearConsole();
-                                  switch (newChoice) {
-                                  case 1:
-                                	  System.out.print("Please enter your current password: ");
-                                	  currentPass = scanner.nextLine();
-                                	  continue;
-                                  case 2:
-                                	  retry1 = false;
-                                	  break;
-                                	  }
-                                  }
-                            } 
-                    	else { 
-                    		break; 
-                    		}
-                    }
-                    continue;
-
+                    
                 case 2:
-                	System.out.println("To reset your password, please answer the following question:");
-                	System.out.println(moduleHub.getUserSecretQuestion(currentUser));
-
-                	String answer = scanner.nextLine();
-                	boolean retry2 = true;
-
-                	while(true) {
-                		clearConsole();
-                		if(retry2) {
-                            //necessary for accounts team keep
-                                if (moduleHub.verifyUserSecretAnswer(currentUser, answer)) {
-                                	System.out.print("Your password has been reset. What would you like to set your new password to be? ");
-                                    String newPass = scanner.nextLine();
-
-                                    moduleHub.resetUserPassword(currentUser, answer, newPass);
-                                    System.out.println("Password successfully changed!");
-                                    clearConsole();
-                                    break;
-                                }else {
-                    			System.out.println("The answer you entered is incorrect. Would you like to try again?");
-                    			System.out.println("  1. Yes");
-                    			System.out.println("  2. No");
-                    			System.out.print("Please enter the number associated with your desired option: ");
-
-                    			int choice = getUserChoice(2);
-                    			clearConsole();
-                                switch (choice) {
-                                	case 1:
-                                		System.out.println(moduleHub.getUserSecretQuestion(currentUser));
-                                 		currentPass = scanner.nextLine();
-                                 		continue;
-                                	case 2:
-                                		retry2 = false;
-                                		break;
-                                }
-                            }
-
-                    	} 
-                		else{ 
-                			break; 
-                		}
-                	}
-                	continue;
-
-                case 3:
-                	System.out.print("To reset your recovery question, please enter your password: ");
-
-                	 String currentPassword = scanner.nextLine();
-
-                     boolean retry3 = true;
-
-                     while(true) {
-                     	clearConsole();
-                     	if(retry3) {
-                             if(moduleHub.loginUser(currentUser, currentPassword)) {
-                             	System.out.print("What would you like your recovery question to be? ");
-                             	String registerSecretQuestion = scanner.nextLine();
-                             	System.out.print("What would you like your recovery question answer to be? ");
-                             	String registerSecretAnswer = scanner.nextLine();
-
-                             	// TODO: Add a method in moduleHub to set the user's secret question and answer
-                             	moduleHub.updateUserSecretQuestionAndAnswer(currentUser, registerSecretQuestion,registerSecretAnswer);
-
-                                clearConsole();
-                                System.out.println("Recovery question successfully changed!");
-								System.out.println();
-
-                             	break;
-                             } 
-                             else {
-                            	 System.out.println("The password you entered is incorrect. Would you like to try again?");
-                            	 System.out.println("  1. Yes");
-                            	 System.out.println("  2. No");
-                            	 System.out.print("Please enter the number associated with your desired option: ");
-                            	 int newChoice = getUserChoice(2);
-                                  
-                            	 clearConsole();
-                            	 switch (newChoice) {
-                                  	case 1:
-                                  		System.out.print("Please enter your current password: ");
-                                  		currentPassword = scanner.nextLine();
-
-                                  		continue;
-                                  	case 2:
-                                  		retry3 = false;
-                                  		break;
-                                  }
-                             }
-                     	} 
-                     	else { 
-                     		break; 
-                     	}
-                     }
-                     continue;
-                     
-                case 4:
                     clearConsole();
                     System.out.println("Are you sure you want to delete this account: " + currentUser + "? ");
                     System.out.println("  1. Yes");
@@ -662,7 +551,7 @@ public class MainMenu {
                         break;
                     }
 
-                case 5:
+                case 3:
                     inSettings = false;
                     break;
             }
@@ -670,6 +559,15 @@ public class MainMenu {
         return true;
     }
 
+    /**
+     * Runs the entire application with the MainMenu as the main interface for the user to interact with
+     * Makes calls to other menus that handle other parts of the application
+     * Also lets the user log out and quit the program
+     * 
+     * @param args
+     * 
+     * @author Shazadul Islam
+     */
     public static void main(String[] args) {
     	System.out.println("Hamilton Heights Presents");
         System.out.println("Personal Finance Manager");
@@ -687,6 +585,7 @@ public class MainMenu {
         	
         	while(running && loggedIn) {
         		applicationInterface.clearConsole();
+        		System.out.println("Personal Finance Manager:");
         		System.out.println("Main Menu: ");
                 System.out.println("  1. Finances");
                 System.out.println("  2. Settings");
@@ -718,7 +617,12 @@ public class MainMenu {
     }
     
     /**
-     * Lets the user exit the program to desktop from anywhere within the code.
+     * When the user requests to exit the application,
+     * this function is called to clean up the scanner, 
+     * relay a message to the user that have exited the program,
+     * and returns the user to the normal command line in terminal
+     * 
+     * @author Shazadul Islam
      */
     public void exitApplication() {
         scanner.close();
