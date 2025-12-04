@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.io.File;
 
 /**
  * This class allows the user to navigate to all of the different "pages" of the
@@ -64,8 +65,8 @@ public class MainMenu {
     
     public void moveOn() {
     	System.out.print("Press enter when you are ready to move on...");
-    	scanner.nextLine();    
-    	}
+    	scanner.nextLine();
+    }
     
     /**
      * Handles the initial entry flow: - Ask whether the user wants to sign in or
@@ -77,10 +78,11 @@ public class MainMenu {
         while (true) {
         	clearConsole();
             System.out.println("Would you like to sign in or create a new account? ");
-            System.out.println(" 1. Sign In");
-            System.out.println(" 2. Create a new account");
+            System.out.println("  1. Sign In");
+            System.out.println("  2. Create a new account");
+            System.out.println("  3. Exit application");
             System.out.print("Please enter the number associated with your desired option: ");
-            int userChoice = getUserChoice(2);
+            int userChoice = getUserChoice(3);
 
             switch (userChoice) {
                 case 1:
@@ -88,9 +90,9 @@ public class MainMenu {
                     while (isNotLoggedIn) {
                     	clearConsole();
                         System.out.println("Enter your username and password: ");
-                        System.out.print(" Username: ");
+                        System.out.print("  Username: ");
                         String loginUsername = scanner.nextLine();
-                        System.out.print(" Password: ");
+                        System.out.print("  Password: ");
                         String loginPassword = scanner.nextLine();
 
                         boolean validLogin = moduleHub.loginUser(loginUsername, loginPassword);
@@ -102,16 +104,20 @@ public class MainMenu {
                         	clearConsole();
                             System.out.println("Your username or password was incorrect or that account does not exist.");
                             System.out.println("Would you like to try logging in again or create a new account? ");
-                            System.out.println(" 1. Try Logging in again");
-                            System.out.println(" 2. Create a New Account");
+                            System.out.println("  1. Try Logging in again");
+                            System.out.println("  2. Create a New Account");
+                            System.out.println("  3. Exit Application");
                             System.out.print("Please enter the number associated with your desired option: ");
-                            int retryChoice = getUserChoice(2);
+                            int retryChoice = getUserChoice(3);
                             if (retryChoice == 2) {
                                 // this code breaks out of isNotLoggedIn while loop and
                                 // since case 1 doesn't end in a break,
                                 // the user can fall through to case 2 and
                                 // begin registering a new account
                                 break;
+                            }
+                            else if (retryChoice == 3) {
+                            	exitApplication();
                             }
                         }
                     }
@@ -129,7 +135,12 @@ public class MainMenu {
                         String registerSecretAnswer = scanner.nextLine();
                         
                         clearConsole();
-                        System.out.println("Confirm account creation with this username, password, recovery question, and recovery question answer? ");
+                        System.out.println("Please confirm that these are the credentials that you want for your account. ");
+                        System.out.println("Username: "+ registerUsername);
+                        System.out.println("Password: "+ registerPassword);
+                        System.out.println("Account Recory Question: "+ registerSecretQuestion);
+                        System.out.println("Account Recovery Answewr: "+ registerSecretAnswer);
+                        System.out.println("Are these are the credentials that you want for your account? ");
                         System.out.println(" 1. Yes");
                         System.out.println(" 2. No");
                         System.out.print("Please enter the number associated with your desired option: ");
@@ -153,7 +164,7 @@ public class MainMenu {
                                 scanner.nextLine();
                             } else {
                                 clearConsole();
-                                System.out.println("Your account has been succesffuly created.");
+                                System.out.println("Your account has been successfully created.");
                                 System.out.print("Press enter when you are ready to sign in with your new credentials...");
                                 scanner.nextLine();
                                 createdAccount = true;
@@ -162,13 +173,15 @@ public class MainMenu {
                         } else {
                             // User said "No"
                             clearConsole();
-                            System.out.println("Let's try creating an account again, shall we?");
+                            System.out.println("Let's try creating your account again, shall we?");
                             System.out.print("Press enter when you are ready to try again...");
                             scanner.nextLine();
                         }
 
                     }
                     continue;// After successful registration, loop back and show the Sign In / Create menu again
+                case 3:
+                	exitApplication();
             }
         }
     }
@@ -210,23 +223,42 @@ public class MainMenu {
     	     System.out.println("  4. Data Management");
     	     System.out.println("  5. Return to Main Menu");
     	     System.out.print("Please enter the number associated with your desired option: ");
-  	        int userChoice = getUserChoice(5);
+    	     int userChoice = getUserChoice(5);
   	        
-   	        switch (userChoice) {
-   	        	case 1:
-   	        		clearConsole();
-   	        		System.out.println("---CSV Loader---");
-   	        		System.out.print("Please enter the year this CSV file is for: ");
-   	        		int year = getUserYear();
-   	        		System.out.println();
-   	        		System.out.println("Please enter the name of the CSV file you want to upload.");
-   	        		System.out.println("• If the CSV you want to upload is in the same folder as the JAR, just type: data.csv");
-   	        		System.out.println("• However, if it’s somewhere else, please provide the full path.");
-   	        		System.out.print("File name: ");
-   	        		String csvPath = scanner.nextLine();
-   	        		System.out.println();
-   	        		
-   	        		moduleHub.uploadCSVData(currentUser, csvPath, year);
+    	     switch (userChoice) {
+    	     	case 1:
+   	        		boolean uploadingFile = true;
+   	        		while (uploadingFile) {
+   	        			clearConsole();
+	   	        		System.out.println("---CSV Loader---");
+	   	        		System.out.println("Please enter the name of the CSV file you want to upload below.");
+	   	        		System.out.println("• If the CSV you want to upload is in the same folder as the JAR, just type the file name(Ex: data.csv)");
+	   	        		System.out.println("• However, if the file is somewhere else, please provide the full file path.");
+	   	        		System.out.print("File name: ");
+	   	        		String csvFilePath = scanner.nextLine();
+	   	        		
+	   	        		File file = new File(csvFilePath);
+	   	        		String fileName = file.getName();
+	   	        		try {
+	   	        			int year = Integer.parseInt(fileName.substring(0, 4));
+		   	        		System.out.println();
+	   	        			moduleHub.uploadCSVData(currentUser, csvFilePath, year);
+	   	        		} catch(NumberFormatException e){
+	   	        			clearConsole();
+	   	        			System.out.println("Please make sure that the name of your CSV file begins with the year associated with that data.");
+	   	        			System.out.println("Would you like to try uploading your CSV file again or return to the Finances Menu?");
+	   	        			System.out.println("  1. Try uploading my CSV file again");
+	   	        			System.out.println("  2. Return to Finances Menu");
+	   	        			System.out.print("Please enter the number associated with your desired option: ");
+	   	        			userChoice = getUserChoice(2);
+	   	        			switch (userChoice){
+	   	        				case 1:
+	   	        					continue;
+	   	        				case 2:
+	   	        					uploadingFile = false;
+	   	        			}	
+	   	        		}
+   	        		}
    	        		break;
    	        	case 2: 
    	        		if(reportsMenu(currentUser)) {
@@ -309,7 +341,6 @@ public class MainMenu {
 	   	    			return true;
    	    		}
    	    	}
-
     	}
     }
     
@@ -379,7 +410,7 @@ public class MainMenu {
         while(true) {
         	clearConsole();
             System.out.println("Data Management Menu: ");
-            System.out.println("  1. Delete CSV file");
+            System.out.println("  1. Delete a CSV file");
             System.out.println("  2. Return to Finances Menu");
             System.out.println("  3. Return to Main Menu");
             System.out.print("Please enter the number associated with your desired option: ");
@@ -438,7 +469,6 @@ public class MainMenu {
         // Display account settings menu
     	clearConsole();
         System.out.println("Currently signed in as: " + currentUser);
-        System.out.println();
         System.out.println("Settings:");
         System.out.println("  1. Change Password");
         System.out.println("  2. Reset Password");
@@ -604,27 +634,26 @@ public class MainMenu {
                     System.out.print("Please enter the number associated with your desired option: ");
                     int sureDelAccount = getUserChoice(2);
 
-                    clearConsole();
                     if (sureDelAccount == 1) {
                         // Ask ModuleHub / Accounts to delete the user
                         boolean deleted = moduleHub.callAccounts("deleteaccount", currentUser);
 
                         if (deleted) {
-                            // Also log out this user so the session is gone
-                            moduleHub.logoutUser();
-
+                        	clearConsole();
                             System.out.println("Your account has been terminated.");
                             System.out.print("Press enter when you are ready to return to the login page...");
                             scanner.nextLine();
                             // Tell main() that the user is NO LONGER logged in
                             return false;
                         } else {
+                        	clearConsole();
                             System.out.println("Account deletion failed. Your account was not removed.");
                             System.out.print("Press enter when you are to ready return to user settings...");
                             scanner.nextLine();
                             break;  // stay logged in / in settings
                         }
                     } else {
+                    	clearConsole();
                         System.out.print("Press enter when you are ready to return to user settings...");
                         scanner.nextLine();
                         break;
@@ -659,7 +688,7 @@ public class MainMenu {
                 System.out.println("  1. Finances");
                 System.out.println("  2. Settings");
                 System.out.println("  3. Sign Out");
-                System.out.println("  4. Quit Program");
+                System.out.println("  4. Exit Applicaiton");
                 System.out.print("Please enter the number associated with your desired option: ");
                 int mainMenuChoice = applicationInterface.getUserChoice(4);
                 
@@ -675,21 +704,23 @@ public class MainMenu {
                 	loggedIn = false;
                 	break;
                 case 4:
+                	applicationInterface.moduleHub.logoutUser();
                 	loggedIn = false;
                 	running = false;
                 	break;
         		}
         	}
         }
-        applicationInterface.exitProgram();
+        applicationInterface.exitApplication();
     }
     
     /**
      * Lets the user exit the program to desktop from anywhere within the code.
      */
-    public void exitProgram() {
+    public void exitApplication() {
         scanner.close();
-        System.out.println("Goodbye!");
+        clearConsole();
+        System.out.println("Thank you for using Hamilton Heights Personal Finance Manager!");
         System.exit(0);
     }
 }
