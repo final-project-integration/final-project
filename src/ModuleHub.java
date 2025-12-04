@@ -20,7 +20,7 @@ import java.util.List;
  * 3. Collect the response or result
  * 4. Return a simple result or status message back to the caller
  *
- * All integration responsibilities are handled here so other modules can focus
+ * All integration responsibilities are handled here, so other modules can focus
  * only on their core logic.
  *
  * @author Denisa Cakoni
@@ -45,7 +45,7 @@ public class ModuleHub {
     private final ReportManager reportsModule;
     /** ReportAnalyzer responsible for additional analysis on financial records. */
     private final ReportAnalyzer reportAnalyzer;
-    /** ReportFormatter responsible for formatting analysis output. */
+    /** ReportFormatter responsible for formatting the analysis output. */
     private final ReportFormatter reportFormatter;
 
 
@@ -66,7 +66,7 @@ public class ModuleHub {
 
     /**
      * Prints a colored header with horizontal lines of a fixed width,
-     * so the colored header bars line up with the white dividers (e.g. width 70).
+     * so the colored header bars line up with the white dividers (e.g., width 70).
      *
      * @param title text to show in the center
      * @param color ANSI color from BeautifulDisplay
@@ -89,7 +89,7 @@ public class ModuleHub {
             line.append('─');
         }
 
-        // Center the title in a line of length `width`
+        // Center the title in a line of length `width.`
         int padding = width - title.length();
         int left = padding / 2;
         int right = padding - left;
@@ -106,6 +106,21 @@ public class ModuleHub {
         System.out.println(color + line.toString() + BeautifulDisplay.RESET);
         System.out.println(color + middle.toString() + BeautifulDisplay.RESET);
         System.out.println(color + line.toString() + BeautifulDisplay.RESET);
+    }
+
+    /**
+     * Drops a trailing ".00" from a currency string so reports
+     * show whole dollars only.
+     *
+     * @author Denisa Cakoni
+     */
+    private String stripCents(String amount) {
+        if (amount == null) return "";
+        amount = amount.trim();
+        if (amount.endsWith(".00")) {
+            return amount.substring(0, amount.length() - 3);
+        }
+        return amount;
     }
 
     /**
@@ -150,7 +165,7 @@ public class ModuleHub {
      * @param action   the storage action to perform ("load", "delete", "listyears")
      * @param username the username whose data is being accessed
      * @param year     the year associated with the data
-     * @return true if the requested action completes without throwing an exception false otherwise
+     * @return true if the requested action completes without throwing an exception, false otherwise
      *
      *
      * @author Denisa Cakoni
@@ -345,6 +360,8 @@ public class ModuleHub {
      *
      * @param csvFilePath the path or filename the user typed
      * @return a File that exists on disk, or null if not found
+     *
+     * @author Denisa Cakoni
      */
     private File resolveCsvFile(String csvFilePath) {
         if (csvFilePath == null) {
@@ -518,8 +535,11 @@ public class ModuleHub {
     private void printYearlySection(int year, ReportManager.YearlySummary yearly) {
         BeautifulDisplay.printGradientHeader("FINANCIAL REPORT - " + year, 70);
 
-        String incomeStr   = BeautifulDisplay.GREEN  + "$" + yearly.getTotalIncome()   + BeautifulDisplay.RESET;
-        String expenseStr  = BeautifulDisplay.RED    + "$" + yearly.getTotalExpenses() + BeautifulDisplay.RESET;
+        String incomeRaw  = "$" + yearly.getTotalIncome();
+        String expenseRaw = "$" + yearly.getTotalExpenses();
+
+        String incomeStr  = BeautifulDisplay.GREEN  + stripCents(incomeRaw)  + BeautifulDisplay.RESET;
+        String expenseStr = BeautifulDisplay.RED    + stripCents(expenseRaw) + BeautifulDisplay.RESET;
 
         double netVal = 0.0;
         try {
@@ -620,7 +640,11 @@ public class ModuleHub {
                 monthName = line.trim();
             }
         }
-    
+
+        incomeMonthly  = stripCents(incomeMonthly);
+        expenseMonthly = stripCents(expenseMonthly);
+        balanceMonthly = stripCents(balanceMonthly);
+
         // Print the row aligned in the table
         System.out.printf("│ %-12s │ %12s │ %13s │ %13s │%n",
                 monthName, incomeMonthly, expenseMonthly, balanceMonthly);
@@ -645,7 +669,7 @@ public class ModuleHub {
             return;
         }
 
-        // Parse "Category: $123.45" into name + amount (string)
+        // Parse Category:into name + amount (string)
         ArrayList<String> names = new ArrayList<>();
         ArrayList<String> amounts = new ArrayList<>();
 
@@ -664,13 +688,7 @@ public class ModuleHub {
                 amount = text.substring(colonIndex + 1).trim();
             }
 
-            // DISPLAY ONLY:
-            // remove minus sign from things like "-$500.00" or "$-500.00"
-            amount = amount.replace("-$", "$");
-            amount = amount.replace("$-", "$");
-            if (amount.startsWith("-")) {
-                amount = amount.substring(1).trim();
-            }
+            amount = stripCents(amount);
 
             names.add(name);
             amounts.add(amount);
@@ -692,7 +710,7 @@ public class ModuleHub {
         }
 
         // Build header line and borders based on its length
-        String header = String.format("│ %-3s │ %-" + nameWidth + "s │ %" + amountWidth + "s │",
+        String header = String.format("│ %-3s │ %-" + nameWidth + "s │ %-" + amountWidth + "s │",
                 "#", "Category", "Amount");
         String border = "─".repeat(header.length() - 2); // minus the two side bars
 
@@ -1387,7 +1405,8 @@ class ErrorHandler {
     /**
      * Creates a new ErrorHandler instance.
      * The handler provides a centralized way to display, log, and recover
-     * from errors across all modules.
+     * from errors across all modules
+     * @author Kapil Tamang
      */
     public ErrorHandler() {}
 
@@ -1400,6 +1419,8 @@ class ErrorHandler {
      *
      * @param moduleName the name of the module where the error occurred
      * @param error      the exception that was thrown
+     *
+     * @author Kapil Tamang
      */
     public void handleModuleError(String moduleName, Exception error) {
         displayError("An error has occurred in the " + moduleName + " module.");
@@ -1410,6 +1431,8 @@ class ErrorHandler {
     /**
      * Displays a message indicating the system is returning to the main menu.
      * This keeps the program usable after an error.
+     *
+     * @author Kapil Tamang
      */
     public void recoverToMenu() {
         System.out.println("Restoring main menu.");
@@ -1421,6 +1444,8 @@ class ErrorHandler {
      *
      * @param errorMessage a brief description of the error context
      * @param error        the exception thrown
+     *
+     * @author Kapil Tamang
      */
     public void logError(String errorMessage, Exception error) {
         System.err.println("ERROR");
@@ -1437,6 +1462,8 @@ class ErrorHandler {
      * that something went wrong.
      *
      * @param message the error message to display
+     *
+     * @author Kapil Tamang
      */
     public void displayError(String message) {
         System.out.println("ERROR");
