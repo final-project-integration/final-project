@@ -49,7 +49,7 @@ public class Storage {
      * @param rec the AuthRecord to store or overwrite
      * @return true if the record was stored and successfully saved to disk, 
      * or false if a file write error occurred
-     * @author Jessica Ramirez
+     * @author Andony Ariza, Jessica Ramirez
      */
 	
     public boolean addAuthRecord(String username, Authentication.AuthRecord rec) {
@@ -62,7 +62,7 @@ public class Storage {
      *
      * @param username the username whose authentication data is being requested
      * @return the AuthRecord associated with the username, or null if none exists
-     * @author Zhengjun Xie
+     * @author Andony Ariza
      */
     
     public Authentication.AuthRecord getAuthInfo(String username) {
@@ -73,7 +73,7 @@ public class Storage {
      * Removes all authentication data associated with a username
      *
      * @param username the username whose authentication record should be deleted
-     * @author Zhengjun Xie
+     * @author Andony Ariza, Zhengjun Xie
      */
 	
     public boolean removeAccount(String username) {
@@ -86,7 +86,7 @@ public class Storage {
      * Returns a shallow copy of the authentication record map.
      *
      * @return a new Map containing all username to AuthRecord entries
-     * @author Zhengjun Xie
+     * @author Andony Ariza, Zhengjun Xie
      */
 	
     public Map<String, Authentication.AuthRecord> loadAllAuthRecords() {
@@ -171,3 +171,4 @@ public class Storage {
     }
 }
 }
+
