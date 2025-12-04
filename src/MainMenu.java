@@ -566,7 +566,7 @@ public class MainMenu {
 
                                 clearConsole();
                                 System.out.println("Recovery question successfully changed!");
-								System.out.prinln();
+								System.out.println();
 
                              	break;
                              } 
