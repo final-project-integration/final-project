@@ -1,4 +1,6 @@
-// package validation;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * The DataTypeValidator class checks if user input is valid
@@ -71,10 +73,10 @@ public class DataTypeValidator {
     }
 
     /**
-     * Checks if the date is in the format "MM/DD/YYYY".
+     * Checks if the date is in the format "MM/DD/YYYY" and is a real calendar date.
      *
      * @param input the text to check
-     * @return true if the date follows the expected format
+     * @return true if the date follows the expected format and is valid
      */
     public boolean isValidDate(String input) {
         if (input == null) {
@@ -83,31 +85,33 @@ public class DataTypeValidator {
 
         input = input.trim();
 
-        if (input.length() != 10) {
+        // Strict pattern: exactly 2 digits, slash, 2 digits, slash, 4 digits
+        if (!input.matches("\\d{2}/\\d{2}/\\d{4}")) {
             return false;
         }
 
-        if (input.charAt(2) != '/' || input.charAt(5) != '/') {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu");
+        try {
+            // parse will fail for invalid dates like 13/40/2024, 02/30/2024, etc.
+            LocalDate.parse(input, formatter);
+            return true;
+        } catch (DateTimeParseException e) {
             return false;
         }
+    }
 
-        String month = input.substring(0, 2);
-        String day = input.substring(3, 5);
-        String year = input.substring(6, 10);
-
-        if (!isNumeric(month) || !isNumeric(day) || !isNumeric(year)) {
-            return false;
+    /**
+     * Extracts the year from a valid MM/DD/YYYY date string, or -1 if invalid.
+     *
+     * @param input date string in MM/DD/YYYY
+     * @return the year, or -1 if the date is invalid
+     */
+    public int extractYear(String input) {
+        if (!isValidDate(input)) {
+            return -1;
         }
-
-        int m = Integer.parseInt(month);
-        int d = Integer.parseInt(day);
-        int y = Integer.parseInt(year);
-
-        if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1) {
-            return false;
-        }
-
-        return true;
+        // positions 6–9 are the 4-digit year in MM/DD/YYYY
+        return Integer.parseInt(input.substring(6, 10));
     }
 
     /**

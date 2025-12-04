@@ -36,7 +36,7 @@ public class Accounts {
     /**
      * Registers a new user account with early validation and secure data handling.
      * This method performs step by step validation before creating an account:
-     * Rejects the username immediately if it is blank or already taken
+     * Rejects the username immediately if is already taken
      * Rejects the username if it contains any non-alphanumeric characters
      * Rejects the password, secret question, or secret answer if any are blank.
      * If all validation passes, the password and secret answer are hashed
@@ -47,30 +47,40 @@ public class Accounts {
      * @param password the chosen password
      * @param secretQuestion the secret question used for password recovery
      * @param secretAnswer the answer to the secret question
-     * @return true if registration is successful, or false otherwise
-     * @author Zhengjun Xie
+     * @param confirm adds confirmation step on whether the user approved final account creation
+     * @return  true only if validation succeeds, the user confirms creation, and
+     * the authentication record is successfully saved to persistent storage. Returns 
+     * false if validation fails, the user cancels, or saving fails.
+     * @author Zhengjun Xie, Jessica Ramirez
      */
    
-   public boolean registerAccount(String username, String password, String secretQuestion, String secretAnswer) {
+   public boolean registerAccount(String username, String password, String secretQuestion, String secretAnswer, boolean confirm) {
 
-	   //Reject username instantly if blank or taken
-	   if (authenticator.isInvalidUsername(username)) {
-	       return false;
-	   }
-	  	   
-	   //Reject usernames with non-alphanumeric characters
-	   if (authenticator.hasInvalidCharacters(username)) {
-	       return false;
-	   }
+       // Username formatting must be valid (must: be non-null, 
+       // contain only alphanumeric characters, no blank spaces, and 3 to 20 chars long
+	  
+       if (authenticator.isInvalidUsernameFormat(username)) {
+           return false;
+       }
 
+       // Username must not already exist
+       if (authenticator.isDuplicateUsername(username)) {
+           return false;
+       }
 
+       // Validate password formatting
+       if (authenticator.isInvalidPasswordFormat(password)) {
+           return false;
+       }
 
-	   //Reject blank password/question/answer
-	   if (authenticator.isBlankField(password) ||
-	       authenticator.isBlankField(secretQuestion) ||
-	       authenticator.isBlankField(secretAnswer)) {
-	       return false;
-	   }
+       // Secret question and answer cannot be blank
+       if (authenticator.isBlankField(secretQuestion) ||
+           authenticator.isBlankField(secretAnswer)) 
+       {return false; }
+
+       // Confirm account creation
+       if (!confirm) {return false;}
+
 
        //Hash sensitive data
        String hashedPassword = authenticator.hashPassword(password);
@@ -81,25 +91,59 @@ public class Accounts {
                new Authentication.AuthRecord(hashedPassword, secretQuestion, hashedAnswer);
 
        //Save
-       storage.addAuthRecord(username, record);
-       return true;
+       boolean saved = storage.addAuthRecord(username, record);
+       return saved;
+
    }
    
      /**
-     * Attempts to sign in a user by validating the provided credentials. If successful,
-     * the user becomes marked as signed in.
+     * Attempts to sign in a user by first validating the input fields and then 
+     * verifying the credentials entered. 
      *
+     * Rejects blank usernames or passwords.
+     * Rejects improperly formatted usernames (non-alphanumeric characters,
+     * blank spaces, or fewer than 3 characters)
+     * Rejects improperly formatted passwords (blank, whitespace, or fewer 
+     * than the minimum required length).
+     * Validates the credentials by comparing the stored hashed password with 
+     * the hash of the provided password.
+     * If validation succeeds, the user's session is activated and the user 
+     * becomes marked as signed in.
+     * 
      * @param username the username of the account
      * @param password the password entered by the user
      * @return true if sign-in is successful, or false otherwise
-     * @author Zhengjun Xie
+     * @author Jessica Ramirez
      */
    
    public boolean signIn(String username, String password) {
-
+	   
+	   // Trim username only for login (prevents accidental trailing spaces)
+	   if (username != null) {
+	        username = username.trim();
+	    }
+	   
+	   // Username and password must not be blank.
+	   if (authenticator.isBlankField(username) || authenticator.isBlankField(password)) {
+	        return false;
+	    }
+	   
+	   // Username format must be valid (alphanumeric, more than 3 characters,
+	   // no spaces)
+	   if (authenticator.isInvalidUsernameFormat(username)) {
+	        return false;
+	    }
+	   
+	   // Password format must be valid
+	   if (authenticator.isInvalidPasswordFormat(password)) {
+	        return false;
+	    }
+	   
+       // Credential check (Ensures username and password match)
        if (!authenticator.validateCredentials(username, password))
            return false;
 
+       // Session state
        this.username = username;
        this.signedIn = true;
        return true;
@@ -113,8 +157,7 @@ public class Accounts {
    
    public boolean signOut() {
        if (!signedIn) return false;
-
-       authenticator.clearSession();
+       
        signedIn = false;
        username = null;
        return true;
@@ -138,32 +181,54 @@ public class Accounts {
        if (!signedIn || !this.username.equals(username))
            return false;
 
-       if (!authenticator.validateCredentials(username, oldPassword))
+        // Validate old password without changing session state
+       if (!authenticator.checkPassword(username, oldPassword)) {
            return false;
+       }
+     
+
+       // Validate new password formatting
+       if (authenticator.isInvalidPasswordFormat(newPassword)) {
+           return false;
+       }
 
        Authentication.AuthRecord rec = storage.getAuthInfo(username);
        rec.setHashedPassword(authenticator.hashPassword(newPassword));
 
-       storage.addAuthRecord(username, rec);
-       return true;
+       boolean saved = storage.addAuthRecord(username, rec);
+       return saved;
    }
    
     /**
-     * Resets a user's password without requiring the old password.
-     * Used during password recovery after verifying the secret answer.
+     * Resets a user's password using their secret answer for verification
+     * Ensures new password follows proper formatting. 
      *
      * @param username  the username of the account
+     * @param secretAnswer the plain-text recovery answer entered by the user
      * @param newPassword the new password to set
-     * @return true if the password is successfully reset, false otherwise
+     * @return true if the password is successfully reset, or false otherwise
      * @author Zhengjun Xie
      */
-   public boolean resetPassword(String username, String newPassword) {
+   public boolean resetPassword (String username, String secretAnswer, String newPassword){
        Authentication.AuthRecord rec = storage.getAuthInfo(username);
-       if (rec == null) return false;
+       
+       if (rec == null) {
+    	   return false;
+       }
+       
+       // Verify secret answer first
+       if (!authenticator.checkSecretAnswer(username, secretAnswer)) {
+           return false;
+       }
 
+       // Password format validation
+       if (authenticator.isInvalidPasswordFormat(newPassword)) {
+           return false;
+       }
+       
+       // Apply password reset
        rec.setHashedPassword(authenticator.hashPassword(newPassword));
-       storage.addAuthRecord(username, rec);
-       return true;
+       return storage.addAuthRecord(username, rec);
    }
 
     /**
@@ -176,10 +241,21 @@ public class Accounts {
      * @return true if both the question and answer were saved successfully, or false otherwise.
      * @author Jessica Ramirez
      */
+   
    public boolean setSecretQuestionAndAnswer(String username, String question, String answer) {
 
        if (!signedIn || !this.username.equals(username))
            return false;
+       
+        // Validate non-blank question/answer
+       if (authenticator.isBlankField(question)) {
+           return false;
+       }
+
+
+       if (authenticator.isBlankField(answer)) {
+           return false;
+       }
 
        Authentication.AuthRecord rec = storage.getAuthInfo(username);
        if (rec == null) return false;
@@ -187,8 +263,9 @@ public class Accounts {
        rec.setSecretQuestion(question);
        rec.setHashedSecretAnswer(authenticator.hashPassword(answer));
 
-       storage.addAuthRecord(username, rec);
-       return true;
+       boolean saved = storage.addAuthRecord(username, rec);
+       return saved;
+
    }
 
      /**
@@ -219,25 +296,28 @@ public class Accounts {
    }
    
    /**
-    * Deletes the currently signed in user’s account.
-    *
-    * This operation requires the user to be logged in. Accounts cannot be deleted
-    * after logging out, since identity has be verified before removal.
-    *
-    * After deletion is completed, the account is removed from Storage and the user 
-    * is automatically signed out.
+    * Deletes the currently signed in user’s account if it exists
+    * If the deleted account is the one currently signed in, the user is signed out.
+    * This method *requires* an active session to delete an account.
     *
     * @param username the username of the account 
     * @return true if the user was signed in and the account was deleted, or false otherwise
-    * @author Jessica Ramirez
+    * @author Jessica Ramirez, Zhengjun Xie
     */
    
    public boolean deleteUser(String username) {
-       if (!signedIn || !this.username.equals(username))
-           return false;
 
-       storage.removeAccount(username);
-       signOut();
-       return true;
-   		}
+	    // Must be signed in AND deleting own account
+	    if (!signedIn || !username.equals(this.username)) {
+	        return false;
+	    }
+
+	    if (storage.getAuthInfo(username) == null) {
+	        return false;
+	    }
+
+	    storage.removeAccount(username);
+	    signOut();
+	    return true;
 	}
+}

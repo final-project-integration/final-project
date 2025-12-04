@@ -19,19 +19,6 @@ public class Authentication {
 
     private Storage storage;
     
-    /** 
-     * Tracks the username currently authenticated in the session.
-     * This is updated on successful login and cleared on logout.
-     */
-    private String currentUser = null;
-
-    /**
-     * Indicates whether there is an active authenticated session.
-     * Becomes true after a successful login, and false after logout.
-     */
-    private boolean activeSession = false;
-
-    
     /**
      * Creates a new Authentication object linked to a Storage instance.
      *
@@ -44,6 +31,7 @@ public class Authentication {
     }
 
     /**
+     * ValidateCredentials () = login
      * Validates user credentials by comparing the stored hashed password
      * with a hashed version of the provided plain-text password.
      *
@@ -61,14 +49,8 @@ public class Authentication {
         if (rec == null) return false;
 
         String hashedInput = hashPassword(password);
-        boolean valid = rec.getHashedPassword().equals(hashedInput);
+        return rec.getHashedPassword().equals(hashedInput);
 
-        if (valid) {
-            currentUser = username;
-            activeSession = true;
-        }
-
-        return valid;
     }
 
 
@@ -136,34 +118,6 @@ public class Authentication {
     }
 
     /**
-     * Validates registration input by ensuring no field is null or blank.
-     *
-     * @param username the username of the account
-     * @param password the password to validate
-     * @param secretQuestion the recovery question to validate
-     * @param secretAnswer the recovery answer to validate
-     * @return true if all fields are valid, or false otherwise
-     * @author Zhengjun Xie
-     */
-
-    public boolean validateUserInfo(String username, String password, String secretQuestion, String secretAnswer) {
-    	
-        return !(isBlank(username) || isBlank(password) || isBlank(secretQuestion) || isBlank(secretAnswer));
-    }
-
-    /**
-     * Determines whether a given text value is null, empty, or with whitespace.
-     *
-     * @param text the input string to check
-     * @return true if the text is blank, or false otherwise
-     * @author Zhengjun Xie
-     */
-
-    private boolean isBlank(String text) {
-        return (text == null || text.isBlank());
-    }
-    
-    /**
      * Checks if a field is blank (null, empty, or only whitespace).
      * This supports early validation so the user is immediately notified
      * when attempting to enter incomplete form data.
@@ -176,71 +130,7 @@ public class Authentication {
     public boolean isBlankField(String field) {
         return field == null || field.isBlank();
     }
-
-    /**
-     * Determines whether a username is invalid for account creation.
-     * A username is considered invalid if it is blank or already taken.
-     * This method supports early validation so the user is notified
-     * immediately before entering additional account fields.
-     *
-     * @param username the username of the account
-     * @return true if the username is invalid (blank or duplicate), false otherwise
-     * @author Jessica Ramirez
-     */
-    public boolean isInvalidUsername(String username) {
-        return isBlankField(username) || checkUsername(username);
-    }
-    
-    
-    /**
-     * Checks whether a username contains only valid alphanumeric characters.
-     * Usernames may ONLY contain A–Z, a–z, and 0–9.
-     * @param username the username to validate
-     * @return true if the username contains invalid characters, false otherwise
-     * @author Jessica Ramirez
-     */
-    
-    public boolean hasInvalidCharacters(String username) {
-    if (username == null) return true;
-    return !username.matches("[A-Za-z0-9]+");
-    }
-
-    
-
-    /**
-     * Resets a user's password after verification, hashing the new password
-     * before saving it to Storage.
-     *
-     * @param username the username whose password will be reset
-     * @param newPassword the new plain-text password to hash and store
-     * @return true if the password was successfully reset, or false otherwise
-     * @author Zhengjun Xie
-     */
-
-    
-    public boolean recoverPassword(String username, String newPassword) {
-        AuthRecord rec = storage.getAuthInfo(username);
-        if (rec == null) return false;
-
-        rec.setHashedPassword(hashPassword(newPassword));
-        storage.addAuthRecord(username, rec);
-        return true;
-    }
-    
-     /**
-     * Clears all authentication related session data.
-     * This resets the current authenticated user and marks the session
-     * as inactive. Called automatically by Accounts.signOut().
-     *
-     * @author Jessica Ramirez
-     */
-
-    public void clearSession() {
-        currentUser = null;
-        activeSession = false;
-    }
-
-
+        
     /**
      * Hashes a plain-text string (password or secret answer) using SHA-256.
      *
@@ -249,7 +139,6 @@ public class Authentication {
      * @author Zhengjun Xie
      */
 
- 
     public String hashPassword(String plain) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -325,6 +214,8 @@ public class Authentication {
     
     /**
      * Checks whether a username already exists in the system.
+     * Supports early validation so the user is notified 
+     * immediately before entering additional account fields.
      *
      * @param username the username of the account
      * @return true if the username already exists, or false otherwise
@@ -337,34 +228,64 @@ public class Authentication {
     }
     
     /**
-     * Detects edge-case inputs such as invalid characters, surrounding whitespace,
-     * or improper formatting.
+     * Checks whether a username has invalid formatting.
+     * A valid username must: be non-null, contain only alphanumeric characters
+     * not contain leading/trailing spaces, and be at least 3 characters long
      *
-     * @param username the username of the account
-     * @param password the password entered
-     * @return true if any edge-case condition is detected, or false otherwise
+     * @param username the username of the account. 
+     * @return true if formatting is invalid,or false otherwise
      * @author Jessica Ramirez
      */
+    public boolean isInvalidUsernameFormat(String username) {
+        if (username == null) return true;
 
+        // Cannot be empty or only whitespace
+        if (username.trim().isEmpty()) return true;
 
-    public boolean checkEdgeCases(String username, String password) {
-        if (username == null || password == null) 
-            return true;
+        // No leading/trailing spaces
+        if (!username.equals(username.trim())) return true;
 
-        if (username.trim().isEmpty() || password.trim().isEmpty()) 
-            return true;
+        // Must be alphanumeric only
+        if (!username.matches("[A-Za-z0-9]+")) return true;
 
-        if (!username.equals(username.trim()) || !password.equals(password.trim())) 
-            return true;
-
-        if (!username.matches("[A-Za-z0-9]+"))
-            return true;
-
-        if (username.length() < 3 || password.length() < 5) 
-            return true;
+        // Minimum length
+        if (username.length() < 3) return true;
+        
+       // Max length check
+        if (username.length() > 20) return true;
 
         return false;
     }
+    
+    /**
+     * Checks whether a password has invalid formatting.
+     * A valid password must be non-null, not be empty or only whitespace
+     * not contain leading/trailing spaces, have minimum length (default 5
+     * characters), and may include special characters.
+     *
+     * @param password the password to check
+     * @return true if formatting is invalid, or false otherwise
+     * @author Jessica Ramirez
+     */
+    public boolean isInvalidPasswordFormat(String password) {
+        if (password == null) return true;
+
+        // Cannot be empty or whitespace
+        if (password.trim().isEmpty()) return true;
+
+        // Cannot have spaces at the beginning or end
+        if (!password.equals(password.trim())) return true;
+
+        // Minimum length 
+        if (password.length() < 5) return true;
+        
+        // Max length check (allow long passwords)
+        if (password.length() > 30) return true;
+
+        return false;
+    }
+
+
     
     /**
      * Checks whether required login or registration fields are empty.

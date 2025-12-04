@@ -1,9 +1,8 @@
+//Integration team
+
 import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * ModuleHub is the integration layer and traffic controller for the application.
@@ -64,6 +63,68 @@ public class ModuleHub {
 
     /** ErrorHandler used to log and handle module-level errors. */
     private final ErrorHandler errorHandler;
+
+    /**
+     * Prints a colored header with horizontal lines of a fixed width,
+     * so the colored header bars line up with the white dividers (e.g. width 70).
+     *
+     * @param title text to show in the center
+     * @param color ANSI color from BeautifulDisplay
+     * @param width total width of the header line
+     *              
+     * @author Denisa Cakoni
+     */
+    private void printFixedWidthHeader(String title, String color, int width) {
+        if (title == null) {
+            title = "";
+        }
+
+        // Ensure width is at least slightly wider than the title
+        if (width < title.length() + 4) {
+            width = title.length() + 4;
+        }
+
+        // Build the top/bottom horizontal line
+        StringBuilder line = new StringBuilder();
+        for (int i = 0; i < width; i++) {
+            line.append('─');
+        }
+
+        // Center the title in a line of length `width`
+        int padding = width - title.length();
+        int left = padding / 2;
+        int right = padding - left;
+
+        StringBuilder middle = new StringBuilder();
+        for (int i = 0; i < left; i++) {
+            middle.append(' ');
+        }
+        middle.append(title);
+        for (int i = 0; i < right; i++) {
+            middle.append(' ');
+        }
+
+        System.out.println(color + line.toString() + BeautifulDisplay.RESET);
+        System.out.println(color + middle.toString() + BeautifulDisplay.RESET);
+        System.out.println(color + line.toString() + BeautifulDisplay.RESET);
+    }
+
+    /**
+     * Drops a trailing ".00" from a currency string so reports
+     * show whole dollars only.
+     * @param amount the original currency string
+     * @return the same string without a trailing
+     * 
+     * @author Denisa Cakoni
+     */
+    private String stripCents(String amount) {
+        if (amount == null) return "";
+        amount = amount.trim();
+        if (amount.endsWith(".00")) {
+            return amount.substring(0, amount.length() - 3);
+        }
+        return amount;
+    }
 
     /**
      * Default constructor for ModuleHub.
@@ -200,7 +261,7 @@ public class ModuleHub {
     }
 
 
-    // Csv upload (Separate from viewing reports)
+  
 
 
     /**
@@ -221,28 +282,71 @@ public class ModuleHub {
             return false;
         }
 
-        File csvFile = new File(csvFilePath);
-        if (!csvFile.exists()) {
-            System.out.println("[ModuleHub] CSV file not found: " + csvFilePath);
+        // helper that trims and also checks ./data/ folder
+        File csvFile = resolveCsvFile(csvFilePath);
+        if (csvFile == null || !csvFile.exists()) {
+            System.out.println("[ModuleHub] CSV file not found: " + csvFilePath.trim());
+            System.out.println("  Working directory: " + new File(".").getAbsolutePath());
             return false;
         }
 
+        // Check if data already exists for this user + year
+        Budget existing = storageModule.getUserBudget(username, year);
+
+        if (existing != null) {
+            System.out.println();
+            BeautifulDisplay.printWarning(
+                    "A budget already exists for year " + year + " for user '" + username + "'.");
+            System.out.print("Do you want to overwrite it? (Y/N): ");
+
+            java.util.Scanner scanner = new java.util.Scanner(System.in);
+            String answer = scanner.nextLine().trim().toLowerCase();
+
+            if (!answer.equals("y") && !answer.equals("yes")) {
+                BeautifulDisplay.printInfo("Upload cancelled. Existing data was not modified.");
+                return false;
+            }
+        }
+
         try {
-            System.out.println("[ModuleHub] Reading CSV file: " + csvFilePath);
+            System.out.println("[ModuleHub] Reading CSV file: " + csvFile.getPath());
 
-            ArrayList<ReportManager.FinancialRecord> records = parseCSVFile(csvFilePath);
+            // Use CSVHandler to read the file into Transaction objects
+            CSVHandler csvHandler = new CSVHandler();
+            ArrayList<Transaction> transactions = csvHandler.readCSV(csvFile.getPath());
 
-            if (records.isEmpty()) {
-                System.out.println("[ModuleHub] No valid records found in CSV.");
+            if (transactions.isEmpty()) {
+                System.out.println("[ModuleHub] No valid transactions found in CSV.");
                 return false;
             }
 
-            Budget budget = convertRecordsToBudget(records, year);
+            // Build a Budget from the Transactions
+            Budget budget = new Budget();
+            for (Transaction t : transactions) {
+                budget.addTransaction(t.getDate(), t.getCategory(), t.getAmount());
+            }
 
+            // Save using StorageManager
             storageModule.saveUserData(username, year, budget);
 
-            System.out.println("[ModuleHub] ✓ Successfully uploaded data for year " + year);
-            System.out.println("[ModuleHub] ✓ " + records.size() + " transactions stored");
+            // Pretty success display
+            BeautifulDisplay.printLoading("Uploading CSV data", 1500);
+            System.out.println();
+
+            String[][] uploadInfo = {
+                    {"Year", String.valueOf(year)},
+                    {"Transactions", String.valueOf(transactions.size())},
+                    {"Status", BeautifulDisplay.GREEN + "Ready" + BeautifulDisplay.RESET}
+            };
+
+            BeautifulDisplay.printKeyValueBox(
+                    "UPLOAD SUCCESSFUL",
+                    uploadInfo,
+                    BeautifulDisplay.BRIGHT_GREEN
+            );
+            BeautifulDisplay.printInfo(
+                    "You can now view reports and run predictions for year " + year + "."
+            );
 
             return true;
 
@@ -253,99 +357,37 @@ public class ModuleHub {
     }
 
     /**
-     * Parses a CSV file containing financial data into a list of FinancialRecord objects.
-     * This helper translates external CSV data into an internal representation understood by the Reports module.
-     * @param csvPath the path to the CSV file that should be parsed
-     * @return a list of FinancialRecord objects representing valid rows in the CSV
+     * Tries to resolve the CSV file path in a few common locations:
+     * As given (relative or absolute), after trimming whitespace
+     * Inside a "data" subfolder (data/filename.csv)
+     *
+     * @param csvFilePath the path or filename the user typed
+     * @return a File that exists on disk, or null if not found
      *
      * @author Denisa Cakoni
      */
-    private ArrayList<ReportManager.FinancialRecord> parseCSVFile(String csvPath) {
-        ArrayList<ReportManager.FinancialRecord> list = new ArrayList<>();
-
-        try (Scanner sc = new Scanner(new File(csvPath))) {
-            if (!sc.hasNextLine()) {
-                return list;
-            }
-            sc.nextLine(); // skip header line
-
-            while (sc.hasNextLine()) {
-                String line = sc.nextLine().trim();
-                if (line.isEmpty()) {
-                    continue;
-                }
-
-                String[] parts = line.split(",");
-                if (parts.length != 3) {
-                    System.err.println("[ModuleHub] Skipping invalid line: " + line);
-                    continue;
-                }
-
-                String date      = parts[0].trim(); // MM/DD/YYYY
-                String category  = parts[1].trim();
-                String amountStr = parts[2].trim();
-
-                String[] dateParts = date.split("/");
-                if (dateParts.length != 3) {
-                    System.err.println("[ModuleHub] Invalid date format: " + date);
-                    continue;
-                }
-
-                int month = Integer.parseInt(dateParts[0]) - 1; // 0-based month index
-                int year  = Integer.parseInt(dateParts[2]);
-
-                double amount = Double.parseDouble(amountStr);
-                boolean isIncome = amount > 0;
-
-                ReportManager.FinancialRecord rec =
-                        new ReportManager.FinancialRecord(
-                                amountStr,
-                                category,
-                                month,
-                                year,
-                                isIncome
-                        );
-
-                list.add(rec);
-            }
-
-        } catch (Exception e) {
-            System.err.println("[ModuleHub] Error reading CSV: " + e.getMessage());
+    private File resolveCsvFile(String csvFilePath) {
+        if (csvFilePath == null) {
+            return null;
         }
 
-        return list;
-    }
+        String cleaned = csvFilePath.trim();   // ← kills the trailing space
 
-    /**
-     * Converts a list of FinancialRecord objects into a Budget instance.
-     * This helper is responsible for data format conversion between the reporting representation and the storage
-     * representation.
-     *
-     * For simplicity, all dates are set to the 15th of each month for the given year.
-     *
-     * @param records the list of FinancialRecord objects that should be converted
-     * @param year    the year that should be applied to the generated dates
-     * @return a Budget instance populated with transactions from the records list
-     *
-     * @author Denisa Cakoni
-     */
-    private Budget convertRecordsToBudget(
-            ArrayList<ReportManager.FinancialRecord> records, int year) {
-
-        Budget budget = new Budget();
-
-        for (ReportManager.FinancialRecord rec : records) {
-            String date = String.format("%02d/15/%d", rec.getMonth() + 1, year);
-
-            String category = rec.getCategory();
-            double amount = Double.parseDouble(rec.getAmount());
-
-            budget.addTransaction(date, category, amount);
+        // As typed (absolute or relative)
+        File direct = new File(cleaned);
+        if (direct.exists()) {
+            return direct;
         }
 
-        return budget;
-    }
+        // Try in ./data/
+        File inDataFolder = new File("data", cleaned);
+        if (inDataFolder.exists()) {
+            return inDataFolder;
+        }
 
+        // Not found anywhere we expect
+        return null;
+    }
 
     // Reports view from stored data (no CSV prompting)
 
@@ -380,14 +422,13 @@ public class ModuleHub {
             Budget budget = storageModule.getUserBudget(username, year);
 
             if (budget == null) {
-                System.out.println("┌────────────────────────────────────────────┐");
-                System.out.println("│           NO DATA AVAILABLE                │");
-                System.out.println("└────────────────────────────────────────────┘");
+                BeautifulDisplay.printError("No financial data found for year " + year);
                 System.out.println();
-                System.out.println("  No financial data found for year " + year);
-                System.out.println("  Please upload a CSV file for this year first.");
-                System.out.println();
-                System.out.println("  Go to: Main Menu → Upload CSV Data");
+                System.out.println("  " + BeautifulDisplay.BRIGHT_CYAN + "📤 To upload data:" +
+                        BeautifulDisplay.RESET);
+                System.out.println("     " + BeautifulDisplay.DIM +
+                        "Main Menu → Financial Data → Upload CSV" +
+                        BeautifulDisplay.RESET);
                 System.out.println();
                 return "[ModuleHub] No data available for year " + year;
             }
@@ -495,18 +536,30 @@ public class ModuleHub {
      * @author Denisa Cakoni
      */
     private void printYearlySection(int year, ReportManager.YearlySummary yearly) {
-        System.out.println("┌───────────────────────────────────────────────┐");
-        System.out.println("│                FINANCIAL REPORT               │");
-        System.out.println("└───────────────────────────────────────────────┘");
-        System.out.println(" Year: " + year);
-        System.out.println();
-        System.out.println(" ───────────────── YEARLY SUMMARY ─────────────────");
-        System.out.printf("   Total Income:    $%s%n", yearly.getTotalIncome());
-        System.out.printf("   Total Expenses:  $%s%n", yearly.getTotalExpenses());
-        System.out.printf("   Net Balance:     $%s%n", yearly.getNetBalance());
-        System.out.println("────────────────────────────────────────────────────\n");
-    }
+        BeautifulDisplay.printGradientHeader("FINANCIAL REPORT - " + year, 70);
 
+        String incomeRaw  = "$" + yearly.getTotalIncome();
+        String expenseRaw = "$" + yearly.getTotalExpenses();
+
+        String incomeStr  = BeautifulDisplay.GREEN  + stripCents(incomeRaw)  + BeautifulDisplay.RESET;
+        String expenseStr = BeautifulDisplay.RED    + stripCents(expenseRaw) + BeautifulDisplay.RESET;
+
+        double netVal = 0.0;
+        try {
+            netVal = Double.parseDouble(yearly.getNetBalance());
+        } catch (Exception ignored) { }
+
+        String netColored = BeautifulDisplay.formatCurrency(netVal);
+
+        String[][] summaryData = {
+                {"Total Income",   incomeStr},
+                {"Total Expenses", expenseStr},
+                {"Net Balance",    netColored}
+        };
+
+        BeautifulDisplay.printKeyValueBox("YEARLY SUMMARY", summaryData, BeautifulDisplay.BRIGHT_CYAN);
+        BeautifulDisplay.printGradientDivider(70);
+    }
     /**
      * Prints the monthly breakdown section of a financial report.
      * Each line represents income, expenses, and balance for a specific month.
@@ -515,20 +568,91 @@ public class ModuleHub {
      * @param monthly the list of monthly summary lines generated by ReportManager
      *
      * @author Denisa Cakoni
+     * @author Kapil Tamang
      */
     private void printMonthlySection(int year, ArrayList<String> monthly) {
-        System.out.println("┌───────────────────────────────────────────────┐");
-        System.out.println("│              MONTHLY BREAKDOWN                │");
-        System.out.println("└───────────────────────────────────────────────┘");
-        System.out.println(" Year: " + year);
-        System.out.println();
-        System.out.println(" ───────────────── MONTHLY SUMMARY ────────────────");
-        for (String line : monthly) {
-            System.out.println("   • " + line);
-        }
-        System.out.println("────────────────────────────────────────────────────\n");
-    }
+        // Colored header bar that matches width 70, just like the white divider
+        printFixedWidthHeader("MONTHLY BREAKDOWN - " + year,
+                BeautifulDisplay.BRIGHT_MAGENTA,
+                70);
 
+            System.out.println("┌──────────────┬──────────────┬───────────────┬───────────────┐");
+            System.out.printf("│ %-12s │ %-12s │ %-13s │ %-13s │%n",
+                        "Month", "Income", "Expenses", "Balance");
+            System.out.println("├──────────────┼──────────────┼───────────────┼───────────────┤");
+            
+               
+            // If monthly.size() is too small, we pass null so the helper prints $0.00.
+            printMonthlyRow(monthly.size() > 0  ? monthly.get(0)  : null, "January");
+            printMonthlyRow(monthly.size() > 1  ? monthly.get(1)  : null, "February");
+            printMonthlyRow(monthly.size() > 2  ? monthly.get(2)  : null, "March");
+            printMonthlyRow(monthly.size() > 3  ? monthly.get(3)  : null, "April");
+            printMonthlyRow(monthly.size() > 4  ? monthly.get(4)  : null, "May");
+            printMonthlyRow(monthly.size() > 5  ? monthly.get(5)  : null, "June");
+            printMonthlyRow(monthly.size() > 6  ? monthly.get(6)  : null, "July");
+            printMonthlyRow(monthly.size() > 7  ? monthly.get(7)  : null, "August");
+            printMonthlyRow(monthly.size() > 8  ? monthly.get(8)  : null, "September");
+            printMonthlyRow(monthly.size() > 9  ? monthly.get(9)  : null, "October");
+            printMonthlyRow(monthly.size() > 10 ? monthly.get(10) : null, "November");
+            printMonthlyRow(monthly.size() > 11 ? monthly.get(11) : null, "December");
+            
+            
+            System.out.println("└──────────────┴──────────────┴───────────────┴───────────────┘");     
+       
+		BeautifulDisplay.printGradientDivider(70);
+    }
+ /**
+    * Prints a single row of the monthly table.
+    *
+    * @param line             Example from 'monthly':
+    *                         "January: Income=$3700.00, Expenses=$-1740.00, Balance=$1960.00"
+    *                         or null if no data for that month.
+    * @param fallbackMonth    month name to use if the line is null or badly formatted.
+    *
+    * @author Kapil Tamang
+    */
+    private void printMonthlyRow(String line, String fallbackMonth) {
+
+        // Default values if there is no data or if it is null
+        String monthName      = fallbackMonth;
+        String incomeMonthly  = "$0.00";
+        String expenseMonthly = "$0.00";
+        String balanceMonthly = "$0.00";
+    
+        if (line != null && !line.isBlank()) {
+            int colonIndex = line.indexOf(':');
+    
+            if (colonIndex >= 0) {
+                // Part before the ':' is the month name
+                monthName = line.substring(0, colonIndex).trim();
+                String rest = line.substring(colonIndex + 1).trim();
+                // It will print out: "Income=$3700.00, Expenses=$-1740.00, Balance=$1960.00"
+    
+                String[] parts = rest.split(",");
+                for (String part : parts) {
+                    part = part.trim();
+                    if (part.startsWith("Income=")) {
+                        incomeMonthly = part.substring("Income=".length()).trim();
+                    } else if (part.startsWith("Expenses=")) {
+                        expenseMonthly = part.substring("Expenses=".length()).trim();
+                    } else if (part.startsWith("Balance=")) {
+                        balanceMonthly = part.substring("Balance=".length()).trim();
+                    }
+                }
+            } else {
+                
+                monthName = line.trim();
+            }
+        }
+
+        incomeMonthly  = stripCents(incomeMonthly);
+        expenseMonthly = stripCents(expenseMonthly);
+        balanceMonthly = stripCents(balanceMonthly);
+
+        // Print the row aligned in the table
+        System.out.printf("│ %-12s │ %12s │ %13s │ %13s │%n",
+                monthName, incomeMonthly, expenseMonthly, balanceMonthly);
+    }
     /**
      * Prints the category summary section of a financial report.
      * Each line represents a spending or income category and its total amount.
@@ -539,16 +663,76 @@ public class ModuleHub {
      * @author Denisa Cakoni
      */
     private void printCategorySection(int year, ArrayList<String> categorySummaries) {
-        System.out.println("┌───────────────────────────────────────────────┐");
-        System.out.println("│              CATEGORY SUMMARY                 │");
-        System.out.println("└───────────────────────────────────────────────┘");
-        System.out.println(" Year: " + year);
-        System.out.println();
-        System.out.println(" ──────────────── CATEGORY SUMMARY ────────────────");
-        for (String line : categorySummaries) {
-            System.out.println("   • " + line);
+        // Use our fixed-width colorful header so the lines match the white borders.
+        printFixedWidthHeader("CATEGORY SUMMARY - " + year,
+                BeautifulDisplay.BRIGHT_YELLOW, 70);
+
+        if (categorySummaries == null || categorySummaries.isEmpty()) {
+            System.out.println("No category data available for this year.");
+            BeautifulDisplay.printGradientDivider(70);
+            return;
         }
-        System.out.println("────────────────────────────────────────────────────\n");
+
+        // Parse Category:into name + amount (string)
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<String> amounts = new ArrayList<>();
+
+        for (String line : categorySummaries) {
+            if (line == null || line.trim().isEmpty()) {
+                continue;
+            }
+
+            String text = line.trim();
+            String name = text;
+            String amount = "";
+
+            int colonIndex = text.indexOf(':');
+            if (colonIndex >= 0) {
+                name = text.substring(0, colonIndex).trim();
+                amount = text.substring(colonIndex + 1).trim();
+            }
+
+            amount = stripCents(amount);
+
+            names.add(name);
+            amounts.add(amount);
+        }
+
+        // Compute column widths
+        int nameWidth = "Category".length();
+        int amountWidth = "Amount".length();
+
+        for (String n : names) {
+            if (n.length() > nameWidth) {
+                nameWidth = n.length();
+            }
+        }
+        for (String a : amounts) {
+            if (a.length() > amountWidth) {
+                amountWidth = a.length();
+            }
+        }
+
+        // Build header line and borders based on its length
+        String header = String.format("│ %-3s │ %-" + nameWidth + "s │ %-" + amountWidth + "s │",
+                "#", "Category", "Amount");
+        String border = "─".repeat(header.length() - 2); // minus the two side bars
+
+        String borderColor = BeautifulDisplay.BRIGHT_WHITE;
+
+        System.out.println(borderColor + "┌" + border + "┐" + BeautifulDisplay.RESET);
+        System.out.println(borderColor + header + BeautifulDisplay.RESET);
+        System.out.println(borderColor + "├" + border + "┤" + BeautifulDisplay.RESET);
+
+        // Body rows
+        for (int i = 0; i < names.size(); i++) {
+            String row = String.format("│ %3d │ %-" + nameWidth + "s │ %" + amountWidth + "s │",
+                    (i + 1), names.get(i), amounts.get(i));
+            System.out.println(borderColor + row + BeautifulDisplay.RESET);
+        }
+
+        System.out.println(borderColor + "└" + border + "┘" + BeautifulDisplay.RESET);
+        BeautifulDisplay.printGradientDivider(70);
     }
 
     /**
@@ -567,28 +751,9 @@ public class ModuleHub {
                                  ArrayList<String> monthly,
                                  ArrayList<String> categorySummaries) {
 
-        System.out.println("┌───────────────────────────────────────────────┐");
-        System.out.println("│                FINANCIAL REPORT               │");
-        System.out.println("└───────────────────────────────────────────────┘");
-
-        System.out.println(" Year: " + year);
-        System.out.println();
-        System.out.println(" ───────────────── YEARLY SUMMARY ─────────────────");
-        System.out.printf("   Total Income:    $%s%n", yearly.getTotalIncome());
-        System.out.printf("   Total Expenses:  $%s%n", yearly.getTotalExpenses());
-        System.out.printf("   Net Balance:     $%s%n", yearly.getNetBalance());
-
-        System.out.println("\n ───────────────── MONTHLY SUMMARY ────────────────");
-        for (String line : monthly) {
-            System.out.println("   • " + line);
-        }
-
-        System.out.println("\n ──────────────── CATEGORY SUMMARY ────────────────");
-        for (String line : categorySummaries) {
-            System.out.println("   • " + line);
-        }
-
-        System.out.println("────────────────────────────────────────────────────\n");
+        printYearlySection(year, yearly);
+        printMonthlySection(year, monthly);
+        printCategorySection(year, categorySummaries);
     }
 
     /**
@@ -613,43 +778,56 @@ public class ModuleHub {
                                       boolean includeBanner) {
 
         if (includeBanner) {
-            String analysisBanner = reportFormatter.printHeaderFooter(
-                    "Additional Analysis",
-                    "End of analysis"
-            );
-            System.out.println(analysisBanner);
+            // Colored header with same width as dividers (70)
+            printFixedWidthHeader("FINANCIAL INSIGHTS",
+                    BeautifulDisplay.BRIGHT_GREEN,
+                    70);
         }
 
-        System.out.println("Highest spending month: " + highestMonth);
-        System.out.println("Top spending category: " + topSpendingCategory);
-        System.out.println("Overall net balance: " + netBalancePretty);
+        String[] insights = {
+                "📈 Highest spending month: " +
+                        BeautifulDisplay.BOLD + BeautifulDisplay.BRIGHT_YELLOW +
+                        highestMonth + BeautifulDisplay.RESET,
+                "🏆 Top spending category: " +
+                        BeautifulDisplay.BOLD + BeautifulDisplay.BRIGHT_MAGENTA +
+                        topSpendingCategory + BeautifulDisplay.RESET,
+                "💰 Overall net balance: " + BeautifulDisplay.BOLD + netBalancePretty +
+                        BeautifulDisplay.RESET
+        };
+
+        BeautifulDisplay.printColorfulList(insights, BeautifulDisplay.BRIGHT_CYAN);
 
         if (negativeBalanceMonths == null || negativeBalanceMonths.isEmpty()) {
-            System.out.println("No months with negative balance.");
+            BeautifulDisplay.printSuccess(
+                    "All months had a non-negative balance. Nice job managing your finances!");
         } else {
-            System.out.println("Months with negative balance:");
-            for (String month : negativeBalanceMonths) {
-                System.out.println(" - " + month);
+            BeautifulDisplay.printWarning(
+                    negativeBalanceMonths.size() + " month(s) had a negative balance:");
+            String[] neg = new String[negativeBalanceMonths.size()];
+            for (int i = 0; i < negativeBalanceMonths.size(); i++) {
+                neg[i] = BeautifulDisplay.RED + "⚠ " + negativeBalanceMonths.get(i)
+                        + BeautifulDisplay.RESET;
             }
+            BeautifulDisplay.printColorfulList(neg, BeautifulDisplay.RED);
         }
+
+        BeautifulDisplay.printGradientDivider(70);
     }
 
 
-    // Predictions (runs from stored data)
+    // Predictions
 
 
     /**
      * Runs a prediction scenario on previously uploaded and stored data:
      * loads the Budget for a user and year from StorageManager
-     * converts the Budget into a temporary CSV file for the Prediction module
-     * uses DataReader to read the CSV
-     * runs a specified prediction scenario
+     * passes the Budget directly into the Prediction DataReader
+     * delegates the selected scenario to ScenarioSimulator
      *
-     * supported scenario types:
-     * summary: prints a summary report using Prediction DataReader
-     * compare-demo: creates two scenarios and compares them
-     * deficit: runs the DeficitSolver to analyze overspending
-     * surplus: runs the SurplusOptimizer to analyze surplus usage
+     * Supported scenario types:
+     * summary–prints an overall income/expense/net summary
+     * deficit–checks for a deficit and prints a proportional reduction plan
+     * surplus–checks for a surplus and prints a proportional allocation plan
      *
      * @param username     the user requesting the prediction
      * @param year         the year whose data should be analyzed
@@ -667,57 +845,66 @@ public class ModuleHub {
             Budget budget = storageModule.getUserBudget(username, year);
 
             if (budget == null) {
-                System.out.println("┌────────────────────────────────────────────┐");
-                System.out.println("│           NO DATA AVAILABLE                │");
-                System.out.println("└────────────────────────────────────────────┘");
+                BeautifulDisplay.printError("No financial data found for year " + year);
                 System.out.println();
-                System.out.println("  No financial data found for year " + year);
-                System.out.println("  Please upload a CSV file for this year first.");
+                System.out.println("  " + BeautifulDisplay.BRIGHT_CYAN + "📤 To upload data:" +
+                        BeautifulDisplay.RESET);
+                System.out.println("     " + BeautifulDisplay.DIM +
+                        "Main Menu → Financial Data → Upload CSV" +
+                        BeautifulDisplay.RESET);
                 System.out.println();
                 return "[ModuleHub] No data available for year " + year;
             }
 
-            String tempCsvPath = createTemporaryCSVForPrediction(budget, username, year);
-
-            predictionData.readData(tempCsvPath);
+           predictionData.readFromBudget(budget);
 
             switch (scenarioType.toLowerCase()) {
 
                 case "summary": {
-                    String summary = predictionData.createSummaryReport();
-                    System.out.println("\n--- Prediction Summary ---");
-                    System.out.println(summary);
-                    return "Prediction summary generated.";
-                }
-
-                case "compare-demo": {
-                    predictionModule.createScenario("BaseScenario");
-                    predictionModule.createScenario("AdjustedScenario");
-
-                    predictionModule.applyExpenseChange(
-                            "AdjustedScenario", "Entertainment", 50.0);
-
-                    predictionModule.compareScenarios(
-                            "BaseScenario", "AdjustedScenario");
-
-                    return "Scenario comparison complete.";
+                    BeautifulDisplay.printGradientHeader("PREDICTION SUMMARY - " + year, 70);
+                    String summary = predictionModule.buildFinancialSummary();
+                    System.out.println(BeautifulDisplay.BRIGHT_WHITE + summary + BeautifulDisplay.RESET);
+                    BeautifulDisplay.printGradientDivider(70);
+                    return "Prediction summary completed for " + year + ".";
                 }
 
                 case "deficit": {
-                    DeficitSolver ds = new DeficitSolver(predictionData);
-                    System.out.println("\n--- Deficit Prediction ---");
-                    System.out.println(ds.generateSummary());
-                    return "Deficit prediction generated.";
+                    BeautifulDisplay.printGradientHeader("DEFICIT ANALYSIS - " + year, 70);
+
+                    if (!predictionModule.hasDeficit()) {
+                        BeautifulDisplay.printSuccess(
+                                "You do not currently have a deficit. No cuts are required.");
+                        BeautifulDisplay.printGradientDivider(70);
+                        return "No deficit detected for " + year + ".";
+                    }
+
+                    BeautifulDisplay.printWarning(
+                            "Budget deficit detected. Suggested proportional reduction plan:");
+                    System.out.println();
+                    String plan = predictionModule.buildDeficitProportionalPlan();
+
+                    System.out.println(BeautifulDisplay.BRIGHT_WHITE + plan + BeautifulDisplay.RESET);
+                    BeautifulDisplay.printGradientDivider(70);
+                    return "Deficit analysis completed for " + year + ".";
                 }
 
                 case "surplus": {
-                    SurplusOptimizer so = new SurplusOptimizer(predictionData);
-                    System.out.println("\n--- Surplus Prediction ---");
-                    System.out.println(so.surplusTracker());
-                    System.out.println(so.surplusSuggestion());
-                    return "Surplus prediction generated.";
-                }
+                    BeautifulDisplay.printGradientHeader("SURPLUS ANALYSIS - " + year, 70);
 
+                    if (!predictionModule.hasSurplus()) {
+                        BeautifulDisplay.printWarning(
+                                "You do not currently have a surplus for this year.");
+                        BeautifulDisplay.printGradientDivider(70);
+                        return "No surplus detected for " + year + ".";
+                    }
+
+                    BeautifulDisplay.printSuccess("Surplus detected. Suggested allocation plan:");
+                    System.out.println();
+                    String plan = predictionModule.buildSurplusProportionalPlan();
+                    System.out.println(BeautifulDisplay.BRIGHT_WHITE + plan + BeautifulDisplay.RESET);
+                    BeautifulDisplay.printGradientDivider(70);
+                    return "Surplus analysis completed for " + year + ".";
+                }
                 default:
                     return "[ModuleHub] Unknown prediction scenarioType: " + scenarioType;
             }
@@ -728,38 +915,6 @@ public class ModuleHub {
         }
     }
 
-    /**
-     * Creates a temporary CSV file that mirrors the Budget data so that the
-     * Prediction module can read it with its DataReader.
-     * amounts are cast to integers to match the Prediction team's expectations.
-     *
-     * @param budget   the budget whose transactions should be exported
-     * @param username the username (used for naming the temporary file)
-     * @param year     the year (also used for naming the file)
-     * @return the path to the newly created temporary CSV file
-     *
-     * @author Denisa Cakoni
-     */
-    private String createTemporaryCSVForPrediction(Budget budget, String username, int year) {
-        String tempFileName = "temp_prediction_" + username + "_" + year + ".csv";
-
-        try (PrintWriter writer = new PrintWriter(new FileWriter(tempFileName))) {
-            writer.println("Date,Category,Amount");
-
-            for (Transaction t : budget.getAllTransactions()) {
-                writer.println(
-                        t.getDate() + "," +
-                                t.getCategory() + "," +
-                                (int) t.getAmount()
-                );
-            }
-
-        } catch (Exception e) {
-            System.err.println("[ModuleHub] Error creating temp CSV: " + e.getMessage());
-        }
-
-        return tempFileName;
-    }
 
 
     // Validation
@@ -1057,29 +1212,41 @@ public class ModuleHub {
         }
     }
 
-    /**
-     * Registers a new user account using the Accounts module.
-     * This method forwards all data and reports any failure back to the console.
+      /**
+     * Registers a new user account by delegating to the Accounts module.
+     * This wrapper:
+     * forwards all user-centered fields,
+     * passes along the caller's confirmation flag,
+     * and reports any failure back to the console.
      *
      * @param username       the desired username
      * @param password       the chosen password
      * @param secretQuestion the selected secret question for account recovery
      * @param secretAnswer   the answer to the secret question
-     * @return true if registration succeeds, false otherwise
+     * @param confirm        true if registration is confirmed, false otherwise
+     * @return true if the account was created and saved successfully; false if
+     * validation fails, the username is taken, the user cancels, or saving fails
      *
      * @author Denisa Cakoni
      */
     public boolean registerUser(String username,
                                 String password,
                                 String secretQuestion,
-                                String secretAnswer) {
+                                String secretAnswer,
+                                boolean confirm) {
         try {
             boolean ok = accountsModule.registerAccount(
-                    username, password, secretQuestion, secretAnswer);
+                    username, password, secretQuestion, secretAnswer, confirm
+            );
+
             if (!ok) {
-                System.out.println("[ModuleHub] Registration failed: invalid data or username already exists.");
+                System.out.println(
+                        "[ModuleHub] Registration failed: invalid data, duplicate username, or user cancelled."
+                );
             }
+
             return ok;
+
         } catch (Exception e) {
             errorHandler.handleModuleError("Accounts", e);
             return false;
@@ -1175,17 +1342,23 @@ public class ModuleHub {
      * Resets a user's password to a new value using the Accounts module.
      * Any failure is reported through the console.
      *
-     * @param username    the username whose password should be reset
-     * @param newPassword the new password to set
-     * @return true if the password reset succeeds, false otherwise
+     * @param username     the username of the account being recovered
+     * @param secretAnswer the plain-text secret answer entered by the user
+     * @param newPassword  the new password the user wishes to set
+     * @return true if the secret answer is correct, the new password is valid,
+     *         and the update is saved successfully; false otherwise
      *
      * @author Denisa Cakoni
      */
-    public boolean resetUserPassword(String username, String newPassword) {
+    public boolean resetUserPassword(String username,
+                                     String secretAnswer,
+                                     String newPassword) {
         try {
-            boolean ok = accountsModule.resetPassword(username, newPassword);
+            boolean ok = accountsModule.resetPassword(username, secretAnswer, newPassword);
             if (!ok) {
-                System.out.println("[ModuleHub] Password reset failed (user may not exist).");
+                System.out.println(
+                        "[ModuleHub] Password reset failed: invalid secret answer, invalid password, or user may not exist."
+                );
             }
             return ok;
         } catch (Exception e) {
@@ -1193,29 +1366,91 @@ public class ModuleHub {
             return false;
         }
     }
+
+    /**
+     * Updates a user's secrete question and answer using the Accounts module.
+     * Any failure is reported through the console.
+     *
+     * @param username    the username whose password should be reset
+     * @param newQuestion the new secrert question to set
+     * @param newAnswer   the new secrert answer to set
+     * @return true if the security question & answer reset succeeds, false otherwise
+     *
+     * @author Aaron Madou
+     */
+	public boolean updateUserSecretQuestionAndAnswer(String username, String newQuestion, String newAnswer) {
+		try {
+			boolean ok = accountsModule.setSecretQuestionAndAnswer(username, newQuestion, newAnswer);
+			if(!ok) {
+				System.out.println("[ModuleHub] Password reset failed (user may not exist).");
+			}
+			return ok;
+		} catch (Exception e) {
+			errorHandler.handleModuleError("Accounts", e);
+			return false;
+		}
+	}
 }
+
+
+
 
 /**
  * ErrorHandler manages all error handling and recovery operations for the application.
- * Logs errors, displays user-friendly error messages, and recovers from errors gracefully
- * to prevent application crashes.
+ * It receives exceptions thrown by other modules, logs the details for debugging,
+ * displays user-friendly messages, and safely recovers control back to the main menu.
+ *
+ * This prevents the application from crashing on unexpected errors.
  *
  * @author Kapil Tamang
  */
 class ErrorHandler {
 
+    /**
+     * Creates a new ErrorHandler instance.
+     * The handler provides a centralized way to display, log, and recover
+     * from errors across all modules
+     * @author Kapil Tamang
+     */
     public ErrorHandler() {}
 
+    /**
+     * Handles an exception that was thrown by a module.
+     *
+     * This method does *not* catch exceptions itself.
+     * Instead, exceptions are passed into this method after being caught
+     * in ModuleHub or other components.
+     *
+     * @param moduleName the name of the module where the error occurred
+     * @param error      the exception that was thrown
+     *
+     * @author Kapil Tamang
+     */
     public void handleModuleError(String moduleName, Exception error) {
-        displayError("An error has occured in the " + moduleName + " module.");
+        displayError("An error has occurred in the " + moduleName + " module.");
         logError("Error in " + moduleName, error);
         recoverToMenu();
     }
 
+    /**
+     * Displays a message indicating the system is returning to the main menu.
+     * This keeps the program usable after an error.
+     *
+     * @author Kapil Tamang
+     */
     public void recoverToMenu() {
         System.out.println("Restoring main menu.");
     }
 
+    /**
+     * Logs detailed debugging information about an error.
+     * This includes the timestamp, message, exception type, and full stack trace.
+     *
+     * @param errorMessage a brief description of the error context
+     * @param error        the exception thrown
+     *
+     * @author Kapil Tamang
+     */
     public void logError(String errorMessage, Exception error) {
         System.err.println("ERROR");
         System.err.println("Time: " + java.time.LocalDateTime.now());
@@ -1225,6 +1460,15 @@ class ErrorHandler {
         error.printStackTrace(System.err);
     }
 
+    /**
+     * Displays a user-friendly error message to the console.
+     * This avoids exposing technical details to the user while still informing them
+     * that something went wrong.
+     *
+     * @param message the error message to display
+     *
+     * @author Kapil Tamang
+     */
     public void displayError(String message) {
         System.out.println("ERROR");
         System.out.println(message);

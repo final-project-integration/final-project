@@ -1,254 +1,401 @@
+//Prediction Team Module
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ScenarioSimulator class for the Prediction Team module.
- * Provides functionality to create, modify, and compare multiple financial scenarios.
- * Scenarios represent "what-if" versions of a budget based on income and expense data.
- * This class manages multiple independent scenarios that can be modified and analyzed
- * to explore different financial outcomes and decision impacts.
+ *
+ * This class does not handle any user input or printing.
+ * It is intended to be called by ModuleHub that manages user interaction.
+ *
+ * ScenarioSimulator is responsible for:
+ *   - orchestrating calls between DataReader, DeficitSolver, and SurplusOptimizer
+ *   - packaging results as strings or simple data structures for the UI to display.
+ *
  * @author Tanzina Sumona
  */
 public class ScenarioSimulator {
-    private final ArrayList<Scenario> scenarios = new ArrayList<>();
-    private final ArrayList<String> scenarioNames = new ArrayList<>();
-    private DataReader baseData;
 
     /**
-     * Constructs a default ScenarioSimulator with no base data.
-     * Creates an empty simulator. Must provide base data via constructor
-     * or scenarios will not be created properly.
-     * @author Tanzina Sumona
-     */
-    public ScenarioSimulator() {
-        // Default constructor
-    }
-
-    /**
-     * Constructs a ScenarioSimulator initialized with base financial data.
-     * Initializes the simulator with data from a DataReader. This base data will be
-     * used as the foundation for creating new scenarios.
+     * Prediction module is wired to share the same DataReader
+     * that ModuleHub owns. DataReader is assumed to have already
+     * read data via readData() or readFromBudget().
      *
-     * @param reader the DataReader containing loaded financial data from CSV
+     * @param reader a DataReader that has already loaded budget data
      * @author Tanzina Sumona
      */
+
+    private final DataReader dataReader;
     public ScenarioSimulator(DataReader reader) {
-        this.baseData = reader;
+        this.dataReader = reader;
     }
+    
     /**
-     * Creates a new financial scenario with the specified name.
-     * Initializes a new scenario with data from the base DataReader. The scenario
-     * is an independent copy and can be modified without affecting others.
+    * All numbers come from DataReader, DeficitSolver, and SurplusOptimzer.
+    * @bug 68237214 Fixed incorrect deficit detection. Previously, Prediction Summary and DeficitSolver reported 
+    * "You do not currently have a deficit" even when total expenses exceeded total income (e.g., overspending by $7000 in test CSV).
+    * Cause: net balance comparison used incorrect sign logic.
+    * Fix: netBalance < 0 now correctly identifies deficit and reports
+    *      deficit = -netBalance.
+    * @since December 2 2025, 12:30 AM
+    * @bug 68237256 Fixed: Removed negative sign from printed expenses. Expenses are already understood as money spent, so showing a '-' is unnecessary 
+    * and can confuse the user. Values are still stored correctly internally.
+    * @since December 2 2025, 2:40 AM
+    * @return formatted summary text for the UI to display
+    * @author Tanzina Sumona
+    */
+    public String buildFinancialSummary() {
+        int totalIncome  = dataReader.getTotalIncome();
+        int totalExpenses = dataReader.getTotalExpenses(); // negative
+        int net = totalIncome + totalExpenses;   // profit/loss
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("===== Financial Summary =====\n\n");
+        sb.append("Total Income:   $").append(totalIncome).append("\n");
+        sb.append("Total Expense:  $").append(Math.abs(totalExpenses)).append("\n");
+        sb.append("Net Balance:    $").append(net).append("\n\n");
+
+        if (net > 0) {
+            int surplus = net;
+            sb.append("You have a Surplus of: $").append(surplus).append("\n");
+            sb.append("A surplus means you are earning more than you are spending.\n This extra money can be used for savings, investments, paying off debt, or optional spending.\n");
+        } else if (net < 0) {
+            int deficit = -net;
+            sb.append("You have a Deficit of: $").append(deficit).append("\n");
+            sb.append("A deficit means you are spending more than you are earning.\n You may need to reduce your expenses or increase your income to balance your budget.\n");
+        } else {
+            sb.append("You are breaking even (no surplus or deficit).\n");
+            sb.append("This means your income exactly matches your expenses.\n");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Convenience helper so the UI can quickly check if the current budget is in deficit.
      *
-     * @param scenarioName the unique name for the new scenario
-     * @return true if the scenario was created successfully; false if base data is null
-     *         or a scenario with the same name already exists
+     * @return true if there is a deficit, false otherwise
      * @author Tanzina Sumona
      */
-    public boolean createScenario(String scenarioName) {
-        // Ensure base data is available
-        if (baseData == null) {
-            System.out.println("Error: No base data loaded for ScenarioSimulator.");
-        return false;
-        }
-        // Check if scenario with the same name already exists
-        if (scenarioExists(scenarioName)) {
-            return false;
-        }
-        // Build new Scenario from base data
-        Scenario newScenario = buildScenarioFromBaseData();
-        addScenario(scenarioName, newScenario);
+    public boolean hasDeficit() {
+        double totalIncome = 0.0;
+        double totalExpenses = 0.0;
 
-        return true;
-    }
-    /**
-     * Checks if a scenario with the specified name already exists.
-     *
-     * @param scenarioName the name to check
-     * @return true if a scenario with this name exists; false otherwise
-     */
-    private boolean scenarioExists(String scenarioName) {
-        for (String name : scenarioNames) {
-            if (name.equals(scenarioName)) {
-                return true;
+        List<String> categories = dataReader.getCategories();
+        List<Integer> amounts   = dataReader.getAmounts();
+
+        for (int i = 0; i < categories.size(); i++) {
+            String category = categories.get(i);
+            int amount = amounts.get(i);
+
+            if (DataReader.isIncomeCategory(category)) {
+                // incomes are stored as positive
+                totalIncome += amount;
+            } else if (DataReader.isExpenseCategory(category)) {
+                // expenses are stored as negative in DataReader, so use absolute value
+                totalExpenses += Math.abs(amount);
             }
         }
-        return false;
+        double net = totalIncome - totalExpenses;
+        // Deficit if expenses > income
+        return net < 0;
     }
+
     /**
-     * Builds a new Scenario object using the base DataReader data.
-     * Creates a Scenario by extracting income and expense data from the base DataReader,
-     * classifying each entry, and storing in appropriate lists.
+     * Convenience helper so the UI can quickly check if
+     * the current budget is in surplus.
      *
-     * @return a new Scenario initialized with base data
+     * @return true if there is a surplus, false otherwise
+     * @author Tanzina Sumona
      */
-    private Scenario buildScenarioFromBaseData() {
+    public boolean hasSurplus() {
+        int totalIncome   = dataReader.getTotalIncome();
+        int totalExpenses = dataReader.getTotalExpenses(); // negative
+        int net           = totalIncome + totalExpenses;
+        return net > 0;
+    }
 
-    // Get raw data from DataReader
-    List<String> allCategories = baseData.getCategories();
-    List<Integer> allAmounts = baseData.getAmounts();
+    /**
+     * Returns a list of expense categories the user is allowed
+     * to adjust for deficit "What-If" scenarios.
+     *
+     * Uses DataReader's unique expense categories and optionally
+     * filters out fixed categories such as "Rent".
+     *
+     * @return list of adjustable expense category names
+     * @author Tanzina Sumona
+     */
+    // public List<String> getAdjustableExpenseCategories() {
+    //     List<String> base = new ArrayList<>(dataReader.getUniqueExpenseCategories());
 
-    // Prepare separate lists for scenario
-    ArrayList<String> incomeCategories = new ArrayList<>();
-    ArrayList<String> expenseCategories = new ArrayList<>();
-    ArrayList<Double> incomeValues = new ArrayList<>();
-    ArrayList<Double> expenseValues = new ArrayList<>();
+    //     // Optionally remove fixed categories like Rent
+    //     base.removeIf(c -> c.equalsIgnoreCase("Rent"));
+    //     base.removeIf(c -> c.equalsIgnoreCase("Home"));
+    //     base.removeIf(c -> c.equalsIgnoreCase("Utilities"));
 
-    // Split categories into income and expense
-    for (int i = 0; i < allCategories.size(); i++) {
-        String category = allCategories.get(i);
-        double amount = allAmounts.get(i);
+    //     return base;
+    // }
 
-        if (DataReader.isIncomeCategory(category)) {
-            incomeCategories.add(category);
-            incomeValues.add(amount);
-        } else if (DataReader.isExpenseCategory(category)) {
-            expenseCategories.add(category);
-            expenseValues.add(amount);
+    /**
+     * Builds the "Deficit What-If" explanation for a single
+     * chosen category. This method assumes the caller has
+     * already checked that there is a deficit and that the
+     * category name is valid.
+     *
+     * Internally, this delegates to DeficitSolver's
+     * generateWhatIfSummary(...) method.
+     *
+     * @param category expense category to reduce (e.g. "Entertainment")
+     * @return formatted explanation string for the UI to display
+     * @author Tanzina Sumona
+     */
+    public String buildDeficitWhatIfSummary(String category) {
+        // 1. If there is no overall deficit, show the message
+        if (!hasDeficit()) {
+            return """
+                ===== Deficit What-If =====
+                    You do not currently have a deficit, which means your income covers
+                    all of your expenses for this period.
+
+                    There is no need to reduce any spending right now.
+                    Instead, you can focus on:
+                        • Building an emergency fund
+                        • Increasing savings or investments
+                        • Paying down any existing debt
+                        • Planning for future large expenses
+
+                    You're in a stable financial position.
+                """;
         }
+
+        // 2. There is an overall deficit. See how much of it is in adjustable categories.
+        DeficitSolver solver = new DeficitSolver(dataReader);
+        double adjustableDeficit = solver.calculateDeficit();
+
+        if (adjustableDeficit <= 0) {
+            // Overall deficit, but nothing in the adjustable categories.
+            return """
+                ===== Deficit What-If =====
+                    You do have a deficit, but it is not coming from adjustable categories
+                    like Food, Appearance, or Entertainment.
+
+                    Instead, your deficit is likely due to fixed costs such as:
+                        • Rent or Home expenses
+                        • Utilities
+                        • Work-related fixed costs
+                        • Or insufficient income overall
+
+                    Cutting discretionary categories alone will not fully close the gap.
+                """;
+        }
+
+        // 3. Overall & adjustable deficit: delegate to DeficitSolver's explanation.
+        return solver.generateWhatIfSummary(category);
     }
-        // Build and return the Scenario
-        return new Scenario(
-                incomeCategories,
-                expenseCategories,
-                incomeValues,
-                expenseValues
-        );
-    }
+
+
+
     /**
-     * Adds a scenario and its name to the internal storage lists.
+     * Builds a proportional reduction plan across all expense
+     * categories to eliminate the current deficit. This uses
+     * DeficitSolver's proportionalReductions() method.
      *
-     * @param scenarioName the name of the scenario to add
-     * @param scenario the Scenario object to store
+     * @return formatted plan text for the UI to display
+     * @author Tanzina Sumona
      */
-    private void addScenario(String scenarioName, Scenario scenario) {
-        scenarioNames.add(scenarioName);
-        scenarios.add(scenario);
-    }
-    /**
-     * Finds the index of a scenario by its name.
-     *
-     * @param scenarioName the name of the scenario to find
-     * @return the index of the scenario if found; -1 if not found
-     */
-    private int findScenarioIndex(String scenarioName) {
-        for (int i = 0; i < scenarioNames.size(); i++) {
-            if (scenarioNames.get(i).equals(scenarioName)) {
-                return i;
+    public String buildDeficitProportionalPlan() {
+        // 1. Compute the overall deficit using ALL categories
+        double totalIncome = 0.0;
+        double totalExpenses = 0.0;
+
+        List<String> allCategories = dataReader.getCategories();
+        List<Integer> allAmounts   = dataReader.getAmounts();
+
+        for (int i = 0; i < allCategories.size(); i++) {
+            String category = allCategories.get(i);
+            int amount      = allAmounts.get(i);
+
+            if (DataReader.isIncomeCategory(category)) {
+                totalIncome += amount;               // income stored as positive
+            } else if (DataReader.isExpenseCategory(category)) {
+                totalExpenses += Math.abs(amount);   // treat expenses as positive
             }
         }
-        return -1;
-    }
 
-    /**
-     * Retrieves a Scenario object by its name.
-     *
-     * @param scenarioName the name of the scenario to retrieve
-     * @return the Scenario object if found; null if not found
-     */
-    private Scenario getScenario(String scenarioName) {
-        int idx = findScenarioIndex(scenarioName);
-        if (idx == -1) 
-            return null;
-        return scenarios.get(idx);
-    }
-    /**
-     * Applies a change to an expense category in the specified scenario.
-     * Modifies the expense amount for a specific category in the given scenario.
-     *
-     * @param scenarioName the name of the scenario to modify
-     * @param category the expense category to change
-     * @param newAmount the new expense amount
-     * @return true if the change was applied successfully; false if scenario or category not found
-     * @author Tanzina Sumona
-     */
-    public boolean applyExpenseChange(String scenarioName, String category, double newAmount) {
-        Scenario s = getScenario(scenarioName);
-        if (s == null) 
-            return false;
+        double overallDeficit = totalExpenses - totalIncome;
 
-        ArrayList<String> expCats = s.getExpenseCategories();
-        ArrayList<Double> expVals = s.getExpenseValues();
+        // Caller (switch "deficit") should only call this when hasDeficit() is true,
+        // but add a small safety guard just in case.
+        if (overallDeficit <= 0) {
+            return """
+                ===== Proportional Deficit Plan =====
+                No overall deficit was detected. This planner is intended to be
+                used only when your expenses are greater than your income.
+                """;
+        }
 
-        for (int i = 0; i < expCats.size(); i++) {
-            if (expCats.get(i).equals(category)) {
-                expVals.set(i, newAmount);
-                return true;
+        // 2. Use DeficitSolver to figure out how to spread cuts across FLEXIBLE categories
+        DeficitSolver solver = new DeficitSolver(dataReader);
+        ArrayList<String> categories = solver.getCategories();
+        ArrayList<Double> expenses   = solver.getExpenses();
+        ArrayList<Double> reductions = solver.proportionalReductions();
+
+        // Check if any adjustable categories actually have suggested cuts
+        boolean anyReduction = false;
+        for (double r : reductions) {
+            if (r > 0.0) {
+                anyReduction = true;
+                break;
             }
         }
-        return false; // category not found
-    }
-    /**
-     * Applies a change to an income category in the specified scenario.
-     * Modifies the income amount for a specific source in the given scenario.
-     *      
-     * @param scenarioName the name of the scenario to modify
-     * @param category the income category to change
-     * @param newAmount the new income amount
-     * @return true if the change was applied successfully; false if scenario or category not found
-     * @author Tanzina Sumona
-     */
-    public boolean applyIncomeChange(String scenarioName, String category, double newAmount) {
-        Scenario s = getScenario(scenarioName);
-        if (s == null) 
-            return false;
 
-        ArrayList<String> incCats = s.getIncomeCategories();
-        ArrayList<Double> incVals = s.getIncomeValues();
+        StringBuilder sb = new StringBuilder();
+        sb.append("===== Proportional Deficit Plan =====\n");
+        sb.append(String.format("Your overall deficit for this period is $%.2f.%n", overallDeficit));
+        sb.append("\n");
 
-        for (int i = 0; i < incCats.size(); i++) {
-            if (incCats.get(i).equals(category)) {
-                incVals.set(i, newAmount);
-                return true;
+        if (!anyReduction) {
+            sb.append("No adjustable (non-fixed) expense categories were found to cut.\n");
+            sb.append("Your deficit likely comes from fixed costs such as Rent, Home,\n");
+            sb.append("Utilities, or Work, or from insufficient income.\n");
+            sb.append("Consider increasing income or revisiting those fixed expenses.\n");
+            return sb.toString();
+        }
+
+        sb.append("Based on your adjustable spending, we suggest:\n\n");
+
+        for (int i = 0; i < categories.size(); i++) {
+            double r = reductions.get(i);
+            if (r > 0.0) {
+                sb.append(String.format("  %-15s reduce by $%.2f (current: $%.2f)%n",
+                        categories.get(i), r, expenses.get(i)));
             }
         }
-        return false;
+
+        sb.append("\nThese reductions are proportional to how much you currently spend\n");
+        sb.append("in each adjustable category and are designed to close your deficit.\n");
+
+        return sb.toString();
     }
+
     /**
-     * Resets a scenario to its original state using base data.
-     * Rebuilds the specified scenario from the base DataReader data, undoing any modifications.
+     * Returns a list of expense categories the user may choose
+     * to increase when there is a surplus. For now this mirrors
+     * getAdjustableExpenseCategories(), but a SurplusOptimizer
+     * could impose different constraints.
      *
-     * @param scenarioName the name of the scenario to reset
-     * @return true if the scenario was successfully reset; false if scenario not found
+     * @return list of categories that may be increased
      * @author Tanzina Sumona
      */
-    public boolean resetScenarioToBase(String scenarioName) {
-        Scenario baseScenario = buildScenarioFromBaseData();
-        int idx = findScenarioIndex(scenarioName);
-        if (idx == -1) return false;
-            scenarios.set(idx, baseScenario);
-        return true;
-    }
+    // public List<String> getIncreaseableExpenseCategories() {
+    //     // For now, reuse adjustable categories.
+    //     return getAdjustableExpenseCategories();
+    // }
+
     /**
-     * Compares two financial scenarios and displays the results.
-     * Calculates and displays income, expenses, and net totals for both scenarios,
-     * showing the financial comparison between them.
+     * Builds the "Surplus What-If" explanation for increasing
+     * a single category. This assumes a SurplusOptimizer class
+     * exists that can calculate surplus and generate a summary
+     * for how much extra can be safely spent in the given category.
      *
-     * @param scenarioA the name of the first scenario to compare
-     * @param scenarioB the name of the second scenario to compare
+     * NOTE: This will need to be adjusted to match your
+     * SurplusOptimizer's actual method names.
+     *
+     * @param category expense category to increase
+     * @return formatted explanation string for UI
      * @author Tanzina Sumona
      */
-    public void compareScenarios(String scenarioA, String scenarioB) {
-        Scenario a = getScenario(scenarioA);
-        Scenario b = getScenario(scenarioB);
-        if (a == null || b == null) {
-            System.out.println("One or both scenarios not found.");
-            return;
+    public String buildSurplusWhatIfSummary(String category) {
+        int totalIncome  = dataReader.getTotalIncome();
+        int totalExpenses = dataReader.getTotalExpenses(); // negative
+        int net = totalIncome + totalExpenses;
+
+        if (net <= 0) {
+            return """
+                   ===== Surplus What-If =====
+                    You currently do not have a surplus. This means your income is only
+                    covering your existing expenses with nothing left over.
+
+                    Increasing any expense right now would push your budget into a deficit.
+
+                    To create a surplus in the future, consider:
+                        • Reducing optional or discretionary spending
+                        • Tracking recurring expenses for potential savings
+                        • Increasing your income where possible
+                        • Setting a small monthly savings goal
+
+                    Once you have extra income available, we can help you plan where it
+                    can be safely allocated.
+                   """;
         }
 
-        double incomeA = a.getTotalIncome();
-        double expenseA = a.getTotalExpenses();
-        double netA = incomeA - expenseA;
-
-        double incomeB = b.getTotalIncome();
-        double expenseB = b.getTotalExpenses();
-        double netB = incomeB - expenseB;
-
-        System.out.println("--- Comparing '" + scenarioA + "' and '" + scenarioB + "' ---");
-        System.out.println("Scenario " + scenarioA + ": income=" + incomeA +
-                        ", expenses=" + expenseA + ", net=" + netA);
-        System.out.println("Scenario " + scenarioB + ": income=" + incomeB +
-                        ", expenses=" + expenseB + ", net=" + netB);
+        // Hypothetical SurplusOptimizer usage – adjust to teammate's API
+        SurplusOptimizer optimizer = new SurplusOptimizer(dataReader);
+        // Example: assume SurplusOptimizer has a method like:
+        //   String generateWhatIfSummary(String category)
+        return optimizer.generateWhatIfSummary(category);
     }
-      
+
+
+
+    /**
+     * Builds a proportional surplus allocation plan, assuming a
+     * SurplusOptimizer can calculate how to spread a surplus across
+     * categories based on current spending percentages.
+     *
+     * This is a placeholder that should be aligned with the actual
+     * SurplusOptimizer API once finalized.
+     *
+     * @return formatted plan text for UI to display
+     * @author Tanzina Sumona
+     */
+    public String buildSurplusProportionalPlan() {
+        int totalIncome   = dataReader.getTotalIncome();
+        int totalExpenses = dataReader.getTotalExpenses(); // negative
+        int net           = totalIncome + totalExpenses;
+
+        if (net <= 0) {
+            return """
+                   ===== Proportional Surplus Plan =====
+                    You currently do not have a surplus. This means your income is only
+                    covering your existing expenses with nothing left over.
+
+                    Increasing any expense right now would push your budget into a deficit.
+
+                    To create a surplus in the future, consider:
+                        • Reducing optional or discretionary spending
+                        • Tracking recurring expenses for potential savings
+                        • Increasing your income where possible
+                        • Setting a small monthly savings goal
+
+                    Once you have extra income available, we can help you plan where it
+                    can be safely allocated.
+                   """;
+        }
+
+        SurplusOptimizer optimizer = new SurplusOptimizer(dataReader);
+
+        optimizer.categoryBlacklist("Home");
+        optimizer.categoryBlacklist("Rent");
+        optimizer.categoryBlacklist("Utilities");
+        optimizer.categoryBlacklist("Work");
+
+        // Example assumption: SurplusOptimizer has a helper that returns
+        // a Map<String, Double> of category → extraAmount.
+        Map<String, Double> plan = optimizer.getProportionalPlan();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("===== Proportional Surplus Plan =====\n");
+        sb.append("You have a surplus of $").append(net).append(".\n");
+        sb.append("Based on your current spending pattern, we suggest:\n\n");
+
+        for (Map.Entry<String, Double> entry : plan.entrySet()) {
+            sb.append(String.format("  %-15s +$%.2f%n", entry.getKey(), entry.getValue()));
+        }
+
+        sb.append("\nAfter following this plan, you should end at break-even.\n");
+        return sb.toString();
+    }
 }

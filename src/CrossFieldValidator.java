@@ -1,5 +1,3 @@
-// package validation;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -15,7 +13,6 @@ import java.util.Map;
  *
  * @author Atai
  */
-
 public class CrossFieldValidator {
 
     private static final double TOLERANCE = 0.01;
@@ -56,6 +53,7 @@ public class CrossFieldValidator {
     /**
      * Validate that the sum of category planned amounts matches the budget total.
      */
+    @SuppressWarnings("unchecked")
     public ValidationResult validateBudgetBalance(Object budget) {
         if (budget == null) {
             return ValidationResult.error("Budget object is null.");
