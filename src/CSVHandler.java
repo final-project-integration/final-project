@@ -8,22 +8,28 @@ import java.io.IOException;
 /**
  * The CSVHandler class provides the methods to perform the low-level file I/O operations
  * on the given CSV files, converting between CSV format and {@link Transaction} objects.
+ * 
  * @author Eddie Zhu
- * @version 11/4/2025
+ * @version 2025-12-03
  */
 
 public class CSVHandler {
 	
 	/**
-	 * Default constructor for CSVHandler.
+	 * Creates a new CSVHandler instance, used for low-level CSV file operations.
 	 */
 	public CSVHandler() {}
 
 	/**
-	 * Reads all the transactions from the specified CSV file.
+	 * Reads all the transactions from the specified CSV file and converts them into {@link Transaction} objects.
+	 * 
+	 * This method will skip header rows if the first row
+	 * contains the column names (Date, Category, Amount). 
+	 * 
 	 * @param file the name of the CSV file that we're reading into
 	 * @return an array list of {@link Transaction} objects loaded from the CSV file
 	 * @throws IOException if the file can't be read
+	 * @throws NumberFormatException if the amount can't be parsed as a number
 	 * @author Eddie Zhu
 	 */
 	public ArrayList<Transaction> readCSV(String file) throws IOException {
@@ -58,6 +64,10 @@ public class CSVHandler {
 	
 	/**
 	 * Writes a list of transactions to the specified CSV file.
+	 * 
+	 * Will overwrite any existing file and a header row
+	 * (Date, Category, Amount) is always the first line
+	 * 
 	 * @param file the name of the CSV file that we're writing to
 	 * @param transactions an array list of {@link Transaction} objects to save
 	 * @throws IOException if the file can't be written to
@@ -76,9 +86,10 @@ public class CSVHandler {
 	}
 	
 	/**
-	 * Displays the first couple of lines of the CSV file to allow the user to preview the data.
+	 * Displays the first couple of lines, including the header, of the specified CSV file.
+	 * 
 	 * @param file the name of the CSV file that we're previewing
-	 * @param linesToPreview the number of lines that you would like to preview (excluding header)
+	 * @param linesToPreview the number of lines that you would like to preview (including header); must be at least 1
 	 * @return a list of the lines that want to be previewed
 	 * @throws IOException if the file can't be read
 	 * @author Eddie Zhu
@@ -99,7 +110,8 @@ public class CSVHandler {
 	}
 	
 	/**
-	 * Overwrites the file given with a new, complete list of transactions.
+	 * Replaces the content of the specified CSV file with the given list of {@link Transaction} objects.
+	 * 
 	 * @param file the name of the CSV file that we're overwriting
 	 * @param transactions an array list of {@link Transaction} objects to completely replace the file contents
 	 * @throws IOException if the overwriting can't be done
@@ -110,13 +122,30 @@ public class CSVHandler {
 	}
 	
 	/**
-	 * Helper method that detects whether the given line from a CSV file is a header row
+	 * Determines whether the given CSV line is a header row.
+	 * 
+	 * A line is considered a header row if it contains exactly 3 (case insensitive)
+	 * values which are "date", "category", and "amount".
+	 * 
 	 * @param line the line of a CSV file to check
 	 * @return true if the line being checked is a header and false otherwise
 	 * @author Eddie Zhu
 	 */
 	private boolean isHeaderLine(String line) {
-		String header = line.toLowerCase().replace(" ", "");
-		return header.contains("date") && header.contains("category") && header.contains("amount");
+		if (line == null) {
+			return false;
+		}
+		
+		String[] parts = line.split(",");
+		if (parts.length != 3) {
+			return false;
+		}
+		
+		String date = parts[0].trim().toLowerCase();
+		String category = parts[1].trim().toLowerCase();
+		String amount = parts[2].trim().toLowerCase();
+		
+		return date.equals("date") && category.equals("category") && amount.equals("amount");
+		
 	}
 }
