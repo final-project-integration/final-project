@@ -330,7 +330,7 @@ public class BeautifulDisplay {
      * green for positive, red for negative, yellow for zero.
      *
      * @param value the number to format
-     * @return a colored dollar string
+     * @return a colored dollar string using ANSI codes
      *
      * @author Denisa Cakoni
      */
