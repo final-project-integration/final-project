@@ -33,7 +33,7 @@ public class ScenarioSimulator {
     }
     
     /**
-    * All numbers come from DataReader, DeficitSolver, and SurplusOptimzer.
+    * All numbers come from DataReader, DeficitSolver, and SurplusOptimizer.
     * @bug 68237214 Fixed incorrect deficit detection. Previously, Prediction Summary and DeficitSolver reported 
     * "You do not currently have a deficit" even when total expenses exceeded total income (e.g., overspending by $7000 in test CSV).
     * Cause: net balance comparison used incorrect sign logic.
