@@ -5,8 +5,7 @@ import java.util.List;
 
 /**
  * Stores and manages validation results!
- * 
- * @author Aung Latt
+ * * @author Aung Latt
  */
 public class ValidationResult {
 
@@ -14,7 +13,14 @@ public class ValidationResult {
      * Severity levels for messages.
      */
     public enum Severity {
+        /**
+         * Represents a critical failure that prevents processing.
+         */
         ERROR,
+
+        /**
+         * Represents a potential issue that does not stop processing.
+         */
         WARNING
     }
 
@@ -83,7 +89,8 @@ public class ValidationResult {
 
     /**
      * Create a ValidationResult that represents "no issues found".
-     * * @return a new empty ValidationResult instance
+     *
+     * @return a new empty ValidationResult instance
      */
     public static ValidationResult ok() {
         return new ValidationResult();
@@ -91,8 +98,8 @@ public class ValidationResult {
 
     /**
      * Create a ValidationResult that contains a single error.
-     * * @param message the error message to add
-     * 
+     *
+     * @param message the error message to add
      * @return a new ValidationResult containing the specified error
      */
     public static ValidationResult error(String message) {
@@ -104,9 +111,9 @@ public class ValidationResult {
     /**
      * Create a ValidationResult with a summary message and optional details.
      * If ok == false, the summary is treated as an error; otherwise as a warning.
-     * * @param ok true to treat the summary as a warning, false to treat as an
-     * error
-     * 
+     *
+     * @param ok      true to treat the summary as a warning, false to treat as an
+     *                error
      * @param summary the main summary message
      * @param details a list of detailed messages to append (can be null)
      * @return a new ValidationResult populated with the summary and details
@@ -193,7 +200,8 @@ public class ValidationResult {
 
     /**
      * Returns only error messages, for detailed reporting.
-     * * @return a read-only list of error string representations
+     *
+     * @return a read-only list of error string representations
      */
     public List<String> getErrorMessages() {
         List<String> output = new ArrayList<>();
@@ -205,7 +213,8 @@ public class ValidationResult {
 
     /**
      * Returns only warnings.
-     * * @return a read-only list of warning string representations
+     *
+     * @return a read-only list of warning string representations
      */
     public List<String> getWarningMessages() {
         List<String> output = new ArrayList<>();
@@ -217,7 +226,8 @@ public class ValidationResult {
 
     /**
      * Enable or disable debug mode.
-     * * @param enabled true to enable debug output to stdout, false to disable
+     *
+     * @param enabled true to enable debug output to stdout, false to disable
      */
     public void setDebugMode(boolean enabled) {
         this.debugMode = enabled;
@@ -235,8 +245,8 @@ public class ValidationResult {
 
     /**
      * Get messages by severity.
-     * * @param severity the Severity level to filter by
-     * 
+     *
+     * @param severity the Severity level to filter by
      * @return a read-only list of messages matching the specified severity
      */
     public List<String> getMessagesBySeverity(Severity severity) {
@@ -275,7 +285,8 @@ public class ValidationResult {
 
     /**
      * Quick summary for integration debugging.
-     * * @return a string summary of the error and warning counts
+     *
+     * @return a string summary of the error and warning counts
      */
     public String summary() {
         return "ValidationResult Summary: " +

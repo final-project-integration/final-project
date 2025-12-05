@@ -13,6 +13,13 @@ import java.time.format.ResolverStyle;
 public class DataTypeValidator {
 
     /**
+     * Default constructor.
+     */
+    public DataTypeValidator() {
+        // Default constructor
+    }
+
+    /**
      * Checks if the input string is not null and contains at least one
      * non-whitespace character.
      *
@@ -91,9 +98,10 @@ public class DataTypeValidator {
 
     /**
      * Checks if the date is in the format "MM/DD/YYYY" and is a real calendar date.
-     * 
-     * FIXED: Now uses STRICT resolver style to properly validate dates like 13/40/2024
-     * and properly rejects dates with wrong separators or wrong order like YYYY/MM/DD.
+     * * FIXED: Now uses STRICT resolver style to properly validate dates like
+     * 13/40/2024
+     * and properly rejects dates with wrong separators or wrong order like
+     * YYYY/MM/DD.
      *
      * @param input the text to check
      * @return true if the date follows the expected format and is valid
@@ -110,10 +118,11 @@ public class DataTypeValidator {
             return false;
         }
 
-        // Use STRICT resolver style to catch invalid dates like 13/40/2024, 02/30/2024, etc.
+        // Use STRICT resolver style to catch invalid dates like 13/40/2024, 02/30/2024,
+        // etc.
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu")
                 .withResolverStyle(ResolverStyle.STRICT);
-        
+
         try {
             // parse will fail for invalid dates like 13/40/2024, 02/30/2024, etc.
             LocalDate.parse(input, formatter);
