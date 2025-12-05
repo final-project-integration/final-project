@@ -15,10 +15,7 @@ import java.util.ArrayList;
  * are NEGATIVE (see ReportManager). All calculations below respect that
  * convention.
  *
- * @author Angelo Samir Alvarez
  * @author Furkan Bilgi
- * @author Chukwuemeka Okwuka
- * @author Omar Piron
  */
 
 public class ReportAnalyzer {
