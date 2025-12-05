@@ -39,6 +39,19 @@ import java.util.Map;
  *
  * @author Jessica Barrera Saguay
  */
+
+
+/**
+ * Default constructor for the DataReader class.
+ * Initializes an empty reader with no loaded budget or CSV data.
+ * Provides a clean starting point before calling readData() or readFromBudget().
+ * @author Jessica Barrera Saguay
+ */
+public DataReader() {
+    // fields start empty.
+}
+
+
 public class DataReader {
 	/**
 	 * Stores the list of category names extracted from the data and can correspond
