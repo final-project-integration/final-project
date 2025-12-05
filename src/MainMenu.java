@@ -496,8 +496,10 @@ public class MainMenu {
      * Account Settings Menu
      *
      * @param currentUser - username of the currently signed-in user
-     * @return true if user remains logged in, false if account was deleted or logout requested
-     *
+     * @return Determines whether or not the user has decided to delete their account
+     * 		   If the function returns true, then the user has not deleted their account and they can return to the Main Menu
+     * 		   If the function returns false, then the user has deleted their account and are forcibly moved to the login page
+     * 
      * @author Aaron Madou
      * @author Shazadul Islam
      */
@@ -565,7 +567,7 @@ public class MainMenu {
      * Makes calls to other menus that handle other parts of the application
      * Also lets the user log out and quit the program
      * 
-     * @param args command line arguments (not used)
+     * @param args - allows the program to receive and process command-line arguments when it is executed in terminal (we have no use for this)
      * 
      * @author Shazadul Islam
      */
