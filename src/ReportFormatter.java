@@ -8,7 +8,11 @@ import java.util.List;
  */
 public class ReportFormatter {
 
+    /**
+     * Default constructor.
+     */
     public ReportFormatter(){
+        // default constructor 
     }
     /**
      * Attaches a currency symbol to the amount string.
