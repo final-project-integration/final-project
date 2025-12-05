@@ -4,42 +4,179 @@
  * BeautifulDisplay provides colorful, nicely formatted console output helpers
  * using ANSI escape codes. It is purely for display and UI, not business logic.
  *
- * All methods are static, so they can be called from anywhere in the project.
+ * This utility class contains static methods and color constants for creating
+ * visually appealing terminal output. All methods and constants are static,
+ * so they can be called from anywhere in the project without instantiation.
+ *
+ * COLOR CONSTANTS:
+ * The class provides the following ANSI color escape codes as public constants:
+ *  Basic Colors: RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
+ *  Bright Colors: BRIGHT_RED, BRIGHT_GREEN, BRIGHT_YELLOW, BRIGHT_BLUE,
+ *  BRIGHT_MAGENTA, BRIGHT_CYAN, BRIGHT_WHITE
+ * Text Modifiers: RESET (removes all formatting), BOLD, DIM
+ *
+ * USAGE EXAMPLE:
+ * // Print a colored message:
+ * System.out.println(BeautifulDisplay.GREEN + "Success!" + BeautifulDisplay.RESET);
+ *
+ * // Print a formatted header:
+ * BeautifulDisplay.printGradientHeader("FINANCIAL REPORT", 70);
+ *
+ * // Print a success message:
+ * BeautifulDisplay.printSuccess("Data saved successfully");
+ *
+ * // Format currency with color:
+ * String amount = BeautifulDisplay.formatCurrency(1500.00);
+ *
+ * COLOR CONSTANTS PURPOSE:
+ * The color constants are intended to be used in the following ways:
+ *  RESET: Always use after colored text to prevent color bleeding
+ *  BOLD: Emphasize important text or headers
+ *  DIM: De-emphasize secondary information
+ *  GREEN: Success messages, positive values, income
+ *  RED: Error messages, negative values, expenses
+ *  YELLOW: Warnings, neutral values
+ *  CYAN: Information messages, highlights
+ *  BLUE: Headers, structural elements
+ *  BRIGHT_* versions: More vibrant alternatives to basic colors
+ *
+ * DESIGN NOTES:
+ *  This is a utility class with a private constructor to prevent instantiation
+ *  All methods handle ANSI color codes properly to ensure correct visual alignment
  *
  * @author Denisa Cakoni
  */
 public class BeautifulDisplay {
 
+
     // ANSI COLOR CODES
+
+
+    /**
+     * Resets all ANSI formatting (color, bold, dim) back to terminal default.
+     * Important: Always use RESET after colored text to prevent color bleeding
+     * into subsequent output.
+     *
+     * Example usage:
+     * System.out.println(GREEN + "Success" + RESET + " - Operation complete");
+     */
     public static final String RESET = "\u001B[0m";
+
+    /**
+     * Makes text bold/bright.
+     * Use for emphasizing headers, titles, or important information.
+     *
+     * Example usage:
+     * System.out.println(BOLD + "Total: " + RESET + "$1,500");
+     */
     public static final String BOLD = "\u001B[1m";
+
+    /**
+     * Makes text dimmed/faint.
+     * Use for de-emphasizing secondary information like timestamps or footnotes.
+     *
+     * Example usage:
+     * System.out.println(DIM + "Last updated: 2025-12-04" + RESET);
+     */
     public static final String DIM = "\u001B[2m";
 
+    /**
+     * Standard red color.
+     * Commonly used for error messages, negative values, or expenses.
+     */
     public static final String RED = "\u001B[31m";
+
+    /**
+     * Standard green color.
+     * Commonly used for success messages, positive values, or income.
+     */
     public static final String GREEN = "\u001B[32m";
+
+    /**
+     * Standard yellow color.
+     * Commonly used for warning messages or neutral values.
+     */
     public static final String YELLOW = "\u001B[33m";
+
+    /**
+     * Standard blue color.
+     * Commonly used for headers, borders, or structural elements.
+     */
     public static final String BLUE = "\u001B[34m";
+
+    /**
+     * Standard magenta color.
+     * Commonly used for highlighting special categories or sections.
+     */
     public static final String MAGENTA = "\u001B[35m";
+
+    /**
+     * Standard cyan color.
+     * Commonly used for informational messages or balance amounts.
+     */
     public static final String CYAN = "\u001B[36m";
+
+    /**
+     * Standard white color.
+     * Commonly used for general text or backgrounds.
+     */
     public static final String WHITE = "\u001B[37m";
 
+    /**
+     * Bright/vivid red color.
+     * More vibrant than RED. Use for critical errors or important negative values.
+     */
     public static final String BRIGHT_RED = "\u001B[91m";
+
+    /**
+     * Bright/vivid green color.
+     * More vibrant than GREEN. Use for prominent success messages or important income.
+     */
     public static final String BRIGHT_GREEN = "\u001B[92m";
+
+    /**
+     * Bright/vivid yellow color.
+     * More vibrant than YELLOW. Use for important warnings.
+     */
     public static final String BRIGHT_YELLOW = "\u001B[93m";
+
+    /**
+     * Bright/vivid blue color.
+     * More vibrant than BLUE. Use for prominent headers or borders.
+     */
     public static final String BRIGHT_BLUE = "\u001B[94m";
+
+    /**
+     * Bright/vivid magenta color.
+     * More vibrant than MAGENTA. Use for special highlights.
+     */
     public static final String BRIGHT_MAGENTA = "\u001B[95m";
+
+    /**
+     * Bright/vivid cyan color.
+     * More vibrant than CYAN. Use for important information or titles.
+     */
     public static final String BRIGHT_CYAN = "\u001B[96m";
+
+    /**
+     * Bright/vivid white color.
+     * More vibrant than WHITE. Use for high-contrast text.
+     */
     public static final String BRIGHT_WHITE = "\u001B[97m";
 
     /**
      * Private constructor to prevent instantiation.
+     * BeautifulDisplay is a utility class with only static methods and should
+     * never be instantiated.
      *
      * @author Denisa Cakoni
      */
     private BeautifulDisplay() { }
 
-    
+
+
     // BASIC UTILITIES
+
 
 
     /**
@@ -61,6 +198,8 @@ public class BeautifulDisplay {
 
     /**
      * Removes ANSI color codes so the visible length can be measured correctly.
+     * This is essential for proper text alignment when using colored strings,
+     * as ANSI escape sequences don't consume visual space.
      *
      * @param text text that may contain color codes
      * @return the text with ANSI escape codes removed
@@ -74,6 +213,7 @@ public class BeautifulDisplay {
 
     /**
      * Returns the number of visible characters in a string.
+     * Ignores ANSI color codes when calculating length.
      *
      * @param text the string to measure
      * @return number of visible characters (ignoring color codes)
@@ -86,6 +226,7 @@ public class BeautifulDisplay {
 
     /**
      * Pads text on the right so its visible length is at least the given width.
+     * Accounts for ANSI color codes to ensure proper alignment.
      *
      * @param text  the text to pad
      * @param width desired visible width
@@ -107,6 +248,7 @@ public class BeautifulDisplay {
 
     /**
      * Pads text on the left to reach the desired visible width.
+     * Accounts for ANSI color codes to ensure proper alignment.
      *
      * @param text  the text to pad
      * @param width desired visible width
@@ -129,6 +271,7 @@ public class BeautifulDisplay {
 
     /**
      * Centers text within a given visible width.
+     * Accounts for ANSI color codes to ensure proper centering.
      *
      * @param text  the text to center
      * @param width total space to center within
@@ -147,14 +290,18 @@ public class BeautifulDisplay {
     }
 
 
+
     // HEADERS & DIVIDERS
+
 
 
     /**
      * Prints a large decorative header box.
+     * Creates a bordered box with the title centered inside, using bright blue
+     * for borders and bright cyan for the title text.
      *
      * @param title text to show inside the header
-     * @param width width of the inner box
+     * @param width width of the inner box (minimum will be adjusted to fit title)
      *
      * @author Denisa Cakoni
      */
@@ -173,9 +320,11 @@ public class BeautifulDisplay {
 
     /**
      * Prints a smaller colored section header.
+     * Creates a simple header with horizontal lines above and below,
+     * with a triangular bullet point.
      *
      * @param title text to show
-     * @param color ANSI color to use
+     * @param color ANSI color to use for the header elements
      *
      * @author Denisa Cakoni
      */
@@ -188,8 +337,9 @@ public class BeautifulDisplay {
 
     /**
      * Prints a horizontal divider line.
+     * Useful for separating sections of output.
      *
-     * @param width divider length
+     * @param width divider length (minimum 10 characters)
      *
      * @author Denisa Cakoni
      */
@@ -199,15 +349,20 @@ public class BeautifulDisplay {
     }
 
 
+
     // BOXES & LISTS
+
 
 
     /**
      * Prints a colored key/value table inside a box.
+     * Creates a bordered table with a title and key-value pairs.
+     * Automatically calculates column widths and aligns content properly,
+     * accounting for ANSI color codes in the values.
      *
-     * @param title       the box title
-     * @param rows        each row contains a key and value
-     * @param borderColor color for the box border
+     * @param title       the box title (displayed centered at top)
+     * @param rows        each row contains [key, value] can include ANSI colors
+     * @param borderColor ANSI color constant to use for the box border
      *
      * @author Denisa Cakoni
      */
@@ -242,9 +397,10 @@ public class BeautifulDisplay {
 
     /**
      * Prints an ordered list with colored index numbers.
+     * Each item is prefixed with a colored number (1, 2, 3, etc.).
      *
-     * @param items       list of items
-     * @param bulletColor color for the numbering
+     * @param items       array of items to display
+     * @param bulletColor ANSI color constant to use for the numbering
      *
      * @author Denisa Cakoni
      */
@@ -257,10 +413,13 @@ public class BeautifulDisplay {
     }
 
 
+
     // STATUS & MESSAGES
 
+
     /**
-     * Prints a green success message.
+     * Prints a green success message with a checkmark icon.
+     * Use for confirming successful operations.
      *
      * @param message text to print
      *
@@ -271,7 +430,8 @@ public class BeautifulDisplay {
     }
 
     /**
-     * Prints a yellow warning message.
+     * Prints a yellow warning message with a warning icon.
+     * Use for alerting users to potential issues or required actions.
      *
      * @param message text to print
      *
@@ -282,7 +442,8 @@ public class BeautifulDisplay {
     }
 
     /**
-     * Prints a red error message.
+     * Prints a red error message with an X icon.
+     * Use for reporting errors or failed operations.
      *
      * @param message text to print
      *
@@ -293,7 +454,8 @@ public class BeautifulDisplay {
     }
 
     /**
-     * Prints an informational message.
+     * Prints an informational message with an info icon.
+     * Use for general information or helpful tips.
      *
      * @param message text to print
      *
@@ -305,9 +467,11 @@ public class BeautifulDisplay {
 
     /**
      * Prints a loading animation using dots.
+     * Displays a message followed by animated dots. Useful for indicating
+     * that a long-running operation is in progress.
      *
      * @param message message to display before the dots
-     * @param delayMs how long the animation lasts (milliseconds)
+     * @param delayMs how long the animation lasts in milliseconds (divided into 3 steps)
      *
      * @author Denisa Cakoni
      */
@@ -326,11 +490,14 @@ public class BeautifulDisplay {
     }
 
     /**
-     * Formats a currency value as whole dollars and adds a color:
-     * green for positive, red for negative, yellow for zero.
+     * Formats a currency value as whole dollars and adds color based on value.
+     * Colors applied:
+     *  GREEN for positive values (income, profit)
+     *  RED for negative values (expenses, loss)
+     *  YELLOW for zero values
      *
      * @param value the number to format
-     * @return a colored dollar string using ANSI codes
+     * @return a colored dollar string with ANSI codes (e.g., "[GREEN]$1500[RESET]")
      *
      * @author Denisa Cakoni
      */
