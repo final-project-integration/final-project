@@ -1372,9 +1372,9 @@ public class ModuleHub {
      * Any failure is reported through the console.
      *
      * @param username    the username whose password should be reset
-     * @param newQuestion the new secrert question to set
-     * @param newAnswer   the new secrert answer to set
-     * @return true if the security question & answer reset succeeds, false otherwise
+     * @param newQuestion the new secret question to set
+     * @param newAnswer   the new secret answer to set
+     * @return true if the security question answer reset succeeds, false otherwise
      *
      * @author Aaron Madou
      */
