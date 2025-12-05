@@ -31,8 +31,8 @@ public class MainMenu {
     }
 
     /**
-     * Only creates a new line when the program is being run in the eclipse console
-     * Clears all everything when the program is being run in the terminal
+     * Only creates a new line when the program is being run in the Eclipse console
+     * Clears the screen when the program is being run in the terminal
      * Provides a clean display for new menu or information screens
      * 
      * @author Aaron Madou
