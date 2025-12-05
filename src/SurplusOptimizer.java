@@ -466,6 +466,17 @@ public class SurplusOptimizer {
     public double getSurplusValue() {
         return surplus;
     }
+    
+    /**
+     * Generates a simple What-If summary message for a specific expense category.
+     * This method calculates how much additional spending is possible based on the
+     * current surplus and returns a user-friendly sentence describing it.
+     *
+     * @param category the expense category the user wants to test
+     * @return a summary string indicating how much can be spent in the given category
+     *         without going into deficit
+     * @author Daniel Moore
+     */
 
     public String generateWhatIfSummary(String category) {
     double possible = surplusCreator();
