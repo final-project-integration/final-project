@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class ScenarioSimulator {
     
-    private final DataReader dataReader;
+    private final DataReader dataReader; // Shared DataReader instance
     /**
      * ScenarioSimulator is wired to share the same DataReader
      * that ModuleHub owns. DataReader is assumed to have already
