@@ -17,10 +17,9 @@ public class Transaction {
 
     /**
      *  Constructs a new transaction object
-     *  Initializes all three instance fields with default empty values.
+     *  Does not set values to the fields, leaves them as is (null).
      */
     public Transaction() {
-        // Initialize object fields
     }
     /**
      *  Constructs a new transaction object
@@ -101,7 +100,7 @@ public class Transaction {
 
     /**
      * Retrieves the amount of money that changed in the transaction
-     * @return a String representing the date in MM/DD/YYYY format
+     * @return a double representing the amount of money in the transaction
      * @author Karol Kopciuch
      */
     public double getAmount() {
@@ -109,3 +108,4 @@ public class Transaction {
     }
 
 }
+
