@@ -17,7 +17,8 @@ import java.util.Map;
  * @author Tanzina Sumona
  */
 public class ScenarioSimulator {
-
+    
+    private final DataReader dataReader;
     /**
      * ScenarioSimulator is wired to share the same DataReader
      * that ModuleHub owns. DataReader is assumed to have already
@@ -36,8 +37,7 @@ public class ScenarioSimulator {
     * @bug 68237214 Fixed incorrect deficit detection. Previously, Prediction Summary and DeficitSolver reported 
     * "You do not currently have a deficit" even when total expenses exceeded total income (e.g., overspending by $7000 in test CSV).
     * Cause: net balance comparison used incorrect sign logic.
-    * Fix: netBalance < 0 now correctly identifies deficit and reports
-    *      deficit = -netBalance.
+    * Fix: netBalance < 0 now correctly identifies deficit and reports deficit = -netBalance.
     * @since December 2 2025, 12:30 AM
     * @bug 68237256 Fixed: Removed negative sign from printed expenses. Expenses are already understood as money spent, so showing a '-' is unnecessary 
     * and can confuse the user. Values are still stored correctly internally.
