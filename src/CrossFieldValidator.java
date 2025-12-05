@@ -16,6 +16,13 @@ import java.util.Map;
 public class CrossFieldValidator {
 
     /**
+     * Default constructor.
+     */
+    public CrossFieldValidator() {
+        // Default constructor
+    }
+
+    /**
      * Acceptable tolerance for floating-point comparisons (0.01).
      */
     private static final double TOLERANCE = 0.01;
@@ -41,7 +48,7 @@ public class CrossFieldValidator {
     }
 
     /**
-     * Validate that startDate <= endDate.
+     * Validate that startDate &lt;= endDate.
      *
      * @param startDate the start date string (Expected format: YYYY-MM-DD)
      * @param endDate   the end date string (Expected format: YYYY-MM-DD)
