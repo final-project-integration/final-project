@@ -6,8 +6,11 @@ import java.util.ArrayList;
  * and provides summary calculations such as totals by month, totals by category,
  * and an overall annual summary.
  *
- * This class is part of the Storage module and is responsible for maintaining
- * the user's financial data between program sessions.
+ * <p>
+ * This class is part of the Storage module. While it manages in-memory financial data,
+ * actual persistence between program sessions (saving/loading from files or databases)
+ * is handled by external components.
+ * </p>
  *
  * @author Emmanuel
  * @version 11/4/2025
@@ -39,9 +42,13 @@ public class Budget {
 
     /**
      * Removes an existing transaction at the specified index.
+     * <p>
+     * If the index is invalid, no transaction is removed and the budget
+     * remains unchanged.
+     * </p>
      *
      * @param transactionIndex  the index of the transaction to remove
-     *                          (must be between 0 and the number of transactions − 1)
+     *                          (must be between 0 and size−1)
      */
     public void removeTransaction(int transactionIndex) {
         if (transactionIndex >= 0 && transactionIndex < transactions.size()) {
@@ -53,11 +60,16 @@ public class Budget {
 
     /**
      * Updates an existing transaction with new values.
+     * <p>
+     * If the index is invalid, no transaction is updated and the budget
+     * remains unchanged.
+     * </p>
      *
      * @param transactionIndex  the index of the transaction to update
      * @param newDate           the updated date in MM/DD/YYYY format
      * @param newCategory       the updated category name
-     * @param newAmount         the updated amount (positive for income, negative for expense)
+     * @param newAmount         the updated amount (positive for income,
+     *                          negative for expense)
      */
     public void updateTransaction(int transactionIndex,
                                   String newDate,
@@ -74,8 +86,8 @@ public class Budget {
      * Groups all transactions by their calendar month based on the date string.
      * Index 0 corresponds to January, index 1 to February, ..., index 11 to December.
      *
-     * @return an ArrayList of 12 lists, where each inner list contains
-     *         all transactions that occurred in that month
+     * @return an {@code ArrayList<ArrayList<Transaction>>} of 12 lists, where each
+     *         inner list contains all transactions that occurred in that month
      */
     public ArrayList<ArrayList<Transaction>> getTransactionsByMonth() {
 
@@ -106,12 +118,15 @@ public class Budget {
 
     /**
      * Groups all transactions by their category.
+     * <p>
+     * Categories are ordered by their first appearance in the transaction list.
+     * </p>
      *
-     * @return an ArrayList containing two elements:
+     * @return an {@code ArrayList<Object>} containing:
      *         <ul>
-     *             <li>Index 0: an ArrayList<String> of unique category names</li>
-     *             <li>Index 1: an ArrayList<ArrayList<Transaction>> where each inner list
-     *                 groups all transactions belonging to the corresponding category</li>
+     *             <li>Index 0: {@code ArrayList<String>} of unique category names</li>
+     *             <li>Index 1: {@code ArrayList<ArrayList<Transaction>>} where each inner list
+     *                 contains transactions for the corresponding category</li>
      *         </ul>
      */
     public ArrayList<Object> getTransactionsByCategory() {
@@ -142,7 +157,7 @@ public class Budget {
     /**
      * Calculates the total income and expenses for each month of the year.
      *
-     * @return an ArrayList<Double> of 12 values, where each element represents
+     * @return an {@code ArrayList<Double>} of 12 values, where each element represents
      *         the total amount for that month (income minus expenses)
      */
     public ArrayList<Double> calculateMonthlyTotals() {
@@ -167,11 +182,11 @@ public class Budget {
     /**
      * Computes an annual summary of all financial activity.
      *
-     * @return an ArrayList<Double> containing:
+     * @return an {@code ArrayList<Double>} containing:
      *         <ul>
-     *             <li>Total income (sum of all positive amounts)</li>
-     *             <li>Total expenses (sum of all negative amounts)</li>
-     *             <li>Net balance (income + expenses)</li>
+     *             <li>Total income</li>
+     *             <li>Total expenses</li>
+     *             <li>Net balance</li>
      *         </ul>
      */
     public ArrayList<Double> calculateAnnualSummary() {
@@ -211,11 +226,16 @@ public class Budget {
     }
 
     /**
-     * Returns all transactions stored in this budget.
+     * Returns a copy of all transactions stored in this budget.
+     * <p>
+     * Modifying the returned list will <b>not</b> affect the internal
+     * state of the {@code Budget} object.
+     * </p>
      *
-     * @return an ArrayList of all Transaction objects
+     * @return an {@code ArrayList<Transaction>} containing copies of references
+     *         to all transaction objects
      */
     public ArrayList<Transaction> getAllTransactions() {
-        return this.transactions;
+        return new ArrayList<>(this.transactions);
     }
-}
+}  

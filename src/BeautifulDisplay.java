@@ -2,40 +2,192 @@
 
 /**
  * BeautifulDisplay provides colorful, nicely formatted console output helpers
- * using ANSI escape codes. It is purely for display / UI, not business logic.
+ * using ANSI escape codes. It is purely for display and UI, not business logic.
  *
- * All methods are static so you can call BeautifulDisplay.methodName(...)
- * from anywhere in the default package without imports.
+ * This utility class contains static methods and color constants for creating
+ * visually appealing terminal output. All methods and constants are static,
+ * so they can be called from anywhere in the project without instantiation.
+ *
+ * COLOR CONSTANTS:
+ * The class provides the following ANSI color escape codes as public constants:
+ *  Basic Colors: RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
+ *  Bright Colors: BRIGHT_RED, BRIGHT_GREEN, BRIGHT_YELLOW, BRIGHT_BLUE,
+ *  BRIGHT_MAGENTA, BRIGHT_CYAN, BRIGHT_WHITE
+ * Text Modifiers: RESET (removes all formatting), BOLD, DIM
+ *
+ * USAGE EXAMPLE:
+ * // Print a colored message:
+ * System.out.println(BeautifulDisplay.GREEN + "Success!" + BeautifulDisplay.RESET);
+ *
+ * // Print a formatted header:
+ * BeautifulDisplay.printGradientHeader("FINANCIAL REPORT", 70);
+ *
+ * // Print a success message:
+ * BeautifulDisplay.printSuccess("Data saved successfully");
+ *
+ * // Format currency with color:
+ * String amount = BeautifulDisplay.formatCurrency(1500.00);
+ *
+ * COLOR CONSTANTS PURPOSE:
+ * The color constants are intended to be used in the following ways:
+ *  RESET: Always use after colored text to prevent color bleeding
+ *  BOLD: Emphasize important text or headers
+ *  DIM: De-emphasize secondary information
+ *  GREEN: Success messages, positive values, income
+ *  RED: Error messages, negative values, expenses
+ *  YELLOW: Warnings, neutral values
+ *  CYAN: Information messages, highlights
+ *  BLUE: Headers, structural elements
+ *  BRIGHT_* versions: More vibrant alternatives to basic colors
+ *
+ * DESIGN NOTES:
+ *  This is a utility class with a private constructor to prevent instantiation
+ *  All methods handle ANSI color codes properly to ensure correct visual alignment
  *
  * @author Denisa Cakoni
  */
 public class BeautifulDisplay {
 
-    // ===== ANSI COLOR CODES =====
-    public static final String RESET         = "\u001B[0m";
-    public static final String BOLD          = "\u001B[1m";
-    public static final String DIM           = "\u001B[2m";
 
-    public static final String RED           = "\u001B[31m";
-    public static final String GREEN         = "\u001B[32m";
-    public static final String YELLOW        = "\u001B[33m";
-    public static final String BLUE          = "\u001B[34m";
-    public static final String MAGENTA       = "\u001B[35m";
-    public static final String CYAN          = "\u001B[36m";
-    public static final String WHITE         = "\u001B[37m";
+    // ANSI COLOR CODES
 
-    public static final String BRIGHT_RED    = "\u001B[91m";
-    public static final String BRIGHT_GREEN  = "\u001B[92m";
+
+    /**
+     * Resets all ANSI formatting (color, bold, dim) back to terminal default.
+     * Important: Always use RESET after colored text to prevent color bleeding
+     * into subsequent output.
+     *
+     * Example usage:
+     * System.out.println(GREEN + "Success" + RESET + " - Operation complete");
+     */
+    public static final String RESET = "\u001B[0m";
+
+    /**
+     * Makes text bold/bright.
+     * Use for emphasizing headers, titles, or important information.
+     *
+     * Example usage:
+     * System.out.println(BOLD + "Total: " + RESET + "$1,500");
+     */
+    public static final String BOLD = "\u001B[1m";
+
+    /**
+     * Makes text dimmed/faint.
+     * Use for de-emphasizing secondary information like timestamps or footnotes.
+     *
+     * Example usage:
+     * System.out.println(DIM + "Last updated: 2025-12-04" + RESET);
+     */
+    public static final String DIM = "\u001B[2m";
+
+    /**
+     * Standard red color.
+     * Commonly used for error messages, negative values, or expenses.
+     */
+    public static final String RED = "\u001B[31m";
+
+    /**
+     * Standard green color.
+     * Commonly used for success messages, positive values, or income.
+     */
+    public static final String GREEN = "\u001B[32m";
+
+    /**
+     * Standard yellow color.
+     * Commonly used for warning messages or neutral values.
+     */
+    public static final String YELLOW = "\u001B[33m";
+
+    /**
+     * Standard blue color.
+     * Commonly used for headers, borders, or structural elements.
+     */
+    public static final String BLUE = "\u001B[34m";
+
+    /**
+     * Standard magenta color.
+     * Commonly used for highlighting special categories or sections.
+     */
+    public static final String MAGENTA = "\u001B[35m";
+
+    /**
+     * Standard cyan color.
+     * Commonly used for informational messages or balance amounts.
+     */
+    public static final String CYAN = "\u001B[36m";
+
+    /**
+     * Standard white color.
+     * Commonly used for general text or backgrounds.
+     */
+    public static final String WHITE = "\u001B[37m";
+
+    /**
+     * Bright/vivid red color.
+     * More vibrant than RED. Use for critical errors or important negative values.
+     */
+    public static final String BRIGHT_RED = "\u001B[91m";
+
+    /**
+     * Bright/vivid green color.
+     * More vibrant than GREEN. Use for prominent success messages or important income.
+     */
+    public static final String BRIGHT_GREEN = "\u001B[92m";
+
+    /**
+     * Bright/vivid yellow color.
+     * More vibrant than YELLOW. Use for important warnings.
+     */
     public static final String BRIGHT_YELLOW = "\u001B[93m";
-    public static final String BRIGHT_BLUE   = "\u001B[94m";
-    public static final String BRIGHT_MAGENTA= "\u001B[95m";
-    public static final String BRIGHT_CYAN   = "\u001B[96m";
-    public static final String BRIGHT_WHITE  = "\u001B[97m";
 
+    /**
+     * Bright/vivid blue color.
+     * More vibrant than BLUE. Use for prominent headers or borders.
+     */
+    public static final String BRIGHT_BLUE = "\u001B[94m";
+
+    /**
+     * Bright/vivid magenta color.
+     * More vibrant than MAGENTA. Use for special highlights.
+     */
+    public static final String BRIGHT_MAGENTA = "\u001B[95m";
+
+    /**
+     * Bright/vivid cyan color.
+     * More vibrant than CYAN. Use for important information or titles.
+     */
+    public static final String BRIGHT_CYAN = "\u001B[96m";
+
+    /**
+     * Bright/vivid white color.
+     * More vibrant than WHITE. Use for high-contrast text.
+     */
+    public static final String BRIGHT_WHITE = "\u001B[97m";
+
+    /**
+     * Private constructor to prevent instantiation.
+     * BeautifulDisplay is a utility class with only static methods and should
+     * never be instantiated.
+     *
+     * @author Denisa Cakoni
+     */
     private BeautifulDisplay() { }
+
+
 
     // BASIC UTILITIES
 
+
+
+    /**
+     * Repeats a string a certain number of times.
+     *
+     * @param s     the string to repeat
+     * @param count how many times to repeat it
+     * @return the repeated string
+     *
+     * @author Denisa Cakoni
+     */
     private static String repeat(String s, int count) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < count; i++) {
@@ -44,86 +196,213 @@ public class BeautifulDisplay {
         return sb.toString();
     }
 
+    /**
+     * Removes ANSI color codes so the visible length can be measured correctly.
+     * This is essential for proper text alignment when using colored strings,
+     * as ANSI escape sequences don't consume visual space.
+     *
+     * @param text text that may contain color codes
+     * @return the text with ANSI escape codes removed
+     *
+     * @author Denisa Cakoni
+     */
+    private static String stripAnsi(String text) {
+        if (text == null) return "";
+        return text.replaceAll("\u001B\\[[;\\d]*m", "");
+    }
+
+    /**
+     * Returns the number of visible characters in a string.
+     * Ignores ANSI color codes when calculating length.
+     *
+     * @param text the string to measure
+     * @return number of visible characters (ignoring color codes)
+     *
+     * @author Denisa Cakoni
+     */
+    private static int visibleLength(String text) {
+        return stripAnsi(text).length();
+    }
+
+    /**
+     * Pads text on the right so its visible length is at least the given width.
+     * Accounts for ANSI color codes to ensure proper alignment.
+     *
+     * @param text  the text to pad
+     * @param width desired visible width
+     * @return padded text
+     *
+     * @author Denisa Cakoni
+     */
+    private static String padVisible(String text, int width) {
+        if (text == null) text = "";
+        int visible = visibleLength(text);
+        int needed = width - visible;
+
+        if (needed <= 0) return text;
+
+        StringBuilder sb = new StringBuilder(text);
+        for (int i = 0; i < needed; i++) sb.append(' ');
+        return sb.toString();
+    }
+
+    /**
+     * Pads text on the left to reach the desired visible width.
+     * Accounts for ANSI color codes to ensure proper alignment.
+     *
+     * @param text  the text to pad
+     * @param width desired visible width
+     * @return left-padded text
+     *
+     * @author Denisa Cakoni
+     */
+    private static String padVisibleLeft(String text, int width) {
+        if (text == null) text = "";
+        int visible = visibleLength(text);
+        int needed = width - visible;
+
+        if (needed <= 0) return text;
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < needed; i++) sb.append(' ');
+        sb.append(text);
+        return sb.toString();
+    }
+
+    /**
+     * Centers text within a given visible width.
+     * Accounts for ANSI color codes to ensure proper centering.
+     *
+     * @param text  the text to center
+     * @param width total space to center within
+     * @return centered text
+     *
+     * @author Denisa Cakoni
+     */
     private static String center(String text, int width) {
-        if (text.length() >= width) {
-            return text;
-        }
-        int padding = width - text.length();
+        int visible = visibleLength(text);
+        if (visible >= width) return text;
+
+        int padding = width - visible;
         int left = padding / 2;
         int right = padding - left;
         return repeat(" ", left) + text + repeat(" ", right);
     }
 
-    // HEADERS / DIVIDERS
+
+
+    // HEADERS & DIVIDERS
+
+
 
     /**
-     * Prints a fancy top-level header with a box and accent colors.
+     * Prints a large decorative header box.
+     * Creates a bordered box with the title centered inside, using bright blue
+     * for borders and bright cyan for the title text.
+     *
+     * @param title text to show inside the header
+     * @param width width of the inner box (minimum will be adjusted to fit title)
+     *
+     * @author Denisa Cakoni
      */
     public static void printGradientHeader(String title, int width) {
-        if (width < title.length() + 4) {
-            width = title.length() + 4;
+        if (width < visibleLength(title) + 4) {
+            width = visibleLength(title) + 4;
         }
         String line = repeat("═", width);
+
         System.out.println(BRIGHT_BLUE + "┌" + line + "┐" + RESET);
         System.out.println(BRIGHT_BLUE + "│" +
-                RESET +
-                center(BOLD + BRIGHT_CYAN + title + RESET, width) +
+                RESET + center(BOLD + BRIGHT_CYAN + title + RESET, width) +
                 BRIGHT_BLUE + "│" + RESET);
         System.out.println(BRIGHT_BLUE + "└" + line + "┘" + RESET);
     }
 
     /**
-     * Prints a smaller section header with a colored left border.
+     * Prints a smaller colored section header.
+     * Creates a simple header with horizontal lines above and below,
+     * with a triangular bullet point.
+     *
+     * @param title text to show
+     * @param color ANSI color to use for the header elements
+     *
+     * @author Denisa Cakoni
      */
     public static void printSectionHeader(String title, String color) {
-        String line = repeat("─", title.length() + 6);
+        String line = repeat("─", visibleLength(title) + 6);
         System.out.println(color + line + RESET);
         System.out.println(color + "▶ " + BOLD + title + RESET);
         System.out.println(color + line + RESET);
     }
 
     /**
-     * Prints a horizontal divider.
+     * Prints a horizontal divider line.
+     * Useful for separating sections of output.
+     *
+     * @param width divider length (minimum 10 characters)
+     *
+     * @author Denisa Cakoni
      */
     public static void printGradientDivider(int width) {
         if (width < 10) width = 10;
         System.out.println(DIM + repeat("─", width) + RESET);
     }
 
-    //  BOXES / LISTS
+
+
+    // BOXES & LISTS
+
+
 
     /**
-     * Prints a key/value table inside a colored box.
+     * Prints a colored key/value table inside a box.
+     * Creates a bordered table with a title and key-value pairs.
+     * Automatically calculates column widths and aligns content properly,
+     * accounting for ANSI color codes in the values.
+     *
+     * @param title       the box title (displayed centered at top)
+     * @param rows        each row contains [key, value] can include ANSI colors
+     * @param borderColor ANSI color constant to use for the box border
+     *
+     * @author Denisa Cakoni
      */
     public static void printKeyValueBox(String title, String[][] rows, String borderColor) {
-        int keyWidth = title.length();
+        int keyWidth = visibleLength(title);
         int valueWidth = 0;
-        for (String[] row : rows) {
-            if (row[0].length() > keyWidth) keyWidth = row[0].length();
-            if (row[1].length() > valueWidth) valueWidth = row[1].length();
-        }
-        int innerWidth = keyWidth + valueWidth + 5; // "key : value"
 
+        for (String[] row : rows) {
+            if (visibleLength(row[0]) > keyWidth) keyWidth = visibleLength(row[0]);
+            if (visibleLength(row[1]) > valueWidth) valueWidth = visibleLength(row[1]);
+        }
+
+        int innerWidth = keyWidth + valueWidth + 5;
         String topBottom = repeat("═", innerWidth);
+
         System.out.println(borderColor + "┌" + topBottom + "┐" + RESET);
-        String headerLine = " " + title + " ";
         System.out.println(borderColor + "│" + RESET +
-                center(BOLD + headerLine + RESET, innerWidth) +
+                center(BOLD + " " + title + " " + RESET, innerWidth) +
                 borderColor + "│" + RESET);
         System.out.println(borderColor + "├" + repeat("─", innerWidth) + "┤" + RESET);
 
         for (String[] row : rows) {
-            String key = row[0];
-            String value = row[1];
-            String line = String.format(" %-" + keyWidth + "s : %-" + valueWidth + "s ", key, value);
-            System.out.println(borderColor + "│" + RESET + line + borderColor + "│" + RESET);
+            String key = padVisible(row[0], keyWidth);
+            String value = padVisible(row[1], valueWidth);
+            System.out.println(borderColor + "│" + RESET +
+                    " " + key + " : " + value + " " +
+                    borderColor + "│" + RESET);
         }
 
         System.out.println(borderColor + "└" + topBottom + "┘" + RESET);
     }
 
     /**
-     * Prints an ordered list with colored bullets.
+     * Prints an ordered list with colored index numbers.
+     * Each item is prefixed with a colored number (1, 2, 3, etc.).
+     *
+     * @param items       array of items to display
+     * @param bulletColor ANSI color constant to use for the numbering
+     *
+     * @author Denisa Cakoni
      */
     public static void printColorfulList(String[] items, String bulletColor) {
         int index = 1;
@@ -133,27 +412,68 @@ public class BeautifulDisplay {
         }
     }
 
-    // STATUS / MESSAGES
 
+
+    // STATUS & MESSAGES
+
+
+    /**
+     * Prints a green success message with a checkmark icon.
+     * Use for confirming successful operations.
+     *
+     * @param message text to print
+     *
+     * @author Denisa Cakoni
+     */
     public static void printSuccess(String message) {
         System.out.println(BRIGHT_GREEN + "✔ " + message + RESET);
     }
 
+    /**
+     * Prints a yellow warning message with a warning icon.
+     * Use for alerting users to potential issues or required actions.
+     *
+     * @param message text to print
+     *
+     * @author Denisa Cakoni
+     */
     public static void printWarning(String message) {
         System.out.println(BRIGHT_YELLOW + "⚠ " + message + RESET);
     }
 
+    /**
+     * Prints a red error message with an X icon.
+     * Use for reporting errors or failed operations.
+     *
+     * @param message text to print
+     *
+     * @author Denisa Cakoni
+     */
     public static void printError(String message) {
         System.out.println(BRIGHT_RED + "✖ " + message + RESET);
     }
 
+    /**
+     * Prints an informational message with an info icon.
+     * Use for general information or helpful tips.
+     *
+     * @param message text to print
+     *
+     * @author Denisa Cakoni
+     */
     public static void printInfo(String message) {
         System.out.println(BRIGHT_CYAN + "ℹ " + message + RESET);
     }
 
     /**
-     * Simple "loading" animation with dots.
-     * delayMs is total time; we just split into a few steps.
+     * Prints a loading animation using dots.
+     * Displays a message followed by animated dots. Useful for indicating
+     * that a long-running operation is in progress.
+     *
+     * @param message message to display before the dots
+     * @param delayMs how long the animation lasts in milliseconds (divided into 3 steps)
+     *
+     * @author Denisa Cakoni
      */
     public static void printLoading(String message, int delayMs) {
         int steps = 3;
@@ -163,23 +483,29 @@ public class BeautifulDisplay {
         for (int i = 0; i < steps; i++) {
             try {
                 Thread.sleep(stepDelay);
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) { }
             System.out.print(DIM + "." + RESET);
         }
         System.out.println();
     }
 
     /**
-     * Formats a currency number with a $ and two decimals.
+     * Formats a currency value as whole dollars and adds color based on value.
+     * Colors applied:
+     *  GREEN for positive values (income, profit)
+     *  RED for negative values (expenses, loss)
+     *  YELLOW for zero values
+     *
+     * @param value the number to format
+     * @return a colored dollar string with ANSI codes (e.g., "[GREEN]$1500[RESET]")
+     *
+     * @author Denisa Cakoni
      */
     public static String formatCurrency(double value) {
-        String formatted = String.format("$%.2f", value);
-        if (value > 0) {
-            return GREEN + formatted + RESET;
-        } else if (value < 0) {
-            return RED + formatted + RESET;
-        } else {
-            return YELLOW + formatted + RESET;
-        }
+        String formatted = String.format("$%.0f", value);
+
+        if (value > 0) return GREEN + formatted + RESET;
+        if (value < 0) return RED + formatted + RESET;
+        return YELLOW + formatted + RESET;
     }
 }

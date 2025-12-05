@@ -1,13 +1,31 @@
-// package validation;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 
 /**
  * The DataTypeValidator class checks if user input is valid
- * by going through simple data checks.
+ * by performing specific validations such as null checks, numeric parsing,
+ * range validation, and date format verification.
  *
  * @author David Humala
  */
 public class DataTypeValidator {
 
+    /**
+     * Default constructor.
+     */
+    public DataTypeValidator() {
+        // Default constructor
+    }
+
+    /**
+     * Checks if the input string is not null and contains at least one
+     * non-whitespace character.
+     *
+     * @param input the string to test
+     * @return true if the string contains text, false if null or whitespace only
+     */
     public boolean isNonEmpty(String input) {
         return input != null && input.trim().length() > 0;
     }
@@ -39,10 +57,12 @@ public class DataTypeValidator {
     }
 
     /**
-     * Checks if the given string is a positive integer.
+     * Checks if the given string is a strictly positive integer.
+     * <p>
+     * Note: Zero (0) is not considered positive.
      *
      * @param input number to test
-     * @return true if the number is positive
+     * @return true if the number is strictly greater than 0
      */
     public boolean isPositive(String input) {
         if (!isNumeric(input)) {
@@ -55,11 +75,17 @@ public class DataTypeValidator {
 
     /**
      * Checks if the number is within the given range.
+     * <p>
+     * <strong>Parsing Rule:</strong> The input is parsed as a {@code double} for
+     * comparison.
+     * However, the input string must pass {@link #isNumeric(String)} first, which
+     * currently
+     * restricts input to integer formats (no decimal points allowed).
      *
      * @param input the number input as text
-     * @param min   the lower limit of the range
-     * @param max   the upper limit of the range
-     * @return true if the number is in the given range
+     * @param min   the lower limit of the range (inclusive)
+     * @param max   the upper limit of the range (inclusive)
+     * @return true if the number is valid and falls between min and max
      */
     public boolean isWithinRange(String input, double min, double max) {
         if (!isNumeric(input)) {
@@ -71,10 +97,14 @@ public class DataTypeValidator {
     }
 
     /**
-     * Checks if the date is in the format "MM/DD/YYYY".
+     * Checks if the date is in the format "MM/DD/YYYY" and is a real calendar date.
+     * * FIXED: Now uses STRICT resolver style to properly validate dates like
+     * 13/40/2024
+     * and properly rejects dates with wrong separators or wrong order like
+     * YYYY/MM/DD.
      *
      * @param input the text to check
-     * @return true if the date follows the expected format
+     * @return true if the date follows the expected format and is valid
      */
     public boolean isValidDate(String input) {
         if (input == null) {
@@ -83,37 +113,45 @@ public class DataTypeValidator {
 
         input = input.trim();
 
-        if (input.length() != 10) {
+        // Strict pattern: exactly 2 digits, slash, 2 digits, slash, 4 digits
+        if (!input.matches("\\d{2}/\\d{2}/\\d{4}")) {
             return false;
         }
 
-        if (input.charAt(2) != '/' || input.charAt(5) != '/') {
+        // Use STRICT resolver style to catch invalid dates like 13/40/2024, 02/30/2024,
+        // etc.
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/uuuu")
+                .withResolverStyle(ResolverStyle.STRICT);
+
+        try {
+            // parse will fail for invalid dates like 13/40/2024, 02/30/2024, etc.
+            LocalDate.parse(input, formatter);
+            return true;
+        } catch (DateTimeParseException e) {
             return false;
         }
+    }
 
-        String month = input.substring(0, 2);
-        String day = input.substring(3, 5);
-        String year = input.substring(6, 10);
-
-        if (!isNumeric(month) || !isNumeric(day) || !isNumeric(year)) {
-            return false;
+    /**
+     * Extracts the year from a valid MM/DD/YYYY date string, or -1 if invalid.
+     *
+     * @param input date string in MM/DD/YYYY
+     * @return the year, or -1 if the date is invalid
+     */
+    public int extractYear(String input) {
+        if (!isValidDate(input)) {
+            return -1;
         }
-
-        int m = Integer.parseInt(month);
-        int d = Integer.parseInt(day);
-        int y = Integer.parseInt(year);
-
-        if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1) {
-            return false;
-        }
-
-        return true;
+        // positions 6–9 are the 4-digit year in MM/DD/YYYY
+        return Integer.parseInt(input.substring(6, 10));
     }
 
     /**
      * Simple CSV line validation demo.
      * For now, it prints results to the console.
      * Expected format: date,text,number
+     *
+     * @param line the raw CSV string to validate
      */
     public void validateCSVLine(String line) {
 
@@ -167,8 +205,14 @@ public class DataTypeValidator {
         }
     }
 
+    /**
+     * Main entry point for manual testing of the validator logic.
+     *
+     * @param args command line arguments (unused)
+     */
     public static void main(String[] args) {
-        String exInput = "12/30/2004, Food, -200"; // test unit.
+        // Demo only; real PFM CSVs may use negative amounts for expenses.
+        String exInput = "12/30/2004, Food, 200";
         DataTypeValidator example = new DataTypeValidator();
         example.validateCSVLine(exInput);
     }
