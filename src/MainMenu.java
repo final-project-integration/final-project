@@ -496,7 +496,8 @@ public class MainMenu {
      * Account Settings Menu
      *
      * @param currentUser - username of the currently signed-in user
-     * 
+     * @return true if user remains logged in, false if account was deleted or logout requested
+     *
      * @author Aaron Madou
      * @author Shazadul Islam
      */
@@ -564,7 +565,7 @@ public class MainMenu {
      * Makes calls to other menus that handle other parts of the application
      * Also lets the user log out and quit the program
      * 
-     * @param args
+     * @param args command line arguments (not used)
      * 
      * @author Shazadul Islam
      */
