@@ -20,7 +20,7 @@ import java.util.List;
  * 3. Collect the response or result
  * 4. Return a simple result or status message back to the caller
  *
- * All integration responsibilities are handled here so other modules can focus
+ * All integration responsibilities are handled here, so other modules can focus
  * only on their core logic.
  *
  * @author Denisa Cakoni
@@ -33,7 +33,7 @@ public class ModuleHub {
     private final Storage authStorage;
     /** Authentication module responsible for login, registration, and credentials. */
     private final Authentication authModule;
-    /** Accounts module responsible for user account operations. */
+    /** Accounts module is responsible for user account operations. */
     private final Accounts accountsModule;
 
 
@@ -41,11 +41,11 @@ public class ModuleHub {
     private final StorageManager storageModule;
 
 
-    /** ReportManager responsible for computing summaries and balances. */
+    /** ReportManager is responsible for computing summaries and balances. */
     private final ReportManager reportsModule;
-    /** ReportAnalyzer responsible for additional analysis on financial records. */
+    /** ReportAnalyzer is responsible for additional analysis on financial records. */
     private final ReportAnalyzer reportAnalyzer;
-    /** ReportFormatter responsible for formatting analysis output. */
+    /** ReportFormatter is responsible for formatting analysis output. */
     private final ReportFormatter reportFormatter;
 
 
@@ -66,7 +66,7 @@ public class ModuleHub {
 
     /**
      * Prints a colored header with horizontal lines of a fixed width,
-     * so the colored header bars line up with the white dividers (e.g. width 70).
+     * so the colored header bars line up with the white dividers (e.g., width 70).
      *
      * @param title text to show in the center
      * @param color ANSI color from BeautifulDisplay
@@ -90,7 +90,7 @@ public class ModuleHub {
             line.append('─');
         }
 
-        // Center the title in a line of length `width`
+        // Center the title in a line of length `width.`
         int padding = width - title.length();
         int left = padding / 2;
         int right = padding - left;
@@ -168,7 +168,7 @@ public class ModuleHub {
      * @param action   the storage action to perform ("load", "delete", "listyears")
      * @param username the username whose data is being accessed
      * @param year     the year associated with the data
-     * @return true if the requested action completes without throwing an exception false otherwise
+     * @return true if the requested action completes without throwing an exception, false otherwise
      *
      *
      * @author Denisa Cakoni
@@ -240,7 +240,7 @@ public class ModuleHub {
     }
 
     /**
-     * Updates Budget for a given user and year through StorageManager.
+     * Updates the Budget for a given user and year through StorageManager.
      * Any exceptions are logged and reported via ErrorHandler.
      *
      * @param username the username whose budget is being updated
@@ -282,7 +282,7 @@ public class ModuleHub {
             return false;
         }
 
-        // helper that trims and also checks ./data/ folder
+        // helper that trims and also checks the ./data/ folder
         File csvFile = resolveCsvFile(csvFilePath);
         if (csvFile == null || !csvFile.exists()) {
             System.out.println("[ModuleHub] CSV file not found: " + csvFilePath.trim());
@@ -371,7 +371,7 @@ public class ModuleHub {
             return null;
         }
 
-        String cleaned = csvFilePath.trim();   // ← kills the trailing space
+        String cleaned = csvFilePath.trim();   // kills the trailing space
 
         // As typed (absolute or relative)
         File direct = new File(cleaned);
@@ -571,7 +571,7 @@ public class ModuleHub {
      * @author Kapil Tamang
      */
     private void printMonthlySection(int year, ArrayList<String> monthly) {
-        // Colored header bar that matches width 70, just like the white divider
+        // Colored header bar that matches the width 70, just like the white divider
         printFixedWidthHeader("MONTHLY BREAKDOWN - " + year,
                 BeautifulDisplay.BRIGHT_MAGENTA,
                 70);
@@ -736,7 +736,7 @@ public class ModuleHub {
     }
 
     /**
-     * Prints the full financial report including yearly, monthly, and category sections.
+     * Prints the full financial report, including yearly, monthly, and category sections.
      * This is used when the user requests a complete view of their finances for a year.
      *
      * @param year              the year being reported
@@ -1276,7 +1276,7 @@ public class ModuleHub {
 
     /**
      * Deletes the specified user account using the Accounts module.
-     * This operation may require a matching signed-in session depending on the
+     * This operation may require a matching signed-in session, depending on the
      * Accounts team implementation.
      *
      * @param username the username of the account to delete
@@ -1368,7 +1368,7 @@ public class ModuleHub {
     }
 
     /**
-     * Updates a user's secrete question and answer using the Accounts module.
+     * Updates a user's secret question and answer using the Accounts module.
      * Any failure is reported through the console.
      *
      * @param username    the username whose password should be reset
