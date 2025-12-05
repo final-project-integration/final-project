@@ -19,7 +19,7 @@ import java.util.Map;
 public class ScenarioSimulator {
 
     /**
-     * Prediction module is wired to share the same DataReader
+     * ScenarioSimulator is wired to share the same DataReader
      * that ModuleHub owns. DataReader is assumed to have already
      * read data via readData() or readFromBudget().
      *
@@ -27,7 +27,6 @@ public class ScenarioSimulator {
      * @author Tanzina Sumona
      */
 
-    private final DataReader dataReader;
     public ScenarioSimulator(DataReader reader) {
         this.dataReader = reader;
     }
