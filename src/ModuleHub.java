@@ -1236,7 +1236,7 @@ public class ModuleHub {
                                 boolean confirm) {
         try {
             boolean ok = accountsModule.registerAccount(
-                    username, password, secretQuestion, secretAnswer, confirm
+                    username, password, secretQuestion, secretAnswer
             );
 
             if (!ok) {
@@ -1354,7 +1354,7 @@ public class ModuleHub {
                                      String secretAnswer,
                                      String newPassword) {
         try {
-            boolean ok = accountsModule.resetPassword(username, secretAnswer, newPassword);
+            boolean ok = accountsModule.changePassword(username, null, secretAnswer, newPassword);
             if (!ok) {
                 System.out.println(
                         "[ModuleHub] Password reset failed: invalid secret answer, invalid password, or user may not exist."
