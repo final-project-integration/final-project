@@ -11,7 +11,7 @@ import java.util.Collections;
  * given year Producing monthly, category, and yearly summaries Computing
  * overall balance figures Exporting summaries to CSV and displaying reports on
  * screen
- *
+ * 
  * @author Chukwuemeka Okwuka
  * @author Omar Piron
  */
@@ -411,17 +411,25 @@ public class ReportManager {
 	}
 
 	/**
-	 * Immutable value object representing yearly totals.
+	 * Immutable value object representing yearly financial totals. Once created,
+	 * the values in this object cannot be modified.
 	 *
-	 * @param totalIncome   sum of all income entries for the year
-	 * @param totalExpenses sum of all expense entries for the year
-	 * @param netBalance    totalIncome - totalExpenses
 	 */
 	public static final class YearlySummary {
 		private final String totalIncome;
 		private final String totalExpenses;
 		private final String netBalance;
 
+		/**
+		 * Constructs a new YearlySummary with the specified totals.
+		 *
+		 * @param totalIncome   sum of all income entries for the year as a formatted
+		 *                      string
+		 * @param totalExpenses sum of all expense entries for the year as a formatted
+		 *                      string
+		 * @param netBalance    the net balance (totalIncome - totalExpenses) as a
+		 *                      formatted string
+		 */
 		public YearlySummary(String totalIncome, String totalExpenses, String netBalance) {
 			this.totalIncome = totalIncome;
 			this.totalExpenses = totalExpenses;
