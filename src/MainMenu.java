@@ -346,12 +346,28 @@ final class MainMenu {
     private void handleAccountCreation() {
     	while (true) {
     		clearConsole();
+    		System.out.println("Username Rules: ");
+    		System.out.println("• Cannot be empty or only whitespace");
+    		System.out.println("• Cannot begin or end with a space");
+    		System.out.println("• Must only include letter or numbers");
+    		System.out.println("• Must be at least 3 characters and at most 20 characters");
+    		System.out.println();
+    		System.out.println("Enter your username below and then press enter. ");
     		System.out.print("What would you like your username to be? ");
     		String registerUsername = scanner.nextLine();
+    		clearConsole();
+    		System.out.println("Password Rules: ");
+    		System.out.println("• Cannot be empty or only whitespace");
+    		System.out.println("• Cannot begin or end with a space");
+    		System.out.println("• Must be at least 5 characters and at most 30 characters");
+    		System.out.println();
+    		System.out.println("Enter your password below and then press enter. ");
     		System.out.print("What would you like your password to be? ");
     		String registerPassword = scanner.nextLine();
+    		System.out.println("Re-enter your password below to confirm it and then press enter. ");
     		System.out.print("Confirm your password: ");
     		String confirmPassword = scanner.nextLine();
+    		clearConsole();
     		System.out.print("What would you like your recovery question to be? ");
     		String registerSecretQuestion = scanner.nextLine();
     		System.out.print("What would you like your recovery question answer to be? ");
