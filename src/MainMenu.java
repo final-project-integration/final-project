@@ -125,21 +125,21 @@ final class MainMenu {
 
     	//If the account exists...
     	clearConsole();
-    	//Print out the user's recovery question
-    	System.out.println("To recover your account, please answer the recovery question for the account, " + usernameRecovering + ", below and then press enter.");
+    	//Print out the user's security question
+    	System.out.println("To recover your account, please answer the security question for the account, " + usernameRecovering + ", below and then press enter.");
     	System.out.println(secretQuestion);
-    	//Get the user's answer to their recovery question
+    	//Get the user's answer to their security question
     	System.out.print("Answer: ");
     	String loginSecretAnswer = scanner.nextLine();
 
-    	//If the user's answer to the their account's recovery question is incorrect
+    	//If the user's answer to the their account's security question is incorrect
     	if (!moduleHub.verifyUserSecretAnswer(usernameRecovering,loginSecretAnswer)) {
     		clearConsole();
-    		System.out.println("Your answer to the recovery question was incorrect.");
+    		System.out.println("Your answer to the security question was incorrect.");
     		return AccountRecoverState.INCORRECT_ANSWER;
     	}
 
-    	//If the user's answer to their account's recovery question is correct
+    	//If the user's answer to their account's security question is correct
     	while (true) {
     		clearConsole();
     		//Let them enter a new password
@@ -308,7 +308,7 @@ final class MainMenu {
         				
         				else {
         					System.out.println();
-        					System.out.println("Too many recovery attempts.");
+        					System.out.println("Too many account recovery attempts.");
         					System.out.println("You can either return to the login menu or exit the application.");
         					System.out.println("What would you like to do?");
 	        			    System.out.println("  1. Return to the login menu");
@@ -346,28 +346,123 @@ final class MainMenu {
     private void handleAccountCreation() {
     	while (true) {
     		clearConsole();
+    		System.out.println("Username Rules: ");
+    		System.out.println("• Cannot be empty or only whitespace");
+    		System.out.println("• Cannot begin or end with a space");
+    		System.out.println("• Must only include letter or numbers");
+    		System.out.println("• Must be at least 3 characters and at most 20 characters");
+    		System.out.println();
+    		
+    		System.out.println("Enter your username below and then press enter. ");
     		System.out.print("What would you like your username to be? ");
     		String registerUsername = scanner.nextLine();
+    		
+    		String registerPassword = null;
+    		
+    		clearConsole();
+    		System.out.println("Password Rules: ");
+    		System.out.println("• Cannot be empty or only whitespace");
+    		System.out.println("• Cannot begin or end with a space");
+    		System.out.println("• Must be at least 5 characters and at most 30 characters");
+    		System.out.println();
+
+    		System.out.println("Enter your password below and then press enter. ");
     		System.out.print("What would you like your password to be? ");
-    		String registerPassword = scanner.nextLine();
+    		registerPassword = scanner.nextLine();
+    		System.out.println();
+
+    		System.out.println("Re-enter your password below to confirm it and then press enter. ");
     		System.out.print("Confirm your password: ");
     		String confirmPassword = scanner.nextLine();
-    		System.out.print("What would you like your recovery question to be? ");
-    		String registerSecretQuestion = scanner.nextLine();
-    		System.out.print("What would you like your recovery question answer to be? ");
-    		String registerSecretAnswer = scanner.nextLine();
-
+    		
     		if (!confirmPassword.equals(registerPassword)) {
-    		    System.out.println("Passwords do not match. Try again.");
-    		    continue;
+    			clearConsole();
+    			System.out.println("Passwords do not match.");
+    			System.out.println("What would you like to do?");
+				System.out.println("  1. Try creating an account again");
+				System.out.println("  2. Return to the login menu");
+				System.out.println("  3. Exit the application");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				int passwordRetryChoice = getUserChoice(3);
+
+				if (passwordRetryChoice == 1) {
+					continue;
+				}
+				else if (passwordRetryChoice == 2) {
+					break;
+				}
+				else if (passwordRetryChoice == 3) {
+					exitApplication();
+				}
     		}
     		
     		clearConsole();
-    		System.out.println("Please confirm that these are the credentials that you want for your account. ");
+    		System.out.println("Pick one of the security questions below and then press enter. ");
+    		System.out.println("  1. What was your childhood nickname?");
+    		System.out.println("  2. What is the name of your favorite childhood friend?");
+    		System.out.println("  3. What street did you live on in third grade?");
+    		System.out.println("  4. What is the middle name of your oldest child?");
+    		System.out.println("  5. What school did you attend for sixth grade?");
+    		System.out.println("  6. What was the name of your first stuffed animal?");
+    		System.out.println("  7. What was the name of the first school you remember attending?");
+    		System.out.println("  8. What was the destination of your most memorable school field trip?");
+    		System.out.println("  9. What was your maths teacher’s surname in your 8th year of school?");
+    		System.out.println("  10. What was the name of your first stuffed toy?");
+    		System.out.println("  11. What was your driving instructor’s first name?");
+    		System.out.println();
+    		
+    		System.out.println("Please enter the number associated with the question that you want to be your security question and then press enter: ");
+    		System.out.print("What would you like your security question to be? ");
+    		int secretQuestionChoice = getUserChoice(11);
+    		
+    		String registerSecretQuestion = null;
+    		switch(secretQuestionChoice) {
+    	    case 1:
+    	        registerSecretQuestion = "What was your childhood nickname?";
+    	        break;
+    	    case 2:
+    	        registerSecretQuestion = "What is the name of your favorite childhood friend?";
+    	        break;
+    	    case 3:
+    	        registerSecretQuestion = "What street did you live on in third grade?";
+    	        break;
+    	    case 4:
+    	        registerSecretQuestion = "What is the middle name of your oldest child?";
+    	        break;
+    	    case 5:
+    	        registerSecretQuestion = "What school did you attend for sixth grade?";
+    	        break;
+    	    case 6:
+    	        registerSecretQuestion = "What was the name of your first stuffed animal?";
+    	        break;
+    	    case 7:
+    	        registerSecretQuestion = "What was the name of the first school you remember attending?";
+    	        break;
+    	    case 8:
+    	        registerSecretQuestion = "What was the destination of your most memorable school field trip?";
+    	        break;
+    	    case 9:
+    	        registerSecretQuestion = "What was your maths teacher’s surname in your 8th year of school?";
+    	        break;
+    	    case 10:
+    	        registerSecretQuestion = "What was the name of your first stuffed toy?";
+    	        break;
+    	    case 11:
+    	        registerSecretQuestion = "What was your driving instructor’s first name?";
+    	        break;
+    		}
+    		
+    		clearConsole();
+    		System.out.println("The security question you chose was: " + registerSecretQuestion);
+    		System.out.print("What would you like your answer to your chosen security question to be? ");
+    		String registerSecretAnswer = scanner.nextLine();
+    		
+    		clearConsole();
+    		System.out.println("Please confirm that these are the credentials that you want for your account.");
     		System.out.println("Username: " + registerUsername);
     		System.out.println("Password: " + "*".repeat(registerPassword.length()));
-    		System.out.println("Account Recovery Question: " + registerSecretQuestion);
-    		System.out.println("Account Recovery Answer: " + "*".repeat(registerSecretAnswer.length()));
+    		System.out.println("Security Question: " + registerSecretQuestion);
+    		System.out.println("Security Question Answer: " + "*".repeat(registerSecretAnswer.length()));
     		System.out.println("Are you sure these are the credentials that you want for your account? ");
     		System.out.println(" 1. Yes");
     		System.out.println(" 2. No");
