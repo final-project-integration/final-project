@@ -12,7 +12,6 @@ import java.util.List;
  * Coordinate calls between team modules without re-implementing their logic
  * Convert data formats when passing information between modules
  * Provide a single integration entry point that MainMenu and the rest of the application can use
- * Handle CSV upload and the workflow of persisting that data through StorageManager
  *
  * flow:
  * 1. Accept a request from MainMenu
@@ -47,7 +46,8 @@ public class ModuleHub {
     private final ReportAnalyzer reportAnalyzer;
     /** ReportFormatter is responsible for formatting analysis output. */
     private final ReportFormatter reportFormatter;
-
+    /** Handles printing all report sections to the console. */
+    private final ReportDisplay reportDisplay;
 
     /** DataReader used by the Prediction module to read CSV budget data. */
     private final DataReader predictionData;
@@ -71,7 +71,7 @@ public class ModuleHub {
      * @param title text to show in the center
      * @param color ANSI color from BeautifulDisplay
      * @param width total width of the header line
-     *              
+     *
      * @author Denisa Cakoni
      */
     private void printFixedWidthHeader(String title, String color, int width) {
@@ -109,22 +109,6 @@ public class ModuleHub {
         System.out.println(color + line.toString() + BeautifulDisplay.RESET);
     }
 
-    /**
-     * Drops a trailing ".00" from a currency string so reports
-     * show whole dollars only.
-     * @param amount the original currency string
-     * @return the same string without a trailing
-     * 
-     * @author Denisa Cakoni
-     */
-    private String stripCents(String amount) {
-        if (amount == null) return "";
-        amount = amount.trim();
-        if (amount.endsWith(".00")) {
-            return amount.substring(0, amount.length() - 3);
-        }
-        return amount;
-    }
 
     /**
      * Default constructor for ModuleHub.
@@ -145,6 +129,7 @@ public class ModuleHub {
         reportsModule   = new ReportManager();
         reportAnalyzer  = new ReportAnalyzer();
         reportFormatter = new ReportFormatter();
+        reportDisplay = new ReportDisplay();
 
         // Prediction
         predictionData   = new DataReader();
@@ -261,7 +246,7 @@ public class ModuleHub {
     }
 
 
-  
+
 
 
     /**
@@ -457,24 +442,33 @@ public class ModuleHub {
 
             switch (reportType.toLowerCase()) {
                 case "yearly":
-                    printYearlySection(year, yearly);
-                    printAnalysisSection(highestMonth, topSpendingCategory,
-                            netBalancePretty, negativeBalanceMonths, true);
+                    reportDisplay.printYearlySection(year, yearly);
+                    reportDisplay.printAnalysisSection(
+                            highestMonth,
+                            topSpendingCategory,
+                            netBalancePretty,
+                            negativeBalanceMonths,
+                            true
+                    );
                     break;
 
                 case "monthly":
-                    printMonthlySection(year, monthly);
+                    reportDisplay.printMonthlySection(year, monthly);
                     break;
 
                 case "category":
-                    printCategorySection(year, categorySummaries);
+                    reportDisplay.printCategorySection(year, categorySummaries);
                     break;
 
                 case "full":
                 default:
-                    printFullReport(year, yearly, monthly, categorySummaries);
-                    printAnalysisSection(highestMonth, topSpendingCategory,
-                            netBalancePretty, negativeBalanceMonths, true);
+                    reportDisplay.printFullReport(year, yearly, monthly, categorySummaries);
+                    reportDisplay.printAnalysisSection(
+                            highestMonth,
+                            topSpendingCategory,
+                            netBalancePretty,
+                            negativeBalanceMonths,
+                            true);
                     break;
             }
 
@@ -526,293 +520,6 @@ public class ModuleHub {
         return records;
     }
 
-    /**
-     * Prints the yearly summary section of a financial report.
-     * This method is responsible only for console formatting and display.
-     *
-     * @param year   the year being reported
-     * @param yearly the YearlySummary object containing totals for the year
-     *
-     * @author Denisa Cakoni
-     */
-    private void printYearlySection(int year, ReportManager.YearlySummary yearly) {
-        BeautifulDisplay.printGradientHeader("FINANCIAL REPORT - " + year, 70);
-
-        String incomeRaw  = "$" + yearly.getTotalIncome();
-        String expenseRaw = "$" + yearly.getTotalExpenses();
-
-        String incomeStr  = BeautifulDisplay.GREEN  + stripCents(incomeRaw)  + BeautifulDisplay.RESET;
-        String expenseStr = BeautifulDisplay.RED    + stripCents(expenseRaw) + BeautifulDisplay.RESET;
-
-        double netVal = 0.0;
-        try {
-            netVal = Double.parseDouble(yearly.getNetBalance());
-        } catch (Exception ignored) { }
-
-        String netColored = BeautifulDisplay.formatCurrency(netVal);
-
-        String[][] summaryData = {
-                {"Total Income",   incomeStr},
-                {"Total Expenses", expenseStr},
-                {"Net Balance",    netColored}
-        };
-
-        BeautifulDisplay.printKeyValueBox("YEARLY SUMMARY", summaryData, BeautifulDisplay.BRIGHT_CYAN);
-        BeautifulDisplay.printGradientDivider(70);
-    }
-    /**
-     * Prints the monthly breakdown section of a financial report.
-     * Each line represents income, expenses, and balance for a specific month.
-     *
-     * @param year    the year being reported
-     * @param monthly the list of monthly summary lines generated by ReportManager
-     *
-     * @author Denisa Cakoni
-     * @author Kapil Tamang
-     */
-    private void printMonthlySection(int year, ArrayList<String> monthly) {
-        // Colored header bar that matches the width 70, just like the white divider
-        printFixedWidthHeader("MONTHLY BREAKDOWN - " + year,
-                BeautifulDisplay.BRIGHT_MAGENTA,
-                70);
-
-            System.out.println("┌──────────────┬──────────────┬───────────────┬───────────────┐");
-            System.out.printf("│ %-12s │ %-12s │ %-13s │ %-13s │%n",
-                        "Month", "Income", "Expenses", "Balance");
-            System.out.println("├──────────────┼──────────────┼───────────────┼───────────────┤");
-            
-               
-            // If monthly.size() is too small, we pass null so the helper prints $0.00.
-            printMonthlyRow(monthly.size() > 0  ? monthly.get(0)  : null, "January");
-            printMonthlyRow(monthly.size() > 1  ? monthly.get(1)  : null, "February");
-            printMonthlyRow(monthly.size() > 2  ? monthly.get(2)  : null, "March");
-            printMonthlyRow(monthly.size() > 3  ? monthly.get(3)  : null, "April");
-            printMonthlyRow(monthly.size() > 4  ? monthly.get(4)  : null, "May");
-            printMonthlyRow(monthly.size() > 5  ? monthly.get(5)  : null, "June");
-            printMonthlyRow(monthly.size() > 6  ? monthly.get(6)  : null, "July");
-            printMonthlyRow(monthly.size() > 7  ? monthly.get(7)  : null, "August");
-            printMonthlyRow(monthly.size() > 8  ? monthly.get(8)  : null, "September");
-            printMonthlyRow(monthly.size() > 9  ? monthly.get(9)  : null, "October");
-            printMonthlyRow(monthly.size() > 10 ? monthly.get(10) : null, "November");
-            printMonthlyRow(monthly.size() > 11 ? monthly.get(11) : null, "December");
-            
-            
-            System.out.println("└──────────────┴──────────────┴───────────────┴───────────────┘");     
-       
-		BeautifulDisplay.printGradientDivider(70);
-    }
- /**
-    * Prints a single row of the monthly table.
-    *
-    * @param line             Example from 'monthly':
-    *                         "January: Income=$3700.00, Expenses=$-1740.00, Balance=$1960.00"
-    *                         or null if no data for that month.
-    * @param fallbackMonth    month name to use if the line is null or badly formatted.
-    *
-    * @author Kapil Tamang
-    */
-    private void printMonthlyRow(String line, String fallbackMonth) {
-
-        // Default values if there is no data or if it is null
-        String monthName      = fallbackMonth;
-        String incomeMonthly  = "$0.00";
-        String expenseMonthly = "$0.00";
-        String balanceMonthly = "$0.00";
-    
-        if (line != null && !line.isBlank()) {
-            int colonIndex = line.indexOf(':');
-    
-            if (colonIndex >= 0) {
-                // Part before the ':' is the month name
-                monthName = line.substring(0, colonIndex).trim();
-                String rest = line.substring(colonIndex + 1).trim();
-                // It will print out: "Income=$3700.00, Expenses=$-1740.00, Balance=$1960.00"
-    
-                String[] parts = rest.split(",");
-                for (String part : parts) {
-                    part = part.trim();
-                    if (part.startsWith("Income=")) {
-                        incomeMonthly = part.substring("Income=".length()).trim();
-                    } else if (part.startsWith("Expenses=")) {
-                        expenseMonthly = part.substring("Expenses=".length()).trim();
-                    } else if (part.startsWith("Balance=")) {
-                        balanceMonthly = part.substring("Balance=".length()).trim();
-                    }
-                }
-            } else {
-                
-                monthName = line.trim();
-            }
-        }
-
-        incomeMonthly  = stripCents(incomeMonthly);
-        expenseMonthly = stripCents(expenseMonthly);
-        balanceMonthly = stripCents(balanceMonthly);
-
-        // Print the row aligned in the table
-        System.out.printf("│ %-12s │ %12s │ %13s │ %13s │%n",
-                monthName, incomeMonthly, expenseMonthly, balanceMonthly);
-    }
-    /**
-     * Prints the category summary section of a financial report.
-     * Each line represents a spending or income category and its total amount.
-     *
-     * @param year              the year being reported
-     * @param categorySummaries the list of category summary lines
-     *
-     * @author Denisa Cakoni
-     */
-    private void printCategorySection(int year, ArrayList<String> categorySummaries) {
-        // Use our fixed-width colorful header so the lines match the white borders.
-        printFixedWidthHeader("CATEGORY SUMMARY - " + year,
-                BeautifulDisplay.BRIGHT_YELLOW, 70);
-
-        if (categorySummaries == null || categorySummaries.isEmpty()) {
-            System.out.println("No category data available for this year.");
-            BeautifulDisplay.printGradientDivider(70);
-            return;
-        }
-
-        // Parse Category:into name + amount (string)
-        ArrayList<String> names = new ArrayList<>();
-        ArrayList<String> amounts = new ArrayList<>();
-
-        for (String line : categorySummaries) {
-            if (line == null || line.trim().isEmpty()) {
-                continue;
-            }
-
-            String text = line.trim();
-            String name = text;
-            String amount = "";
-
-            int colonIndex = text.indexOf(':');
-            if (colonIndex >= 0) {
-                name = text.substring(0, colonIndex).trim();
-                amount = text.substring(colonIndex + 1).trim();
-            }
-
-            amount = stripCents(amount);
-
-            names.add(name);
-            amounts.add(amount);
-        }
-
-        // Compute column widths
-        int nameWidth = "Category".length();
-        int amountWidth = "Amount".length();
-
-        for (String n : names) {
-            if (n.length() > nameWidth) {
-                nameWidth = n.length();
-            }
-        }
-        for (String a : amounts) {
-            if (a.length() > amountWidth) {
-                amountWidth = a.length();
-            }
-        }
-
-        // Build header line and borders based on its length
-        String header = String.format("│ %-3s │ %-" + nameWidth + "s │ %-" + amountWidth + "s │",
-                "#", "Category", "Amount");
-        String border = "─".repeat(header.length() - 2); // minus the two side bars
-
-        String borderColor = BeautifulDisplay.BRIGHT_WHITE;
-
-        System.out.println(borderColor + "┌" + border + "┐" + BeautifulDisplay.RESET);
-        System.out.println(borderColor + header + BeautifulDisplay.RESET);
-        System.out.println(borderColor + "├" + border + "┤" + BeautifulDisplay.RESET);
-
-        // Body rows
-        for (int i = 0; i < names.size(); i++) {
-            String row = String.format("│ %3d │ %-" + nameWidth + "s │ %" + amountWidth + "s │",
-                    (i + 1), names.get(i), amounts.get(i));
-            System.out.println(borderColor + row + BeautifulDisplay.RESET);
-        }
-
-        System.out.println(borderColor + "└" + border + "┘" + BeautifulDisplay.RESET);
-        BeautifulDisplay.printGradientDivider(70);
-    }
-
-    /**
-     * Prints the full financial report, including yearly, monthly, and category sections.
-     * This is used when the user requests a complete view of their finances for a year.
-     *
-     * @param year              the year being reported
-     * @param yearly            the yearly summary object
-     * @param monthly           the monthly summary lines
-     * @param categorySummaries the category summary lines
-     *
-     * @author Denisa Cakoni
-     */
-    private void printFullReport(int year,
-                                 ReportManager.YearlySummary yearly,
-                                 ArrayList<String> monthly,
-                                 ArrayList<String> categorySummaries) {
-
-        printYearlySection(year, yearly);
-        printMonthlySection(year, monthly);
-        printCategorySection(year, categorySummaries);
-    }
-
-    /**
-     * Prints the additional analysis section of the report:
-     * highest spending month
-     * top spending category
-     * overall net balance with formatted currency using ReportFormatter
-     * months with a negative balance, if any
-     *
-     * @param highestMonth           the month with the highest total expenses
-     * @param topSpendingCategory    the category with the highest total expenses
-     * @param netBalancePretty       the formatted net balance string
-     * @param negativeBalanceMonths  a list of months where the balance was negative
-     * @param includeBanner          true to print a header and footer, false to skip them
-     *
-     * @author Denisa Cakoni
-     */
-    private void printAnalysisSection(String highestMonth,
-                                      String topSpendingCategory,
-                                      String netBalancePretty,
-                                      ArrayList<String> negativeBalanceMonths,
-                                      boolean includeBanner) {
-
-        if (includeBanner) {
-            // Colored header with same width as dividers (70)
-            printFixedWidthHeader("FINANCIAL INSIGHTS",
-                    BeautifulDisplay.BRIGHT_GREEN,
-                    70);
-        }
-
-        String[] insights = {
-                "📈 Highest spending month: " +
-                        BeautifulDisplay.BOLD + BeautifulDisplay.BRIGHT_YELLOW +
-                        highestMonth + BeautifulDisplay.RESET,
-                "🏆 Top spending category: " +
-                        BeautifulDisplay.BOLD + BeautifulDisplay.BRIGHT_MAGENTA +
-                        topSpendingCategory + BeautifulDisplay.RESET,
-                "💰 Overall net balance: " + BeautifulDisplay.BOLD + netBalancePretty +
-                        BeautifulDisplay.RESET
-        };
-
-        BeautifulDisplay.printColorfulList(insights, BeautifulDisplay.BRIGHT_CYAN);
-
-        if (negativeBalanceMonths == null || negativeBalanceMonths.isEmpty()) {
-            BeautifulDisplay.printSuccess(
-                    "All months had a non-negative balance. Nice job managing your finances!");
-        } else {
-            BeautifulDisplay.printWarning(
-                    negativeBalanceMonths.size() + " month(s) had a negative balance:");
-            String[] neg = new String[negativeBalanceMonths.size()];
-            for (int i = 0; i < negativeBalanceMonths.size(); i++) {
-                neg[i] = BeautifulDisplay.RED + "⚠ " + negativeBalanceMonths.get(i)
-                        + BeautifulDisplay.RESET;
-            }
-            BeautifulDisplay.printColorfulList(neg, BeautifulDisplay.RED);
-        }
-
-        BeautifulDisplay.printGradientDivider(70);
-    }
 
 
     // Predictions
@@ -856,7 +563,7 @@ public class ModuleHub {
                 return "[ModuleHub] No data available for year " + year;
             }
 
-           predictionData.readFromBudget(budget);
+            predictionData.readFromBudget(budget);
 
             switch (scenarioType.toLowerCase()) {
 
@@ -1212,7 +919,7 @@ public class ModuleHub {
         }
     }
 
-      /**
+    /**
      * Registers a new user account by delegating to the Accounts module.
      * This wrapper:
      * forwards all user-centered fields,
@@ -1378,18 +1085,18 @@ public class ModuleHub {
      *
      * @author Aaron Madou
      */
-	public boolean updateUserSecretQuestionAndAnswer(String username, String newQuestion, String newAnswer) {
-		try {
-			boolean ok = accountsModule.setSecretQuestionAndAnswer(username, newQuestion, newAnswer);
-			if(!ok) {
-				System.out.println("[ModuleHub] Password reset failed (user may not exist).");
-			}
-			return ok;
-		} catch (Exception e) {
-			errorHandler.handleModuleError("Accounts", e);
-			return false;
-		}
-	}
+    public boolean updateUserSecretQuestionAndAnswer(String username, String newQuestion, String newAnswer) {
+        try {
+            boolean ok = accountsModule.setSecretQuestionAndAnswer(username, newQuestion, newAnswer);
+            if(!ok) {
+                System.out.println("[ModuleHub] Password reset failed (user may not exist).");
+            }
+            return ok;
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Accounts", e);
+            return false;
+        }
+    }
 }
 
 
