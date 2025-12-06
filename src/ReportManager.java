@@ -1,9 +1,9 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-//import java.util.Collections;
 
 /**
  * Manages loading data and orchestrating the generation and presentation of
@@ -38,7 +38,7 @@ public class ReportManager {
 	 */
 	public void loadCSV(File csvFile) {
 		try {
-			java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(csvFile));
+			BufferedReader reader = new BufferedReader(new FileReader(csvFile));
 			String line;
 
 			// Skip header row
@@ -101,7 +101,7 @@ public class ReportManager {
 		}
 
 		try {
-			java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(sessionFile));
+			BufferedReader reader = new BufferedReader(new FileReader(sessionFile));
 			String filePath;
 
 			while ((filePath = reader.readLine()) != null) {
