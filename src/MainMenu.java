@@ -12,7 +12,7 @@ import java.io.File;
  * @author Shazadul Islam
  * @author Aaron Madou
  */
-public class MainMenu {
+final class MainMenu {
 	/**
 	 * Creates a scanner that is used to handle all of the user input that is taken in and used by the program
 	 */
@@ -26,8 +26,8 @@ public class MainMenu {
     /**
      * Default constructor for MainMenu. Creates a new ModuleHub instance.
      */
-    public MainMenu() {
-        moduleHub = new ModuleHub();
+    private MainMenu() {
+    	moduleHub = new ModuleHub();
     }
 
     /**
@@ -37,10 +37,21 @@ public class MainMenu {
      * 
      * @author Aaron Madou
      */
-    public void clearConsole() {
+    private void clearConsole() {
     	System.out.println();
         System.out.print("\033[H\033[2J");
         System.out.flush();
+    }
+    
+    /**
+     * Provides a buffer for when text needs to be displayed on the console or terminal 
+     * before moving on to the next part of the program
+     * 
+     * @author Shazadul Islam
+     */
+    private void moveOn() {
+    	System.out.print("Press enter when you are ready to move on...");
+    	scanner.nextLine();
     }
 
     /**
@@ -54,151 +65,19 @@ public class MainMenu {
      * 
      * @author Shazadul Islam
      */
-    public int getUserChoice(int numChoices) {
+    private int getUserChoice(int numChoices) {
         // Validate and route based on user choice
         while (true) {
             try {
                 int numChoice = Integer.parseInt(scanner.nextLine());
                 if (numChoice < 1 || numChoice > numChoices) {
-                	System.out.print("Please enter a valid number associated with an option displayed in the main menu (1-" + numChoices + "): ");
+                	System.out.print("Please enter a valid number associated with an option displayed in the menu (1-" + numChoices + ") and then press enter: ");
                 	continue;
                 }
                 return numChoice;
 
             } catch (NumberFormatException e) {
-                System.out.print("Please enter a valid number associated with an option displayed in the main menu (1-" + numChoices + "): ");
-            }
-        }
-    }
-    
-    /**
-     * Provides a buffer for when text needs to be displayed on the console or terminal 
-     * before moving on to the next part of the program
-     * 
-     * @author Shazadul Islam
-     */
-    public void moveOn() {
-    	System.out.print("Press enter when you are ready to move on...");
-    	scanner.nextLine();
-    }
-    
-    /**
-     * Handles the accounts creation and entry:
-     * Asks the user whether the user wants to sign in or create an account
-     * Loop until we have a successful sign-in or the user decides to exit the program
-     *
-     * @return loginUsername - the username of the successfully signed-in user
-     * 
-     * @author Shazadul Islam
-     */
-    public String enter() {
-        while (true) {
-        	clearConsole();
-            System.out.println("Would you like to sign in or create a new account? ");
-            System.out.println("  1. Sign In");
-            System.out.println("  2. Create a new account");
-            System.out.println("  3. Exit application");
-            System.out.print("Please enter the number associated with your desired option: ");
-            int userChoice = getUserChoice(3);
-
-            switch (userChoice) {
-                case 1:
-                    boolean isNotLoggedIn = true;
-                    while (isNotLoggedIn) {
-                    	clearConsole();
-                        System.out.println("Enter your username and password: ");
-                        System.out.print("  Username: ");
-                        String loginUsername = scanner.nextLine();
-                        System.out.print("  Password: ");
-                        String loginPassword = scanner.nextLine();
-
-                        boolean validLogin = moduleHub.loginUser(loginUsername, loginPassword);
-                        if (validLogin) {
-                            return (loginUsername);
-                        } 
-                        
-                        else {
-                        	clearConsole();
-                            System.out.println("Your username or password was incorrect or that account does not exist.");
-                            System.out.println("Would you like to try logging in again or create a new account? ");
-                            System.out.println("  1. Try Logging in again");
-                            System.out.println("  2. Create a New Account");
-                            System.out.println("  3. Exit Application");
-                            System.out.print("Please enter the number associated with your desired option: ");
-                            int retryChoice = getUserChoice(3);
-                            if (retryChoice == 2) {
-                                // this code breaks out of isNotLoggedIn while loop and
-                                // since case 1 doesn't end in a break,
-                                // the user can fall through to case 2 and
-                                // begin registering a new account
-                                break;
-                            }
-                            else if (retryChoice == 3) {
-                            	exitApplication();
-                            }
-                        }
-                    }
-                case 2:
-                    boolean createdAccount = false;
-                    while (!createdAccount) {
-                    	clearConsole();
-                        System.out.print("What would you like your username to be? ");
-                        String registerUsername = scanner.nextLine();
-                        System.out.print("What would you like your password to be? ");
-                        String registerPassword = scanner.nextLine();
-                        System.out.print("What would you like your recovery question to be? ");
-                        String registerSecretQuestion = scanner.nextLine();
-                        System.out.print("What would you like your recovery question answer to be? ");
-                        String registerSecretAnswer = scanner.nextLine();
-                        
-                        clearConsole();
-                        System.out.println("Please confirm that these are the credentials that you want for your account. ");
-                        System.out.println("Username: "+ registerUsername);
-                        System.out.println("Password: "+ registerPassword);
-                        System.out.println("Account Recory Question: "+ registerSecretQuestion);
-                        System.out.println("Account Recovery Answewr: "+ registerSecretAnswer);
-                        System.out.println("Are these are the credentials that you want for your account? ");
-                        System.out.println(" 1. Yes");
-                        System.out.println(" 2. No");
-                        System.out.print("Please enter the number associated with your desired option: ");
-                        int surety = getUserChoice(2);
-
-                        if (surety == 1) {
-                            // User confirmed → proceed with registration
-                            boolean isValidAccount = moduleHub.registerUser(
-                                    registerUsername,
-                                    registerPassword,
-                                    registerSecretQuestion,
-                                    registerSecretAnswer,
-                                    true
-                            );
-
-                            if (!isValidAccount) {
-                            	clearConsole();
-                                System.out.println("The account details you entered were invalid or the username already exists.");
-                                System.out.println("Please try entering different credentials and try again.");
-                                System.out.print("Press enter when you are ready to try again...");
-                                scanner.nextLine();
-                            } else {
-                                clearConsole();
-                                System.out.println("Your account has been successfully created.");
-                                System.out.print("Press enter when you are ready to sign in with your new credentials...");
-                                scanner.nextLine();
-                                createdAccount = true;
-                            }
-
-                        } else {
-                            // User said "No"
-                            clearConsole();
-                            System.out.println("Let's try creating your account again, shall we?");
-                            System.out.print("Press enter when you are ready to try again...");
-                            scanner.nextLine();
-                        }
-
-                    }
-                    continue;// After successful registration, loop back and show the Sign In / Create menu again
-                case 3:
-                	exitApplication();
+                System.out.print("Please enter a valid number associated with an option displayed in the menu (1-" + numChoices + ") and then press enter: ");
             }
         }
     }
@@ -217,14 +96,373 @@ public class MainMenu {
    			try {
   				int year = Integer.parseInt(scanner.nextLine());
   				if ((year < 1900) || (year > 2100)) {
-  	   				System.out.print("Please enter a valid year: ");
+  	   				System.out.print("Please enter a valid year and then press enter: ");
   					continue;
   				}
   				return year;
    			} catch (NumberFormatException e) {
-   				System.out.print("Please enter a valid year: ");
+   				System.out.print("Please enter a valid year and then press enter: ");
    			}
    		}
+    }
+    
+    enum AccountRecoverState{
+    	USERNAME_DNE,
+    	INCORRECT_ANSWER,
+    	SUCCESSFUL_PASSWORD_CHANGE,
+    	RETURN_TO_MENU
+    }
+    
+    private AccountRecoverState accountRecover(String usernameRecovering) {
+    	//If the account does not exist...
+    	String secretQuestion = moduleHub.getUserSecretQuestion(usernameRecovering);
+    	if (secretQuestion == null) {
+    		clearConsole();
+    		//Return the user to the login menu
+    		System.out.println("No account with the username, " + usernameRecovering + ", exists.");
+    		return AccountRecoverState.USERNAME_DNE;
+    	}
+
+    	//If the account exists...
+    	clearConsole();
+    	//Print out the user's recovery question
+    	System.out.println("To recover your account, please answer the recovery question for the account, " + usernameRecovering + ", below and then press enter.");
+    	System.out.println(secretQuestion);
+    	//Get the user's answer to their recovery question
+    	System.out.print("Answer: ");
+    	String loginSecretAnswer = scanner.nextLine();
+
+    	//If the user's answer to the their account's recovery question is incorrect
+    	if (!moduleHub.verifyUserSecretAnswer(usernameRecovering,loginSecretAnswer)) {
+    		clearConsole();
+    		System.out.println("Your answer to the recovery question was incorrect.");
+    		return AccountRecoverState.INCORRECT_ANSWER;
+    	}
+
+    	//If the user's answer to their account's recovery question is correct
+    	while (true) {
+    		clearConsole();
+    		//Let them enter a new password
+    		System.out.println("Please enter a new password for the account, " + usernameRecovering + ", below and then press enter.");
+    		System.out.print("  New Password: ");
+    		String loginSecretPassword = scanner.nextLine();
+    		System.out.print("  Confirm your password: ");
+    		String confirmPassword = scanner.nextLine();
+    		
+    		if (!confirmPassword.equals(loginSecretPassword)) {
+    		    System.out.println("Passwords do not match. Try again.");
+    		    continue;
+    		}
+    		
+    		//Attempt to reset
+    		//returns true if password passes requirements and was saved
+    		//returns false if password failed requirements and was not saved
+    		boolean passwordAccepted = moduleHub.resetUserPassword(usernameRecovering, loginSecretAnswer, loginSecretPassword);
+
+    		//If their new password is valid...
+    		if (passwordAccepted) {
+    			clearConsole();
+    			System.out.println("The password for the account, " + usernameRecovering + ", has been successfully changed.");
+    			return AccountRecoverState.SUCCESSFUL_PASSWORD_CHANGE;
+    		}
+
+    		//If their new password is invalid..
+    		clearConsole();
+    		System.out.println("Your new password did not meet the requirements.");
+    		System.out.println("What would you like to do?");
+    		System.out.println("  1. Try creating a new password for your account, " + usernameRecovering + ", again");
+    		System.out.println("  2. Return to the login menu");
+    		System.out.println("  3. Exit the application");
+    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
+    		int recoverUserChoice = getUserChoice(3);
+
+    		//Try creating a new password for your account again
+    		if (recoverUserChoice == 1) {
+    			continue;
+    		}
+    		//Return to login menu
+    		else if (recoverUserChoice == 2) {
+    			return AccountRecoverState.RETURN_TO_MENU;
+    		}
+    		//Exit the application
+    		else if (recoverUserChoice == 3) {
+    			exitApplication();
+    		}
+    	}
+    }
+    
+    /**
+     * Handles the log in of the user
+     * 
+     * @return loginUsername - If a valid login event happens, then the username of that valid login attempt is returned
+     * 		   null - If anything other than the desired valid login attempt happens, then null is returned
+     * 
+     * @author Shazadul Islam
+     */
+    private String handleLogIn() {
+    	while (true) {
+    		clearConsole();
+    		//Go through login process
+    		System.out.println("Enter your username below and then press enter. ");
+    		System.out.print("  Username: ");
+    		String loginUsername = scanner.nextLine();
+    		System.out.println("Enter your password below and then press enter. ");
+    		System.out.print("  Password: ");
+    		String loginPassword = scanner.nextLine();
+
+    		//Check if the login is valid
+    		boolean validLogin = moduleHub.loginUser(loginUsername, loginPassword);
+
+    		//If the login is valid, then return with the username
+    		if (validLogin) {
+    			return (loginUsername);
+    		} 
+    		
+    		//If the login is invalid, then print invalid login menu
+    		clearConsole();
+    		//Print invalid login menu
+    		System.out.println("The username or password you entered was incorrect.");
+    		System.out.println("Would you like to do? ");
+    		System.out.println("  1. Try logging in again");
+    		System.out.println("  2. Forgot your password?");
+    		System.out.println("  3. Return to the login menu");
+    		System.out.println("  4. Exit application");
+    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
+    		int loginRetryChoice = getUserChoice(4);
+
+    		//If the user wants to try logging in again, jump back to the start of the loop, so that they can try logging in again
+    		switch(loginRetryChoice) {
+    		case 1:
+    			continue;
+
+    		//If the user forgot their password, go through the account recovery process
+    		case 2: 
+    			//Run account recovery process with username of their choice
+    			clearConsole();
+    			System.out.println("Is " + loginUsername + " the account you are trying to recover?");
+    			System.out.println("  1. Yes");
+        		System.out.println("  2. No");
+        		System.out.print("Please enter the number associated with your desired option and then press enter: ");
+        		int correctUsername = getUserChoice(2);
+        		
+        		String loginSecretUsername = null;
+        		if (correctUsername == 1) {
+        			loginSecretUsername = loginUsername;
+        		}
+        		else {
+        			clearConsole(); 
+	    			System.out.println("Please enter the username of the account you are trying to recover and then press enter."); 
+	    			System.out.print("  Username: "); 
+	    			loginSecretUsername = scanner.nextLine();
+        		}
+        		
+        		boolean isNotDoneRecovering = true;
+        		int retries = 0;
+        		while (isNotDoneRecovering) {
+        			AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
+
+        			switch (forgotPasswordReturn) {
+        			case USERNAME_DNE:
+        				System.out.println("What would you like to do?");
+        				System.out.println("  1. Try recovering a different account");
+        				System.out.println("  2. Return to the login menu");
+        				System.out.println("  3. Exit the application");
+        				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+        				int recoverAgainChoice = getUserChoice(3);
+        				
+        				if (recoverAgainChoice == 1) {
+        					clearConsole(); 
+        					System.out.println("Please enter the username of the account you are trying to recover and then press enter."); 
+        					System.out.print("  Username: "); 
+        					loginSecretUsername = scanner.nextLine();
+        					continue;
+        				}
+        				 else if (recoverAgainChoice == 2) {
+        					return null; 
+        				}
+        				else {
+        			        exitApplication();
+        			    }
+        				break;
+
+        			case INCORRECT_ANSWER:
+        				if (retries < 3) {
+	        				System.out.println("What would you like to do?");
+	        			    System.out.println("  1. Try answering again");
+	        			    System.out.println("  2. Return to the login menu");
+	        			    System.out.println("  3. Exit the application");
+	        			    System.out.print("Please enter the number associated with your desired option and then press enter: ");
+	        			    int incorrectChoice = getUserChoice(3);
+	
+	        			    if (incorrectChoice == 1) {
+	        			    	retries++;
+	        			        continue;
+	        			    } 
+	        			    else if (incorrectChoice == 2) {
+	        			        return null;  
+	        			    } 
+	        			    else {
+	        			        exitApplication();
+	        			    }
+        				}
+        				
+        				else {
+        					System.out.println();
+        					System.out.println("Too many recovery attempts.");
+        					System.out.println("You can either return to the login menu or exit the application.");
+        					System.out.println("What would you like to do?");
+	        			    System.out.println("  1. Return to the login menu");
+	        			    System.out.println("  2. Exit the application");
+	        			    System.out.print("Please enter the number associated with your desired option and then press enter: ");
+	        			    
+	        			    int exitChoice = getUserChoice(2);
+	        			    if (exitChoice == 2) {
+	        			    	exitApplication();
+	        			    } 
+	        			    else {
+	        			    	return null; 
+	        			    } 
+        				}
+        				
+        			    break;
+
+        			case SUCCESSFUL_PASSWORD_CHANGE:
+        				System.out.print("Press enter when you are ready to return to the login menu and try logging in with your updated password...");
+        				scanner.nextLine();
+        				return null; //returns to login menu.
+
+        			case RETURN_TO_MENU:
+        				return null; //returns to login menu.
+        			}
+        		}
+    		case 3: 
+    			return null; //returns to login menu.
+    		case 4: 
+    			exitApplication();
+    		} 
+    	}
+    }
+    
+    private void handleAccountCreation() {
+    	while (true) {
+    		clearConsole();
+    		System.out.print("What would you like your username to be? ");
+    		String registerUsername = scanner.nextLine();
+    		System.out.print("What would you like your password to be? ");
+    		String registerPassword = scanner.nextLine();
+    		System.out.print("Confirm your password: ");
+    		String confirmPassword = scanner.nextLine();
+    		System.out.print("What would you like your recovery question to be? ");
+    		String registerSecretQuestion = scanner.nextLine();
+    		System.out.print("What would you like your recovery question answer to be? ");
+    		String registerSecretAnswer = scanner.nextLine();
+
+    		if (!confirmPassword.equals(registerPassword)) {
+    		    System.out.println("Passwords do not match. Try again.");
+    		    continue;
+    		}
+    		
+    		clearConsole();
+    		System.out.println("Please confirm that these are the credentials that you want for your account. ");
+    		System.out.println("Username: " + registerUsername);
+    		System.out.println("Password: " + "*".repeat(registerPassword.length()));
+    		System.out.println("Account Recovery Question: " + registerSecretQuestion);
+    		System.out.println("Account Recovery Answer: " + "*".repeat(registerSecretAnswer.length()));
+    		System.out.println("Are you sure these are the credentials that you want for your account? ");
+    		System.out.println(" 1. Yes");
+    		System.out.println(" 2. No");
+    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
+    		int surety = getUserChoice(2);
+
+    		if (surety == 1) {
+    			// User has not made any errors, so proceed with registration
+    			boolean isValidAccount = moduleHub.registerUser(registerUsername, registerPassword, registerSecretQuestion, registerSecretAnswer, true);
+
+    			if (isValidAccount) {
+    				clearConsole();
+    				System.out.println("Your account has been successfully created.");
+    				System.out.print("Press enter when you are ready to return to the login menu...");
+    				scanner.nextLine();
+    				return;
+    			} 
+    			
+    			else {
+    				clearConsole();
+    				System.out.println("The account credentials you entered were invalid or the username is already in use.");
+    				System.out.println("What would you like to do?");
+    				System.out.println("  1. Try creating an account again");
+    				System.out.println("  2. Return to the login menu");
+    				System.out.println("  3. Exit the application");
+    				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+    				int sureRetryChoice = getUserChoice(3);
+
+    				if (sureRetryChoice == 1) {
+    					continue;
+    				}
+    				else if (sureRetryChoice == 2) {
+    					break;
+    				}
+    				else if (sureRetryChoice == 3) {
+    					exitApplication();
+    				}
+    			}
+
+    		} else {
+    			clearConsole();
+    			System.out.println("What would you like to do?");
+    			System.out.println("  1. Try creating an account again");
+    			System.out.println("  2. Return to the login menu");
+    			System.out.println("  3. Exit the application");
+    			System.out.print("Please enter the number associated with your desired option and then press enter: ");
+    			int unsureRetryChoice = getUserChoice(3);
+
+    			if (unsureRetryChoice == 1) {
+    				continue;
+    			}
+    			else if (unsureRetryChoice == 2) {
+    				return;
+    			}
+    			else if (unsureRetryChoice == 3) {
+    				exitApplication();
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * Handles the accounts creation and entry:
+     * Asks the user whether the user wants to sign in or create an account
+     * Loop until we have a successful sign-in or the user decides to exit the program
+     *
+     * @return loginUsername - the username of the successfully signed-in user
+     * 
+     * @author Shazadul Islam
+     */
+    private String enter() {
+    	while (true) {
+    		clearConsole(); 
+    		// Print the login menu
+    		System.out.println("Login menu: ");
+    		System.out.println("  1. Log In");
+    		System.out.println("  2. Create a new account");
+    		System.out.println("  3. Exit application");
+    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
+    		int userChoice = getUserChoice(3);
+
+    		switch (userChoice) {
+    		case 1:
+    			String loggedInUsername = handleLogIn();
+    			 if (loggedInUsername != null) {
+    				 return loggedInUsername;
+    			 }
+                 break;
+    		case 2:
+    			handleAccountCreation();
+    			break;
+    		case 3:
+    			exitApplication();
+    		}
+    	}
     }
     
     /**
@@ -235,7 +473,7 @@ public class MainMenu {
      * @author Aaron Madou
      * @author Shazadul Islam
      */ 
-    public void financesMenu(String currentUser) {
+    private void financesMenu(String currentUser) {
     	while(true) {
     		 clearConsole();
     		 System.out.println("Finances Menu:");
@@ -244,7 +482,7 @@ public class MainMenu {
     	     System.out.println("  3. Predictions");
     	     System.out.println("  4. Data Management");
     	     System.out.println("  5. Return to Main Menu");
-    	     System.out.print("Please enter the number associated with your desired option: ");
+    	     System.out.print("Please enter the number associated with your desired option and then press enter: ");
     	     int userChoice = getUserChoice(5);
   	        
     	     switch (userChoice) {
@@ -253,7 +491,7 @@ public class MainMenu {
    	        		while (uploadingFile) {
    	        			clearConsole();
 	   	        		System.out.println("---CSV Loader---");
-	   	        		System.out.println("Please enter the name of the CSV file you want to upload below.");
+	   	        		System.out.println("Please enter the name of the CSV file you want to upload below and then press enter.");
 	   	        		System.out.println("• If the CSV you want to upload is in the same folder as the JAR, just type the file name(Ex: data.csv)");
 	   	        		System.out.println("• However, if the file is somewhere else, please provide the full file path.");
 	   	        		System.out.print("File name: ");
@@ -274,7 +512,7 @@ public class MainMenu {
 	   	        			System.out.println("Would you like to try uploading your CSV file again or return to the Finances Menu?");
 	   	        			System.out.println("  1. Try uploading my CSV file again");
 	   	        			System.out.println("  2. Return to Finances Menu");
-	   	        			System.out.print("Please enter the number associated with your desired option: ");
+	   	        			System.out.print("Please enter the number associated with your desired option and then press enter: ");
 	   	        			userChoice = getUserChoice(2);
 	   	        			switch (userChoice){
 	   	        				case 1:
@@ -315,11 +553,11 @@ public class MainMenu {
      * @author Aaron Madou
      * @author Shazadul Islam
      */ 
-    public boolean reportsMenu(String currentUser) {
+    private boolean reportsMenu(String currentUser) {
     	while(true) {
     		clearConsole();
     		moduleHub.callStorage("listyears", currentUser, 0);
-   	    	System.out.print("Please enter the year you would like reports about: ");
+   	    	System.out.print("Please enter the year you would like reports about below and then press enter: ");
    			int year = getUserYear();
    			
    			boolean isWorkingWithYear = true;
@@ -336,7 +574,7 @@ public class MainMenu {
 	    		System.out.println("  5. View the Reports for another year");
 	    		System.out.println("  6. Return to Finances Menu");
 	    		System.out.println("  7. Return to Main Menu");
-	   	    	System.out.print("Please enter the number associated with your desired option: ");
+	    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
 	   	    	userChoice = getUserChoice(7);
 	   			
 	   	    	switch (userChoice) {
@@ -381,11 +619,11 @@ public class MainMenu {
      * @author Aaron Madou
      * @author Shazadul Islam
      */ 
-    public boolean predictionMenu(String currentUser) {
+    private boolean predictionMenu(String currentUser) {
     	while(true) {
     		clearConsole();
     		moduleHub.callStorage("listyears", currentUser, 0);
-   	    	System.out.print("Please enter the year you would like predictions about: ");
+   	    	System.out.print("Please enter the year you would like predictions about below and then press enter: ");
    			int year = getUserYear();
    			
    			boolean isWorkingWithYear = true;
@@ -401,7 +639,7 @@ public class MainMenu {
 	    		System.out.println("  4. View the Predictions for another year");
 	    		System.out.println("  5. Return to Finances Menu");
 	    		System.out.println("  6. Return to Main Menu");
-	   	    	System.out.print("Please enter the number associated with your desired option: ");
+	    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
 	   	    	userChoice = getUserChoice(6);
 	   			
 	   	    	switch (userChoice) {
@@ -439,14 +677,14 @@ public class MainMenu {
      * 
      * @author Shazadul Islam
     */
-    public boolean dataManagementMenu(String currentUser) {
+    private boolean dataManagementMenu(String currentUser) {
         while(true) {
         	clearConsole();
             System.out.println("Data Management Menu: ");
             System.out.println("  1. Delete a CSV file");
             System.out.println("  2. Return to Finances Menu");
             System.out.println("  3. Return to Main Menu");
-            System.out.print("Please enter the number associated with your desired option: ");
+            System.out.print("Please enter the number associated with your desired option and then press enter: ");
             int userChoice = getUserChoice(3);
             
             switch (userChoice) {
@@ -462,7 +700,7 @@ public class MainMenu {
 	                    System.out.println("Would you like to delete another CSV file?");
 	                    System.out.println("  1. Yes");
 	                    System.out.println("  2. No");
-	                    System.out.print("Please enter the number associated with your desired option: ");
+	                    System.out.print("Please enter the number associated with your desired option and then press enter: ");
 	                    userChoice = getUserChoice(2);
 	                    
 	                    if (userChoice == 1) {
@@ -473,7 +711,7 @@ public class MainMenu {
 	                    	System.out.println("Would you like to return to the Finances Menu or the Main Menu?");
 		                    System.out.println("  1. Return to Finance Menu");
 		                    System.out.println("  2. Return to Main Menu");
-		                    System.out.print("Please enter the number associated with your desired option: ");
+		                    System.out.print("Please enter the number associated with your desired option and then press enter: ");
 		                    userChoice = getUserChoice(2);
 		                    
 		                    if (userChoice == 1) {
@@ -503,13 +741,13 @@ public class MainMenu {
      * @author Aaron Madou
      * @author Shazadul Islam
      */
-    public boolean accountSettingsMenu(String currentUser) {
+    private boolean accountSettingsMenu(String currentUser) {
     	clearConsole();
         System.out.println(currentUser + " Account Settings:");
         System.out.println("  1. Change Password");
         System.out.println("  2. Delete Account");
         System.out.println("  3. Return to Main Menu");
-        System.out.print("Please enter the number associated with your desired option: ");
+        System.out.print("Please enter the number associated with your desired option and then press enter: ");
         int settingsChoice = getUserChoice(3);
         
         boolean inSettings = true;
@@ -517,7 +755,7 @@ public class MainMenu {
             switch (settingsChoice){
                 case 1:
                 	clearConsole();
-                    System.out.println("Before you can change your password, please enter your current password. ");
+                    System.out.println("Before you can change your password, please enter your current password below and then press enter. ");
                     System.out.print("Password: ");
                     String currentPass = scanner.nextLine();
                     
@@ -526,7 +764,7 @@ public class MainMenu {
                     System.out.println("Are you sure you want to delete this account: " + currentUser + "? ");
                     System.out.println("  1. Yes");
                     System.out.println("  2. No");
-                    System.out.print("Please enter the number associated with your desired option: ");
+                    System.out.print("Please enter the number associated with your desired option and then press enter: ");
                     int sureDelAccount = getUserChoice(2);
 
                     if (sureDelAccount == 1) {
@@ -594,7 +832,7 @@ public class MainMenu {
                 System.out.println("  2. Settings");
                 System.out.println("  3. Sign Out");
                 System.out.println("  4. Exit Applicaiton");
-                System.out.print("Please enter the number associated with your desired option: ");
+                System.out.print("Please enter the number associated with your desired option and then press enter: ");
                 int mainMenuChoice = applicationInterface.getUserChoice(4);
                 
         		switch (mainMenuChoice) {
@@ -627,7 +865,7 @@ public class MainMenu {
      * 
      * @author Shazadul Islam
      */
-    public void exitApplication() {
+    private void exitApplication() {
         scanner.close();
         clearConsole();
         System.out.println("Thank you for using Hamilton Heights Personal Finance Manager!");
