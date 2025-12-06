@@ -358,42 +358,46 @@ final class MainMenu {
     		String registerUsername = scanner.nextLine();
     		
     		String registerPassword = null;
-    		
-    		clearConsole();
-    		System.out.println("Password Rules: ");
-    		System.out.println("• Cannot be empty or only whitespace");
-    		System.out.println("• Cannot begin or end with a space");
-    		System.out.println("• Must be at least 5 characters and at most 30 characters");
-    		System.out.println();
-
-    		System.out.println("Enter your password below and then press enter. ");
-    		System.out.print("What would you like your password to be? ");
-    		registerPassword = scanner.nextLine();
-    		System.out.println();
-
-    		System.out.println("Re-enter your password below to confirm it and then press enter. ");
-    		System.out.print("Confirm your password: ");
-    		String confirmPassword = scanner.nextLine();
-    		
-    		if (!confirmPassword.equals(registerPassword)) {
+    		while(true) {
     			clearConsole();
-    			System.out.println("Passwords do not match.");
-    			System.out.println("What would you like to do?");
-				System.out.println("  1. Try creating an account again");
-				System.out.println("  2. Return to the login menu");
-				System.out.println("  3. Exit the application");
-				System.out.print("Please enter the number associated with your desired option and then press enter: ");
-				int passwordRetryChoice = getUserChoice(3);
+    			System.out.println("Password Rules: ");
+    			System.out.println("• Cannot be empty or only whitespace");
+    			System.out.println("• Cannot begin or end with a space");
+    			System.out.println("• Must be at least 5 characters and at most 30 characters");
+    			System.out.println();
 
-				if (passwordRetryChoice == 1) {
-					continue;
-				}
-				else if (passwordRetryChoice == 2) {
-					break;
-				}
-				else if (passwordRetryChoice == 3) {
-					exitApplication();
-				}
+    			System.out.println("Enter your password below and then press enter. ");
+    			System.out.print("What would you like your password to be? ");
+    			registerPassword = scanner.nextLine();
+    			System.out.println();
+
+    			System.out.println("Re-enter your password below to confirm it and then press enter. ");
+    			System.out.print("Confirm your password: ");
+    			String confirmPassword = scanner.nextLine();
+
+    			if (confirmPassword.equals(registerPassword)) {
+    				break;
+    			}
+    			else {
+    				clearConsole();
+    				System.out.println("Passwords do not match.");
+    				System.out.println("What would you like to do?");
+    				System.out.println("  1. Try creating a password for your new account again");
+    				System.out.println("  2. Return to the login menu");
+    				System.out.println("  3. Exit the application");
+    				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+    				int passwordRetryChoice = getUserChoice(3);
+
+    				if (passwordRetryChoice == 1) {
+    					continue;
+    				}
+    				else if (passwordRetryChoice == 2) {
+    					return;
+    				}
+    				else if (passwordRetryChoice == 3) {
+    					exitApplication();
+    				}
+    			}
     		}
     		
     		clearConsole();
@@ -495,7 +499,7 @@ final class MainMenu {
     					continue;
     				}
     				else if (sureRetryChoice == 2) {
-    					break;
+    					return;
     				}
     				else if (sureRetryChoice == 3) {
     					exitApplication();
