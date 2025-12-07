@@ -855,6 +855,40 @@ public class ModuleHub {
 
     // Accounts
 
+    //Authentication
+    /**
+     * Checks if a username that is passed to it follows all of the username rules
+     *
+     * @param passedUsername - the username that the function is checking
+     * @return true if the passed username follows all of the username rules, false otherwise
+     *
+     * @author Shazadul Islam
+     */
+    public boolean followsUsernameRules(String passedUsername){
+    	if (!authModule.isInvalidUsernameFormat(passedUsername)) {
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
+    }
+    
+    /**
+     * Checks if a password that is passed to it follows all of the password rules
+     *
+     * @param passedPassword - the password that the function is checking
+     * @return true if the passed password follows all of the password rules, false otherwise 
+     *
+     * @author Shazadul Islam
+     */
+    public boolean followsPasswordRules(String passedPassword){
+    	if (!authModule.isInvalidPasswordFormat(passedPassword)) {
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
+    }
 
     /**
      * Routes account action to the Accounts module.
