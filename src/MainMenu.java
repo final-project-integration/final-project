@@ -50,7 +50,7 @@ final class MainMenu {
      * @author Shazadul Islam
      */
     private void moveOn() {
-    	System.out.print("Press enter when you are ready to move on...");
+        BeautifulDisplay.printContinuePrompt();
     	scanner.nextLine();
     }
 
@@ -622,32 +622,28 @@ final class MainMenu {
      * @author Shazadul Islam
      */
     private String enter() {
-    	while (true) {
-    		clearConsole(); 
-    		// Print the login menu
-    		System.out.println("Login menu: ");
-    		System.out.println("  1. Log In");
-    		System.out.println("  2. Create a new account");
-    		System.out.println("  3. Exit application");
-    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
-    		int userChoice = getUserChoice(3);
+        while (true) {
+            clearConsole();
 
-    		switch (userChoice) {
-    		case 1:
-    			String loggedInUsername = handleLogIn();
-    			 if (loggedInUsername != null) {
-    				 return loggedInUsername;
-    			 }
-                 break;
-    		case 2:
-    			handleAccountCreation();
-    			break;
-    		case 3:
-    			exitApplication();
-    		}
-    	}
+            // pretty START screen
+            BeautifulDisplay.printStartMenu();
+            int userChoice = getUserChoice(3);
+
+            switch (userChoice) {
+                case 1:
+                    String loggedInUsername = handleLogIn();
+                    if (loggedInUsername != null) {
+                        return loggedInUsername;
+                    }
+                    break;
+                case 2:
+                    handleAccountCreation();
+                    break;
+                case 3:
+                    exitApplication();
+            }
+        }
     }
-    
     /**
      * Finances Menu
      * 
@@ -659,53 +655,108 @@ final class MainMenu {
     private void financesMenu(String currentUser) {
     	while(true) {
     		 clearConsole();
-    		 System.out.println("Finances Menu:");
-    	     System.out.println("  1. Upload CSV");
-    	     System.out.println("  2. Reports");
-    	     System.out.println("  3. Predictions");
-    	     System.out.println("  4. Data Management");
-    	     System.out.println("  5. Return to Main Menu");
-    	     System.out.print("Please enter the number associated with your desired option and then press enter: ");
+            BeautifulDisplay.printFinancesMenu();
     	     int userChoice = getUserChoice(5);
-  	        
-    	     switch (userChoice) {
-    	     	case 1:
-   	        		boolean uploadingFile = true;
-   	        		while (uploadingFile) {
-   	        			clearConsole();
-	   	        		System.out.println("---CSV Loader---");
-	   	        		System.out.println("Please enter the name of the CSV file you want to upload below and then press enter.");
-	   	        		System.out.println("• If the CSV you want to upload is in the same folder as the JAR, just type the file name(Ex: data.csv)");
-	   	        		System.out.println("• However, if the file is somewhere else, please provide the full file path.");
-	   	        		System.out.print("File name: ");
-	   	        		String csvFilePath = scanner.nextLine();
-	   	        		
-	   	        		File file = new File(csvFilePath);
-	   	        		String fileName = file.getName();
-	   	        		try {
-	   	        			int year = Integer.parseInt(fileName.substring(0, 4));
-		   	        		System.out.println();
-		   	        		if ((year < 1900) || (year > 2100)) {
-		   	        			throw new NumberFormatException();
-		   	  				}
-	   	        			moduleHub.uploadCSVData(currentUser, csvFilePath, year);
-	   	        		} catch(NumberFormatException e){
-	   	        			clearConsole();
-	   	        			System.out.println("Please make sure that the name of your CSV file begins with a valid year associated with that data.");
-	   	        			System.out.println("Would you like to try uploading your CSV file again or return to the Finances Menu?");
-	   	        			System.out.println("  1. Try uploading my CSV file again");
-	   	        			System.out.println("  2. Return to Finances Menu");
-	   	        			System.out.print("Please enter the number associated with your desired option and then press enter: ");
-	   	        			userChoice = getUserChoice(2);
-	   	        			switch (userChoice){
-	   	        				case 1:
-	   	        					continue;
-	   	        				case 2:
-	   	        					uploadingFile = false;
-	   	        			}	
-	   	        		}
-   	        		}
-   	        		break;
+            switch (userChoice) {
+            case 1:
+                boolean uploadingFile = true;
+
+                while (uploadingFile) {
+                    clearConsole();
+                    System.out.println("--- CSV Loader ---");
+                    System.out.println("Please enter the name of the CSV file you want to upload below and then press enter.");
+                    System.out.println("• If the CSV is in the same folder as the JAR, just type the file name (Ex: 2024_data.csv)");
+                    System.out.println("• Otherwise, paste the full file path.");
+                    System.out.print("File name: ");
+
+                    String csvFilePath = scanner.nextLine().trim();
+                    File file = new File(csvFilePath);
+                    String fileName = file.getName();
+
+                    //  Extract year from filename
+                    int year;
+                    try {
+                        year = Integer.parseInt(fileName.substring(0, 4));
+                        if (year < 1900 || year > 2100) {
+                            throw new NumberFormatException();
+                        }
+                    } catch (NumberFormatException e) {
+                        clearConsole();
+                        System.out.println("Your CSV file must begin with a valid year.");
+                        System.out.println("Example: 2024_data.csv");
+                        System.out.println();
+                        System.out.println("  1. Try uploading again");
+                        System.out.println("  2. Return to Finances Menu");
+                        System.out.print("Choice: ");
+
+                        int retryChoice = getUserChoice(2);
+                        if (retryChoice == 1) continue;
+                        uploadingFile = false;
+                        break;
+                    }
+
+                    // check if year already exists
+                    if (moduleHub.hasDataForYear(currentUser, year)) {
+                        clearConsole();
+                        System.out.println("Data already exists for year " + year + ".");
+                        System.out.println("What would you like to do?");
+                        System.out.println("  1. Overwrite existing data");
+                        System.out.println("  2. Choose a different CSV");
+                        System.out.println("  3. Return to Finances Menu");
+                        System.out.print("Choice: ");
+
+                        int overwriteChoice = getUserChoice(3);
+                        if (overwriteChoice == 2) continue;
+                        if (overwriteChoice == 3) {
+                            uploadingFile = false;
+                            break;
+                        }
+                        // Choice 1 continues to overwrite
+                    }
+
+                    //  send everything to modulehub+validation
+                    ValidationResult result =
+                            moduleHub.uploadCSVData(currentUser, csvFilePath, year);
+
+                    clearConsole();
+
+                    // handle validation errors
+                    if (result.hasErrors()) {
+                        BeautifulDisplay.printError("CSV Upload Failed");
+
+                        for (String msg : result.getErrorMessages()) {
+                            System.out.println("  • " + msg);
+                        }
+
+                        System.out.println();
+                        System.out.println("  1. Try a different or corrected CSV");
+                        System.out.println("  2. Return to Finances Menu");
+                        System.out.print("Choice: ");
+
+                        int afterErrorChoice = getUserChoice(2);
+                        if (afterErrorChoice == 1) continue;
+
+                        uploadingFile = false;
+                    }
+
+                    //success and warnings
+                    else {
+                        if (!result.getWarningMessages().isEmpty()) {
+                            BeautifulDisplay.printWarning("Upload completed with warnings:");
+
+                            for (String msg : result.getWarningMessages()) {
+                                System.out.println("  • " + msg);
+                            }
+                        } else {
+                            BeautifulDisplay.printSuccess(
+                                    "CSV data for year " + year + " uploaded successfully.");
+                        }
+
+                        moveOn();
+                        uploadingFile = false;
+                    }
+                }
+                break;
    	        	case 2: 
    	        		if(reportsMenu(currentUser)) {
    	        			return;
@@ -747,18 +798,9 @@ final class MainMenu {
    			int userChoice;
    			while (isWorkingWithYear) {
 	   			clearConsole();
-	   			System.out.println("What kind of information would you like about data from " + year + "?");
-	   			System.out.println("Available Reports for " + year +":");
-	    		System.out.println("  1. Yearly Summary");
-	    		System.out.println("  2. Month Breakdown");
-	    		System.out.println("  3. Category Analysis");
-	    		System.out.println("  4. Full Report");
-	    		System.out.println("Controls:");
-	    		System.out.println("  5. View the Reports for another year");
-	    		System.out.println("  6. Return to Finances Menu");
-	    		System.out.println("  7. Return to Main Menu");
-	    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
-	   	    	userChoice = getUserChoice(7);
+                BeautifulDisplay.printReportsMenu(year);
+
+                userChoice = getUserChoice(7);
 	   			
 	   	    	switch (userChoice) {
 	   	    		case 1:
@@ -813,17 +855,10 @@ final class MainMenu {
    			int userChoice;
    			while (isWorkingWithYear) {
 	    		clearConsole();
-	   			System.out.println("What kind of Predictions would you like about the data from " + year + "?");
-	   			System.out.println("Available Predictions for " + year + ":");
-	    		System.out.println("  1. Summary Report");
-	    		System.out.println("  2. Deficit Analysis");
-	    		System.out.println("  3. Surplus Analysis");
-	    		System.out.println("Controls:");
-	    		System.out.println("  4. View the Predictions for another year");
-	    		System.out.println("  5. Return to Finances Menu");
-	    		System.out.println("  6. Return to Main Menu");
-	    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
-	   	    	userChoice = getUserChoice(6);
+                // Pretty predictions screen
+                BeautifulDisplay.printPredictionsMenu(year);
+
+                userChoice = getUserChoice(6);
 	   			
 	   	    	switch (userChoice) {
 	   	    		case 1:
@@ -863,11 +898,7 @@ final class MainMenu {
     private boolean dataManagementMenu(String currentUser) {
         while(true) {
         	clearConsole();
-            System.out.println("Data Management Menu: ");
-            System.out.println("  1. Delete a CSV file");
-            System.out.println("  2. Return to Finances Menu");
-            System.out.println("  3. Return to Main Menu");
-            System.out.print("Please enter the number associated with your desired option and then press enter: ");
+            BeautifulDisplay.printDataManagementMenu();
             int userChoice = getUserChoice(3);
             
             switch (userChoice) {
@@ -925,16 +956,14 @@ final class MainMenu {
      * @author Shazadul Islam
      */
     private boolean accountSettingsMenu(String currentUser) {
-    	clearConsole();
-        System.out.println(currentUser + " Account Settings:");
-        System.out.println("  1. Change Password");
-        System.out.println("  2. Delete Account");
-        System.out.println("  3. Return to Main Menu");
-        System.out.print("Please enter the number associated with your desired option and then press enter: ");
-        int settingsChoice = getUserChoice(3);
-        
         boolean inSettings = true;
-        while (inSettings){
+
+        while (inSettings) {
+            clearConsole();
+
+            // ✨ Pretty ACCOUNT SETTINGS menu
+            BeautifulDisplay.printAccountSettingsMenu(currentUser);
+            int settingsChoice = getUserChoice(3);
             switch (settingsChoice){
                 case 1:
                 	clearConsole();
@@ -1008,36 +1037,31 @@ final class MainMenu {
         	if (currentUser != null) {
         		loggedIn = true;
         	}
-        	
-        	while(running && loggedIn) {
-        		applicationInterface.clearConsole();
-        		System.out.println("Personal Finance Manager:");
-        		System.out.println("Main Menu: ");
-                System.out.println("  1. Finances");
-                System.out.println("  2. Settings");
-                System.out.println("  3. Sign Out");
-                System.out.println("  4. Exit Applicaiton");
-                System.out.print("Please enter the number associated with your desired option and then press enter: ");
+
+            while (running && loggedIn) {
+                applicationInterface.clearConsole();
+                BeautifulDisplay.printMainMenuScreen(currentUser);
+
                 int mainMenuChoice = applicationInterface.getUserChoice(4);
-                
-        		switch (mainMenuChoice) {
-                case 1: 
-                	applicationInterface.financesMenu(currentUser);
-                	break;
-                case 2:
-                	loggedIn = applicationInterface.accountSettingsMenu(currentUser);
-                	break;
-                case 3:
-                	applicationInterface.moduleHub.logoutUser();
-                	loggedIn = false;
-                	break;
-                case 4:
-                	applicationInterface.moduleHub.logoutUser();
-                	loggedIn = false;
-                	running = false;
-                	break;
-        		}
-        	}
+
+                switch (mainMenuChoice) {
+                    case 1:
+                        applicationInterface.financesMenu(currentUser);
+                        break;
+                    case 2:
+                        loggedIn = applicationInterface.accountSettingsMenu(currentUser);
+                        break;
+                    case 3:
+                        applicationInterface.moduleHub.logoutUser();
+                        loggedIn = false;
+                        break;
+                    case 4:
+                        applicationInterface.moduleHub.logoutUser();
+                        loggedIn = false;
+                        running = false;
+                        break;
+                }
+            }
         }
         applicationInterface.exitApplication();
     }

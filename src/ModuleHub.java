@@ -1,8 +1,12 @@
 //Integration team
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * ModuleHub is the integration layer and traffic controller for the application.
@@ -108,7 +112,19 @@ public class ModuleHub {
         System.out.println(color + middle.toString() + BeautifulDisplay.RESET);
         System.out.println(color + line.toString() + BeautifulDisplay.RESET);
     }
-
+    /**
+     * Reads all lines from the given file into a List<String>.
+     */
+    private List<String> readAllLines(File file) throws IOException {
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        return lines;
+    }
 
     /**
      * Default constructor for ModuleHub.
@@ -271,93 +287,58 @@ public class ModuleHub {
 
     /**
      * Uploads a CSV file for a specific user and year and stores it as a Budget.
-     * This method is used to take raw CSV input, transform it into a Budget,
-     * and delegate persistence to the StorageManager.
+     * This method:
+     *   - resolves the CSV file path
+     *   - validates the CSV content using ValidationEngine
+     *   - if valid, imports it via StorageManager
+     *
+     * It does NOT print to the console; instead it returns a ValidationResult
+     * so the caller (MainMenu) can decide how to display messages.
      *
      * @param username    the user who is uploading the CSV data
-     * @param csvFilePath the path to the CSV file on disk
+     * @param csvFilePath the path to the CSV file on disk (as typed by the user)
      * @param year        the year represented by the CSV data
-     * @return true if the upload succeeds and data is saved, false otherwise
+     * @return ValidationResult describing any validation errors, or ok() on success
      *
-     * @author Denisa Cakoni
+     * @author Denisa Cakoni (integration refactor)
      */
-    public boolean uploadCSVData(String username, String csvFilePath, int year) {
+    public ValidationResult uploadCSVData(String username, String csvFilePath, int year) {
+        // Basic sanity checks
         if (csvFilePath == null || csvFilePath.trim().isEmpty()) {
-            System.out.println("[ModuleHub] CSV file path cannot be empty.");
-            return false;
+            return ValidationResult.error("CSV file path cannot be empty.");
         }
 
-        // helper that trims and also checks the ./data/ folder
+        // Resolve the file (as typed or inside ./data/)
         File csvFile = resolveCsvFile(csvFilePath);
         if (csvFile == null || !csvFile.exists()) {
-            System.out.println("[ModuleHub] CSV file not found: " + csvFilePath.trim());
-            System.out.println("  Working directory: " + new File(".").getAbsolutePath());
-            return false;
-        }
-
-        // Check if data already exists for this user + year
-        Budget existing = storageModule.getUserBudget(username, year);
-
-        if (existing != null) {
-            System.out.println();
-            BeautifulDisplay.printWarning(
-                    "A budget already exists for year " + year + " for user '" + username + "'.");
-            System.out.print("Do you want to overwrite it? (Y/N): ");
-
-            java.util.Scanner scanner = new java.util.Scanner(System.in);
-            String answer = scanner.nextLine().trim().toLowerCase();
-
-            if (!answer.equals("y") && !answer.equals("yes")) {
-                BeautifulDisplay.printInfo("Upload cancelled. Existing data was not modified.");
-                return false;
-            }
+            return ValidationResult.error(
+                    "CSV file not found: '" + csvFilePath.trim()
+                            + "'. Please check the name or full path and try again.");
         }
 
         try {
-            System.out.println("[ModuleHub] Reading CSV file: " + csvFile.getPath());
+            //  Read raw lines for Validation team
+            List<String> lines = readAllLines(csvFile);
 
-            // Use CSVHandler to read the file into Transaction objects
-            CSVHandler csvHandler = new CSVHandler();
-            ArrayList<Transaction> transactions = csvHandler.readCSV(csvFile.getPath());
+            // Use ValidationEngine to validate header, dates, categories, amounts, etc.
+            ValidationResult csvValidation =
+                    validationModule.validateCsvLines(csvFile.getName(), lines);
 
-            if (transactions.isEmpty()) {
-                System.out.println("[ModuleHub] No valid transactions found in CSV.");
-                return false;
+            if (csvValidation.hasErrors()) {
+                // doesn't continue to Storage if validation failed.
+                return csvValidation;
             }
 
-            // Build a Budget from the Transactions
-            Budget budget = new Budget();
-            for (Transaction t : transactions) {
-                budget.addTransaction(t.getDate(), t.getCategory(), t.getAmount());
-            }
+            storageModule.importCSV(username, year, csvFile.getPath());
 
-            // Save using StorageManager
-            storageModule.saveUserData(username, year, budget);
-
-            // Pretty success display
-            BeautifulDisplay.printLoading("Uploading CSV data", 1500);
-            System.out.println();
-
-            String[][] uploadInfo = {
-                    {"Year", String.valueOf(year)},
-                    {"Transactions", String.valueOf(transactions.size())},
-                    {"Status", BeautifulDisplay.GREEN + "Ready" + BeautifulDisplay.RESET}
-            };
-
-            BeautifulDisplay.printKeyValueBox(
-                    "UPLOAD SUCCESSFUL",
-                    uploadInfo,
-                    BeautifulDisplay.BRIGHT_GREEN
-            );
-            BeautifulDisplay.printInfo(
-                    "You can now view reports and run predictions for year " + year + "."
-            );
-
-            return true;
+            return ValidationResult.ok();
 
         } catch (Exception e) {
+            // Log technical details, but return a friendly message to caller.
             errorHandler.handleModuleError("CSV Upload", e);
-            return false;
+            ValidationResult vr = new ValidationResult();
+            vr.addError("Internal error while uploading CSV. Please try again or contact support.");
+            return vr;
         }
     }
 
