@@ -148,6 +148,11 @@ final class MainMenu {
     	}
 
     	//If the user's answer to their account's security question is correct
+    	return changePassword(usernameRecovering, "login");
+    }
+    
+    private AccountRecoverState changePassword(String usernameChanging, String whichMenu) {
+    	//If the user's answer to their account's security question is correct
     	while (true) {
     		clearConsole();
     		//Let them enter a new password
@@ -156,7 +161,7 @@ final class MainMenu {
 			System.out.println("• Cannot begin or end with a space");
 			System.out.println("• Must be at least 5 characters and at most 30 characters");
 			System.out.println();
-    		System.out.println("Enter a new password for the account, " + usernameRecovering + ", below and then press enter.");
+    		System.out.println("Enter a new password for the account, " + usernameChanging + ", below and then press enter.");
     		System.out.print("  New Password: ");
     		String loginSecretPassword = scanner.nextLine();
     		
@@ -164,8 +169,8 @@ final class MainMenu {
 				clearConsole();
 				System.out.println("Password does not follow the required format.");
 				System.out.println("What would you like to do?");
-				System.out.println("  1. Try creating a different password for your account, " + usernameRecovering + ", again");
-				System.out.println("  2. Return to the login menu");
+				System.out.println("  1. Try creating a different password for your account, " + usernameChanging + ", again");
+				System.out.println("  2. Return to the " + whichMenu + " menu");
 				System.out.println("  3. Exit the application");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 				
@@ -190,8 +195,8 @@ final class MainMenu {
 				clearConsole();
 				System.out.println("Passwords do not match.");
 				System.out.println("What would you like to do?");
-				System.out.println("  1. Try creating a password for your account, " + usernameRecovering + ",again");
-				System.out.println("  2. Return to the login menu");
+				System.out.println("  1. Try creating a password for your account, " + usernameChanging + ",again");
+				System.out.println("  2. Return to the " + whichMenu + " menu");
 				System.out.println("  3. Exit the application");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 				
@@ -210,12 +215,12 @@ final class MainMenu {
     		//Attempt to reset
     		//returns true if password passes requirements and was saved
     		//returns false if password failed requirements and was not saved
-    		boolean passwordAccepted = moduleHub.resetUserPassword(usernameRecovering, loginSecretAnswer, loginSecretPassword);
+    		boolean passwordAccepted = moduleHub.resetUserPassword(usernameChanging, null, null);
 
     		//If their new password is valid...
     		if (passwordAccepted) {
     			clearConsole();
-    			System.out.println("The password for the account, " + usernameRecovering + ", has been successfully changed.");
+    			System.out.println("The password for the account, " + usernameChanging + ", has been successfully changed.");
     			return AccountRecoverState.SUCCESSFUL_PASSWORD_CHANGE;
     		}
 
@@ -223,8 +228,8 @@ final class MainMenu {
     		clearConsole();
     		System.out.println("Your new password did not meet the requirements.");
     		System.out.println("What would you like to do?");
-    		System.out.println("  1. Try creating a new password for your account, " + usernameRecovering + ", again");
-    		System.out.println("  2. Return to the login menu");
+    		System.out.println("  1. Try creating a new password for your account, " + usernameChanging + ", again");
+    		System.out.println("  2. Return to the " + whichMenu + " menu");
     		System.out.println("  3. Exit the application");
     		System.out.print("Please enter the number associated with your desired option and then press enter: ");
     		int recoverUserChoice = getUserChoice(3);
@@ -275,7 +280,7 @@ final class MainMenu {
     		clearConsole();
     		//Print invalid login menu
     		System.out.println("The username or password you entered was incorrect.");
-    		System.out.println("Would you like to do? ");
+    		System.out.println("What would you like to do? ");
     		System.out.println("  1. Try logging in again");
     		System.out.println("  2. Forgot your password?");
     		System.out.println("  3. Return to the login menu");
@@ -341,7 +346,7 @@ final class MainMenu {
         			case INCORRECT_ANSWER:
         				if (retries < 3) {
 	        				System.out.println("What would you like to do?");
-	        			    System.out.println("  1. Try answering again");
+	        			    System.out.println("  1. Try answering your security question again");
 	        			    System.out.println("  2. Return to the login menu");
 	        			    System.out.println("  3. Exit the application");
 	        			    System.out.print("Please enter the number associated with your desired option and then press enter: ");
@@ -627,9 +632,10 @@ final class MainMenu {
 
             // pretty START screen
             BeautifulDisplay.printStartMenu();
-            int userChoice = getUserChoice(3);
+            
+            int entryChoice = getUserChoice(3);
 
-            switch (userChoice) {
+            switch (entryChoice) {
                 case 1:
                     String loggedInUsername = handleLogIn();
                     if (loggedInUsername != null) {
@@ -654,9 +660,11 @@ final class MainMenu {
      */ 
      private void financesMenu(String currentUser) {
     	while(true) {
-    		 clearConsole();
-            BeautifulDisplay.printFinancesMenu();
-    	     int userChoice = getUserChoice(5);
+    		clearConsole();
+    		
+    		BeautifulDisplay.printFinancesMenu();
+    		
+    		int userChoice = getUserChoice(5);
             switch (userChoice) {
                 case 1:
                     boolean uploadingFile = true;
@@ -668,8 +676,8 @@ final class MainMenu {
                         System.out.println("• If the CSV is in the same folder as the JAR, just type the file name (Ex: 2024_data.csv)");
                         System.out.println("• Otherwise, paste the full file path.");
                         System.out.print("File name: ");
-
                         String csvFilePath = scanner.nextLine().trim();
+                        
                         File file = new File(csvFilePath);
                         String fileName = file.getName();
 
@@ -677,6 +685,7 @@ final class MainMenu {
                         int year;
                         try {
                             year = Integer.parseInt(fileName.substring(0, 4));
+                            System.out.println();
                             if (year < 1900 || year > 2100) {
                                 throw new NumberFormatException();
                             }
@@ -684,13 +693,15 @@ final class MainMenu {
                             clearConsole();
                             System.out.println("Your CSV file must begin with a valid year.");
                             System.out.println("Example: 2024_data.csv");
-                            System.out.println();
-                            System.out.println("  1. Try uploading again");
+                            System.out.println("Would you like to try uploading your CSV file again or return to the Finances Menu?");
+                            System.out.println("  1. Try uploading a CSV file again");
                             System.out.println("  2. Return to Finances Menu");
-                            System.out.print("Choice: ");
-
-                            int retryChoice = getUserChoice(2);
-                            if (retryChoice == 1) continue;
+                            System.out.print("Please enter the number associated with your desired option and then press enter: ");
+                            int retryFileChoice = getUserChoice(2);
+                            
+                            if (retryFileChoice == 1) {
+                            	continue;
+                            }
                             uploadingFile = false;
                             break;
                         }
@@ -698,15 +709,17 @@ final class MainMenu {
                         // If that user already has data for that year, ask what to do
                         if (moduleHub.hasDataForYear(currentUser, year)) {
                             clearConsole();
-                            System.out.println("Data already exists for year " + year + ".");
+                            System.out.println("Data already exists for " + year + ".");
                             System.out.println("What would you like to do?");
                             System.out.println("  1. Overwrite existing data");
                             System.out.println("  2. Choose a different CSV");
                             System.out.println("  3. Return to Finances Menu");
-                            System.out.print("Choice: ");
-
+                            System.out.print("Please enter the number associated with your desired option and then press enter: ");
                             int overwriteChoice = getUserChoice(3);
-                            if (overwriteChoice == 2) continue;
+                            
+                            if (overwriteChoice == 2) {
+                            	continue;
+                            }
                             if (overwriteChoice == 3) {
                                 uploadingFile = false;
                                 break;
@@ -715,8 +728,7 @@ final class MainMenu {
                         }
 
                         // Run upload + validation
-                        ValidationResult result =
-                                moduleHub.uploadCSVData(currentUser, csvFilePath, year);
+                        ValidationResult result = moduleHub.uploadCSVData(currentUser, csvFilePath, year);
 
                         clearConsole();
 
@@ -725,19 +737,17 @@ final class MainMenu {
 
                             while (viewingErrors) {
                                 clearConsole();
-                                BeautifulDisplay.printError("CSV Upload Failed");
+                                BeautifulDisplay.printError("CSV Upload Failed:");
                                 System.out.println();
                                 System.out.println("We found " + result.getErrorMessages().size() + " error(s) in your CSV.");
                                 if (!result.getWarningMessages().isEmpty()) {
                                     System.out.println("There were also " + result.getWarningMessages().size() + " warning(s).");
                                 }
-
-                                System.out.println();
-                                System.out.println("  1. Try a different or corrected CSV");
+                                System.out.println("What would you like to do?");
+                                System.out.println("  1. Try a different CSV");
                                 System.out.println("  2. View error details");
                                 System.out.println("  3. Return to Finances Menu");
-                                System.out.print("Choice: ");
-
+                                System.out.print("Please enter the number associated with your desired option and then press enter: ");
                                 int afterErrorChoice = getUserChoice(3);
 
                                 if (afterErrorChoice == 1) {
@@ -746,12 +756,10 @@ final class MainMenu {
                                 }
                                 else if (afterErrorChoice == 2) {
                                     clearConsole();
-                                    BeautifulDisplay.printError("CSV Error Details");
-                                    System.out.println();
-
+                                    BeautifulDisplay.printError("CSV Error Details:");
                                     int shown = 0;
                                     for (String msg : result.getErrorMessages()) {
-                                        System.out.println("  • " + msg);
+                                        System.out.println(" • " + msg);
                                         shown++;
                                         if (shown >= 20) {
                                             System.out.println();
@@ -759,7 +767,7 @@ final class MainMenu {
                                             break;
                                         }
                                     }
-
+                                    
                                     System.out.println();
                                     moveOn(); // Press enter to return to summary
                                 }
@@ -782,7 +790,7 @@ final class MainMenu {
                                 }
                             } else {
                                 BeautifulDisplay.printSuccess(
-                                        "CSV data for year " + year + " uploaded successfully."
+                                        "CSV data for " + year + " uploaded successfully."
                                 );
                             }
 
@@ -791,6 +799,7 @@ final class MainMenu {
                         }
                     }
                 break;
+                
    	        	case 2: 
    	        		if(reportsMenu(currentUser)) {
    	        			return;
@@ -977,6 +986,121 @@ final class MainMenu {
                 }
             }
         }
+    
+    private void handleChangePassword(String currentUsername) {
+    	while (true) {
+    		clearConsole();
+            System.out.println("Please enter your current password below and then press enter.");
+            System.out.print("  Current Password: ");
+    		String currentPassword = scanner.nextLine();
+
+    		//Check if the password we just received is valid
+    		boolean validPass = moduleHub.verifyPassword(currentUsername, currentPassword);
+
+    		//If the current password is valid, then change Password
+    		if (validPass) {
+    			AccountRecoverState currentPassChange = changePassword(currentUsername, "account settings");
+    			switch (currentPassChange) {
+    			case SUCCESSFUL_PASSWORD_CHANGE:
+    				System.out.print("Press enter when you are ready to return to the account settings menu...");
+    				scanner.nextLine();
+    				return; //returns to login menu.
+    			case RETURN_TO_MENU:
+    				return;
+				default:
+					return;
+    			}
+    		}
+    		
+    		//If the login is invalid, then print invalid login menu
+    		clearConsole();
+    		//Print invalid login menu
+    		System.out.println("The password you entered was incorrect.");
+    		System.out.println("What you like to do? ");
+    		System.out.println("  1. Try verifying your password again");
+    		System.out.println("  2. Forgot your password?");
+    		System.out.println("  3. Return to the account settings menu");
+    		System.out.println("  4. Exit application");
+    		System.out.print("Please enter the number associated with your desired option and then press enter: ");
+    		int loginRetryChoice = getUserChoice(4);
+
+    		//If the user wants to try logging in again, jump back to the start of the loop, so that they can try logging in again
+    		switch(loginRetryChoice) {
+    		case 1:
+    			continue;
+    		//If the user forgot their password, go through the account recovery process
+    		case 2: 
+    			//Run account recovery process with the username their logged in as
+    			clearConsole();
+    			
+        		String loginSecretUsername = currentUsername;
+        		
+        		boolean isNotDoneRecovering = true;
+        		int retries = 0;
+        		while (isNotDoneRecovering) {
+        			AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
+
+        			switch (forgotPasswordReturn) {
+        			case INCORRECT_ANSWER:
+        				if (retries < 3) {
+	        				System.out.println("What would you like to do?");
+	        			    System.out.println("  1. Try answering your security question again");
+	        			    System.out.println("  2. Return to the account settings menu");
+	        			    System.out.println("  3. Exit the application");
+	        			    System.out.print("Please enter the number associated with your desired option and then press enter: ");
+	        			    int incorrectChoice = getUserChoice(3);
+	
+	        			    if (incorrectChoice == 1) {
+	        			    	retries++;
+	        			        continue;
+	        			    } 
+	        			    else if (incorrectChoice == 2) {
+	        			        return;  
+	        			    } 
+	        			    else {
+	        			        exitApplication();
+	        			    }
+        				}
+        				
+        				else {
+        					System.out.println();
+        					System.out.println("Too many account recovery attempts.");
+        					System.out.println("You can either return to the account settings menu or exit the application.");
+        					System.out.println("What would you like to do?");
+	        			    System.out.println("  1. Return to the account settings menu");
+	        			    System.out.println("  2. Exit the application");
+	        			    System.out.print("Please enter the number associated with your desired option and then press enter: ");
+	        			    
+	        			    int exitChoice = getUserChoice(2);
+	        			    if (exitChoice == 1) {
+	        			    	return;
+	        			    } 
+	        			    else {
+	        			    	exitApplication(); 
+	        			    } 
+        				}
+        				
+        			    break;
+
+        			case SUCCESSFUL_PASSWORD_CHANGE:
+        				System.out.print("Press enter when you are ready to return to the account settings menu...");
+        				scanner.nextLine();
+        				return;
+
+        			case RETURN_TO_MENU:
+        				return;
+        			
+        			default:
+        				return;
+        			}
+        		}
+    		case 3: 
+    			return; //returns to login menu.
+    		case 4: 
+    			exitApplication();
+    		} 
+    	}
+    }
 
     /**
      * Account Settings Menu
@@ -991,58 +1115,54 @@ final class MainMenu {
      */
     private boolean accountSettingsMenu(String currentUser) {
         boolean inSettings = true;
-
         while (inSettings) {
             clearConsole();
-
             // ✨ Pretty ACCOUNT SETTINGS menu
             BeautifulDisplay.printAccountSettingsMenu(currentUser);
-            int settingsChoice = getUserChoice(3);
+            int settingsChoice = getUserChoice(4);
+            
             switch (settingsChoice){
-                case 1:
-                	clearConsole();
-                    System.out.println("Before you can change your password, please enter your current password below and then press enter. ");
-                    System.out.print("Password: ");
-                    String currentPass = scanner.nextLine();
-                    
-                    System.out.println("Would you like to try again or try recovering your account by answering your security question?. ");
-                    
-                case 2:
-                    clearConsole();
-                    System.out.println("Are you sure you want to delete this account: " + currentUser + "? ");
-                    System.out.println("  1. Yes");
-                    System.out.println("  2. No");
-                    System.out.print("Please enter the number associated with your desired option and then press enter: ");
-                    int sureDelAccount = getUserChoice(2);
+            case 1:
+            	handleChangePassword(currentUser);
+            	continue;
+            case 2:
+            	break;
+            case 3:
+            	clearConsole();
+            	System.out.println("Are you sure you want to delete this account: " + currentUser + "? ");
+            	System.out.println("  1. Yes");
+            	System.out.println("  2. No");
+            	System.out.print("Please enter the number associated with your desired option and then press enter: ");
+            	int sureDelAccount = getUserChoice(2);
 
-                    if (sureDelAccount == 1) {
-                        // Ask ModuleHub / Accounts to delete the user
-                        boolean deleted = moduleHub.callAccounts("deleteaccount", currentUser);
+            	if (sureDelAccount == 1) {
+            		// Ask ModuleHub / Accounts to delete the user
+            		boolean deleted = moduleHub.callAccounts("deleteaccount", currentUser);
 
-                        if (deleted) {
-                        	clearConsole();
-                            System.out.println("Your account has been terminated.");
-                            System.out.print("Press enter when you are ready to return to the login page...");
-                            scanner.nextLine();
-                            // Tell main() that the user is NO LONGER logged in
-                            return false;
-                        } else {
-                        	clearConsole();
-                            System.out.println("Account deletion failed. Your account was not removed.");
-                            System.out.print("Press enter when you are to ready return to user settings...");
-                            scanner.nextLine();
-                            break;  // stay logged in / in settings
-                        }
-                    } else {
-                    	clearConsole();
-                        System.out.print("Press enter when you are ready to return to user settings...");
-                        scanner.nextLine();
-                        break;
-                    }
+            		if (deleted) {
+            			clearConsole();
+            			System.out.println("Your account has been terminated.");
+            			System.out.print("Press enter when you are ready to return to the login page...");
+            			scanner.nextLine();
+            			// Tell main() that the user is NO LONGER logged in
+            			return false;
+            		} else {
+            			clearConsole();
+            			System.out.println("Account deletion failed. Your account was not removed.");
+            			System.out.print("Press enter when you are to ready return to user settings...");
+            			scanner.nextLine();
+            			break;  // stay logged in / in settings
+            		}
+            	} else {
+            		clearConsole();
+            		System.out.print("Press enter when you are ready to return to user settings...");
+            		scanner.nextLine();
+            		break;
+            	}
 
-                case 3:
-                    inSettings = false;
-                    break;
+            case 4:
+            	inSettings = false;
+            	break;
             }
         }
         return true;
