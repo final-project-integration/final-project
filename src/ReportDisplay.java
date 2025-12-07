@@ -246,7 +246,7 @@ public class ReportDisplay {
                 "#", "Category", "Amount");
         String border = "─".repeat(header.length() - 2);
 
-        String borderColor = BeautifulDisplay.BRIGHT_WHITE;
+        String borderColor = BeautifulDisplay.RESET;
 
         System.out.println(borderColor + "┌" + border + "┐" + BeautifulDisplay.RESET);
         System.out.println(borderColor + header + BeautifulDisplay.RESET);
