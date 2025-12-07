@@ -412,7 +412,7 @@ final class MainMenu {
     		
     		System.out.println("Please enter the number associated with the question that you want to be your security question and then press enter: ");
     		System.out.print("What would you like your security question to be? ");
-    		int secretQuestionChoice = getUserChoice(5);
+    		int secretQuestionChoice = getUserChoice(6);
     		
     		String registerSecretQuestion = null;
     		switch(secretQuestionChoice) {
