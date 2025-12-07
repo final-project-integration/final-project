@@ -8,25 +8,7 @@
  * visually appealing terminal output. All methods and constants are static,
  * so they can be called from anywhere in the project without instantiation.
  *
- * COLOR CONSTANTS:
- * The class provides the following ANSI color escape codes as public constants:
- *  Basic Colors: RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
- *  Bright Colors: BRIGHT_RED, BRIGHT_GREEN, BRIGHT_YELLOW, BRIGHT_BLUE,
- *  BRIGHT_MAGENTA, BRIGHT_CYAN, BRIGHT_WHITE
- * Text Modifiers: RESET (removes all formatting), BOLD, DIM
  *
- * USAGE EXAMPLE:
- * // Print a colored message:
- * System.out.println(BeautifulDisplay.GREEN + "Success!" + BeautifulDisplay.RESET);
- *
- * // Print a formatted header:
- * BeautifulDisplay.printGradientHeader("FINANCIAL REPORT", 70);
- *
- * // Print a success message:
- * BeautifulDisplay.printSuccess("Data saved successfully");
- *
- * // Format currency with color:
- * String amount = BeautifulDisplay.formatCurrency(1500.00);
  *
  * COLOR CONSTANTS PURPOSE:
  * The color constants are intended to be used in the following ways:
@@ -163,6 +145,9 @@ public class BeautifulDisplay {
      * More vibrant than WHITE. Use for high-contrast text.
      */
     public static final String BRIGHT_WHITE = "\u001B[97m";
+
+    // Global UI width so all boxes/headers line up nicely
+    public static final int MAIN_WIDTH = 60;
 
     /**
      * Private constructor to prevent instantiation.
@@ -348,7 +333,33 @@ public class BeautifulDisplay {
         System.out.println(DIM + repeat("─", width) + RESET);
     }
 
+    /**
+     * Prints a full-width section header with centered text so it lines up
+     * with the main gradient header.
+     *
+     * Example:
+     *  ────────────────────────────────────────────────
+     *                 ▶ START
+     *  ────────────────────────────────────────────────
+     *
+     * @param title the section title text
+     * @param color ANSI color to use for the bar and label
+     */
+    public static void printFullWidthSectionHeader(String title, String color, int width) {
+        if (width < visibleLength(title) + 4) {
+            width = visibleLength(title) + 4;
+        }
 
+        String line = repeat("─", width);
+        String headerText = color + "▶ " + BOLD + title + RESET;
+
+        // top line
+        System.out.println(color + line + RESET);
+        // centered label
+        System.out.println(center(headerText, width));
+        // bottom line
+        System.out.println(color + line + RESET);
+    }
 
     // BOXES & LISTS
 
@@ -508,4 +519,218 @@ public class BeautifulDisplay {
         if (value < 0) return RED + formatted + RESET;
         return YELLOW + formatted + RESET;
     }
+
+
+    // HIGH-LEVEL SCREENS FOR MAIN MENU FLOW
+
+    /**
+     * Prints the START screen the user sees after the title,
+     * with options to sign in or create an account.
+     */
+    public static void printStartMenu() {
+        int width = MAIN_WIDTH;
+
+        // Big blue box (already looks nice)
+        printGradientHeader("WELCOME TO PERSONAL FINANCE MANAGER", width);
+        System.out.println();
+
+        // Full-width green START bar
+        printFullWidthSectionHeader("START", BRIGHT_GREEN, width);
+        System.out.println();
+
+        // Menu options: yellow numbers, default text color
+        System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Sign In");
+        System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Create a New Account");
+        System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Exit Application");
+
+        System.out.println();
+        printGradientDivider(width);
+
+        // Prompt in default color (no bright white)
+        System.out.print("Please enter the number associated with your desired option: ");
+    }
+    /**
+     * Prints the MAIN MENU the user sees after logging in.
+     */
+    public static void printMainMenuScreen(String currentUser) {
+        int width = MAIN_WIDTH;
+
+        // Big MAIN MENU header box
+        printGradientHeader("MAIN MENU", width);
+        System.out.println();
+
+        // "Signed in as" line (small & dim)
+        System.out.println(
+                DIM + "Signed in as: " + RESET +
+                        BRIGHT_CYAN + currentUser + RESET
+        );
+        System.out.println();
+
+        // Full-width green bar
+        printFullWidthSectionHeader("WHAT WOULD YOU LIKE TO DO?", BRIGHT_GREEN, width);
+        System.out.println();
+
+        // Options with yellow numbers, default text color
+        String[] items = new String[] {
+                "Finances",
+                "Settings",
+                "Sign Out",
+                "Exit Program"
+        };
+        printColorfulList(items, BRIGHT_YELLOW);
+
+        System.out.println();
+        printGradientDivider(width);
+
+        // Prompt in default color
+        System.out.print("Please enter the number associated with your desired option: ");
+    }
+
+    /**
+     * Prints the FINANCES menu (Upload CSV, Reports, etc.).
+     */
+    public static void printFinancesMenu() {
+        int width = MAIN_WIDTH;
+
+        printGradientHeader("FINANCES", width);
+        System.out.println();
+
+        printFullWidthSectionHeader("FINANCES MENU", BRIGHT_GREEN, width);
+        System.out.println();
+
+        // Yellow numbers, default words
+        System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Upload CSV");
+        System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Reports");
+        System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Predictions");
+        System.out.println(BRIGHT_YELLOW + "  4. " + RESET + "Data Management");
+        System.out.println(BRIGHT_YELLOW + "  5. " + RESET + "Return to Main Menu");
+
+        System.out.println();
+        printGradientDivider(width);
+
+        // Prompt in default color
+        System.out.print("Please enter the number associated with your desired option: ");
+    }
+
+
+    public static void printReportsMenu(int year) {
+        int width = MAIN_WIDTH;
+
+        // Big header box: REPORTS FOR 2023
+        printGradientHeader("REPORTS FOR " + year, width);
+        System.out.println();
+
+        // Section: Available Reports
+        printFullWidthSectionHeader("AVAILABLE REPORTS", BRIGHT_GREEN, width);
+        System.out.println();
+
+        // Plain text (safe on any background)
+        System.out.println("What kind of information would you like about data from " + year + "?");
+        System.out.println();
+
+        // Options 1–4: yellow numbers, default text
+        System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Yearly Summary");
+        System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Month Breakdown");
+        System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Category Analysis");
+        System.out.println(BRIGHT_YELLOW + "  4. " + RESET + "Full Report");
+        System.out.println();
+
+        // Controls section with matching bar
+        printFullWidthSectionHeader("CONTROLS", BRIGHT_GREEN, width);
+        System.out.println();
+
+        System.out.println(BRIGHT_YELLOW + "  5. " + RESET + "View the reports for another year");
+        System.out.println(BRIGHT_YELLOW + "  6. " + RESET + "Return to Finances Menu");
+        System.out.println(BRIGHT_YELLOW + "  7. " + RESET + "Return to Main Menu");
+        System.out.println();
+
+        // Bottom divider + prompt
+        printGradientDivider(width);
+        System.out.print("Please enter the number associated with your desired option: ");
+    }
+
+
+    public static void printPredictionsMenu(int year) {
+        int width = MAIN_WIDTH;
+
+        // Big header box: PREDICTIONS FOR 2023
+        printGradientHeader("PREDICTIONS FOR " + year, width);
+        System.out.println();
+
+        // Section: Available Predictions
+        printFullWidthSectionHeader("AVAILABLE PREDICTIONS", BRIGHT_GREEN, width);
+        System.out.println();
+
+        System.out.println("What kind of predictions would you like about the data from " + year + "?");
+        System.out.println();
+
+        // Options 1–3
+        System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Summary Report");
+        System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Deficit Analysis");
+        System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Surplus Analysis");
+        System.out.println();
+
+        // Controls section with matching bar
+        printFullWidthSectionHeader("CONTROLS", BRIGHT_GREEN, width);
+        System.out.println();
+
+        System.out.println(BRIGHT_YELLOW + "  4. " + RESET + "View the Predictions for another year");
+        System.out.println(BRIGHT_YELLOW + "  5. " + RESET + "Return to Finances Menu");
+        System.out.println(BRIGHT_YELLOW + "  6. " + RESET + "Return to Main Menu");
+        System.out.println();
+
+        // Bottom divider + prompt (plain color)
+        printGradientDivider(width);
+        System.out.print("Please enter the number associated with your desired option: ");
+    }
+
+    public static void printDataManagementMenu() {
+        int width = MAIN_WIDTH;
+
+        // Big header
+        printGradientHeader("DATA MANAGEMENT", width);
+        System.out.println();
+
+        // Section header
+        printFullWidthSectionHeader("DATA MANAGEMENT MENU", BRIGHT_GREEN, width);
+        System.out.println();
+
+        // Yellow numbers, normal text
+        System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Delete a CSV file");
+        System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Return to Finances Menu");
+        System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Return to Main Menu");
+        System.out.println();
+
+        printGradientDivider(width);
+        System.out.print("Please enter the number associated with your desired option: ");
+    }
+
+    public static void printAccountSettingsMenu(String currentUser) {
+        int width = MAIN_WIDTH;
+
+        // Big header
+        printGradientHeader("ACCOUNT SETTINGS", width);
+        System.out.println();
+
+        // Section header with username
+        printFullWidthSectionHeader(currentUser + " ACCOUNT SETTINGS", BRIGHT_GREEN, width);
+        System.out.println();
+
+        // Options
+        System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Change Password");
+        System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Delete Account");
+        System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Return to Main Menu");
+        System.out.println();
+
+        printGradientDivider(width);
+        System.out.print("Please enter the number associated with your desired option: ");
+    }
+
+    /**
+     * Prints a generic "press enter to continue" prompt using dim text.
+     */
+    public static void printContinuePrompt() {
+        System.out.print(DIM + "Press enter when you are ready to move on..." + RESET);
+    }
+
 }
