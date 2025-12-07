@@ -890,6 +890,24 @@ public class ModuleHub {
     		return false;
     	}
     }
+    
+    /**
+     * Checks if a password that is passed to it matches the password in storage associated with the passed username
+     *
+     * @param passedUsername - the username the the function is using to find the hashed password in stroage
+     * @param passedPassword - the password that the function is checking
+     * @return true if the passed password matches the password in storage associated with the passed username, false otherwise 
+     *
+     * @author Shazadul Islam
+     */
+    public boolean verifyPassword(String passedUsername, String passedPassword) {
+    	if (authModule.checkPassword(passedUsername, passedPassword)) {
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
+    }
 
     /**
      * Routes account action to the Accounts module.
