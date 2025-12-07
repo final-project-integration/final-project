@@ -151,16 +151,61 @@ final class MainMenu {
     	while (true) {
     		clearConsole();
     		//Let them enter a new password
-    		System.out.println("Please enter a new password for the account, " + usernameRecovering + ", below and then press enter.");
+    		System.out.println("Password Rules: ");
+			System.out.println("• Cannot be empty or only whitespace");
+			System.out.println("• Cannot begin or end with a space");
+			System.out.println("• Must be at least 5 characters and at most 30 characters");
+			System.out.println();
+    		System.out.println("Enter a new password for the account, " + usernameRecovering + ", below and then press enter.");
     		System.out.print("  New Password: ");
     		String loginSecretPassword = scanner.nextLine();
-    		System.out.print("  Confirm your password: ");
-    		String confirmPassword = scanner.nextLine();
     		
-    		if (!confirmPassword.equals(loginSecretPassword)) {
-    		    System.out.println("Passwords do not match. Try again.");
-    		    continue;
-    		}
+    		if (!(moduleHub.followsPasswordRules(loginSecretPassword))) {
+				clearConsole();
+				System.out.println("Password does not follow the required format.");
+				System.out.println("What would you like to do?");
+				System.out.println("  1. Try creating a different password for your account, " + usernameRecovering + ", again");
+				System.out.println("  2. Return to the login menu");
+				System.out.println("  3. Exit the application");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				
+				int secretPasswordChoice = getUserChoice(3);
+				if (secretPasswordChoice == 1) {
+					continue;
+				}
+				else if (secretPasswordChoice == 2) {
+					return AccountRecoverState.RETURN_TO_MENU;
+				}
+				else if (secretPasswordChoice == 3) {
+					exitApplication();
+				}
+			}
+    		
+    		System.out.println();
+			System.out.println("Re-enter your password below to confirm it and then press enter. ");
+			System.out.print("Confirm your password: ");
+			String secretConfirmPassword = scanner.nextLine();
+			
+			if (!secretConfirmPassword.equals(loginSecretPassword)) {
+				clearConsole();
+				System.out.println("Passwords do not match.");
+				System.out.println("What would you like to do?");
+				System.out.println("  1. Try creating a password for your account, " + usernameRecovering + ",again");
+				System.out.println("  2. Return to the login menu");
+				System.out.println("  3. Exit the application");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				
+				int secretComparePassRetryChoice = getUserChoice(3);
+				if (secretComparePassRetryChoice == 1) {
+					continue;
+				}
+				else if (secretComparePassRetryChoice == 2) {
+					return AccountRecoverState.RETURN_TO_MENU;
+				}
+				else if (secretComparePassRetryChoice == 3) {
+					exitApplication();
+				}
+			}
     		
     		//Attempt to reset
     		//returns true if password passes requirements and was saved
@@ -896,6 +941,8 @@ final class MainMenu {
                     System.out.println("Before you can change your password, please enter your current password below and then press enter. ");
                     System.out.print("Password: ");
                     String currentPass = scanner.nextLine();
+                    
+                    System.out.println("Would you like to try again or try recovering your account by answering your security question?. ");
                     
                 case 2:
                     clearConsole();
