@@ -718,8 +718,9 @@ public class BeautifulDisplay {
 
         // Options
         System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Change Password");
-        System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Delete Account");
-        System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Return to Main Menu");
+        System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Change Security Question and Answer");
+        System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Delete Account");
+        System.out.println(BRIGHT_YELLOW + "  4. " + RESET + "Return to Main Menu");
         System.out.println();
 
         printGradientDivider(width);
