@@ -303,7 +303,7 @@ public class ModuleHub {
      * @author Denisa Cakoni (integration refactor)
      */
     public ValidationResult uploadCSVData(String username, String csvFilePath, int year) {
-        // --- 0) Basic sanity checks ---
+        // Basic sanity checks
         if (csvFilePath == null || csvFilePath.trim().isEmpty()) {
             return ValidationResult.error("CSV file path cannot be empty.");
         }
