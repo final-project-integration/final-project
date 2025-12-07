@@ -246,8 +246,28 @@ public class ModuleHub {
     }
 
 
+    /**
+     * Checks whether stored budget data exists for a given user and year.
+     *
+     * @param username the user whose data is being checked
+     * @param year     the year to check for existing data
+     * @return true if a saved file exists for that user and year, false otherwise
+     *
+     * @author Denisa Cakoni
+     */
+    public boolean hasDataForYear(String username, int year) {
+        if (username == null || username.trim().isEmpty()) {
+            return false;
+        }
 
-
+        try {
+            Budget budget = storageModule.getUserBudget(username, year);
+            return budget != null;
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Storage", e);
+            return false;
+        }
+    }
 
     /**
      * Uploads a CSV file for a specific user and year and stores it as a Budget.
