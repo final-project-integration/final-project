@@ -352,7 +352,7 @@ final class MainMenu {
     		System.out.println("• Must only include letter or numbers");
     		System.out.println("• Must be at least 3 characters and at most 20 characters");
     		System.out.println();
-    		
+
     		System.out.println("Enter your username below and then press enter. ");
     		System.out.print("What would you like your username to be? ");
     		String registerUsername = scanner.nextLine();
@@ -404,20 +404,15 @@ final class MainMenu {
     		System.out.println("Pick one of the security questions below and then press enter. ");
     		System.out.println("  1. What was your childhood nickname?");
     		System.out.println("  2. What is the name of your favorite childhood friend?");
-    		System.out.println("  3. What street did you live on in third grade?");
-    		System.out.println("  4. What is the middle name of your oldest child?");
-    		System.out.println("  5. What school did you attend for sixth grade?");
-    		System.out.println("  6. What was the name of your first stuffed animal?");
-    		System.out.println("  7. What was the name of the first school you remember attending?");
-    		System.out.println("  8. What was the destination of your most memorable school field trip?");
-    		System.out.println("  9. What was your maths teacher’s surname in your 8th year of school?");
-    		System.out.println("  10. What was the name of your first stuffed toy?");
-    		System.out.println("  11. What was your driving instructor’s first name?");
+    		System.out.println("  3. What was the name of your first stuffed animal?");
+    		System.out.println("  4. What was the name of the first school you remember attending?");
+    		System.out.println("  5. What was the destination of your most memorable school field trip?");
+    		System.out.println("  6. What was your driving instructor’s first name?");
     		System.out.println();
     		
     		System.out.println("Please enter the number associated with the question that you want to be your security question and then press enter: ");
     		System.out.print("What would you like your security question to be? ");
-    		int secretQuestionChoice = getUserChoice(11);
+    		int secretQuestionChoice = getUserChoice(5);
     		
     		String registerSecretQuestion = null;
     		switch(secretQuestionChoice) {
@@ -428,30 +423,15 @@ final class MainMenu {
     	        registerSecretQuestion = "What is the name of your favorite childhood friend?";
     	        break;
     	    case 3:
-    	        registerSecretQuestion = "What street did you live on in third grade?";
-    	        break;
-    	    case 4:
-    	        registerSecretQuestion = "What is the middle name of your oldest child?";
-    	        break;
-    	    case 5:
-    	        registerSecretQuestion = "What school did you attend for sixth grade?";
-    	        break;
-    	    case 6:
     	        registerSecretQuestion = "What was the name of your first stuffed animal?";
     	        break;
-    	    case 7:
+    	    case 4:
     	        registerSecretQuestion = "What was the name of the first school you remember attending?";
     	        break;
-    	    case 8:
+    	    case 5:
     	        registerSecretQuestion = "What was the destination of your most memorable school field trip?";
     	        break;
-    	    case 9:
-    	        registerSecretQuestion = "What was your maths teacher’s surname in your 8th year of school?";
-    	        break;
-    	    case 10:
-    	        registerSecretQuestion = "What was the name of your first stuffed toy?";
-    	        break;
-    	    case 11:
+    	    case 6:
     	        registerSecretQuestion = "What was your driving instructor’s first name?";
     	        break;
     		}
