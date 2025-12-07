@@ -113,6 +113,14 @@ final class MainMenu {
     	RETURN_TO_MENU
     }
     
+    /**
+     * Handles recovery of the user's account
+     * 
+     * @param userNameRecovering - the account that the useris trying to recover
+     * @return AccountRecoverState - an enum that tells us what happened when the user tried recovering their account
+     * 
+     * @author Shazadul Islam
+     */
     private AccountRecoverState accountRecover(String usernameRecovering) {
     	//If the account does not exist...
     	String secretQuestion = moduleHub.getUserSecretQuestion(usernameRecovering);
@@ -343,6 +351,11 @@ final class MainMenu {
     	}
     }
     
+    /**
+     * Handles account creation for a user
+     * 
+     * @author Shazadul Islam
+     */
     private void handleAccountCreation() {
     	while (true) {
     		String registerUsername = null;
@@ -557,9 +570,7 @@ final class MainMenu {
     }
     
     /**
-     * Handles the accounts creation and entry:
-     * Asks the user whether the user wants to sign in or create an account
-     * Loop until we have a successful sign-in or the user decides to exit the program
+     * Handles the user's entry into the actual software
      *
      * @return loginUsername - the username of the successfully signed-in user
      * 
