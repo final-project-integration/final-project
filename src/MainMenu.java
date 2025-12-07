@@ -652,110 +652,144 @@ final class MainMenu {
      * @author Aaron Madou
      * @author Shazadul Islam
      */ 
-    private void financesMenu(String currentUser) {
+     private void financesMenu(String currentUser) {
     	while(true) {
     		 clearConsole();
             BeautifulDisplay.printFinancesMenu();
     	     int userChoice = getUserChoice(5);
             switch (userChoice) {
-            case 1:
-                boolean uploadingFile = true;
+                case 1:
+                    boolean uploadingFile = true;
 
-                while (uploadingFile) {
-                    clearConsole();
-                    System.out.println("--- CSV Loader ---");
-                    System.out.println("Please enter the name of the CSV file you want to upload below and then press enter.");
-                    System.out.println("• If the CSV is in the same folder as the JAR, just type the file name (Ex: 2024_data.csv)");
-                    System.out.println("• Otherwise, paste the full file path.");
-                    System.out.print("File name: ");
-
-                    String csvFilePath = scanner.nextLine().trim();
-                    File file = new File(csvFilePath);
-                    String fileName = file.getName();
-
-                    //  Extract year from filename
-                    int year;
-                    try {
-                        year = Integer.parseInt(fileName.substring(0, 4));
-                        if (year < 1900 || year > 2100) {
-                            throw new NumberFormatException();
-                        }
-                    } catch (NumberFormatException e) {
+                    while (uploadingFile) {
                         clearConsole();
-                        System.out.println("Your CSV file must begin with a valid year.");
-                        System.out.println("Example: 2024_data.csv");
-                        System.out.println();
-                        System.out.println("  1. Try uploading again");
-                        System.out.println("  2. Return to Finances Menu");
-                        System.out.print("Choice: ");
+                        System.out.println("--- CSV Loader ---");
+                        System.out.println("Please enter the name of the CSV file you want to upload below and then press enter.");
+                        System.out.println("• If the CSV is in the same folder as the JAR, just type the file name (Ex: 2024_data.csv)");
+                        System.out.println("• Otherwise, paste the full file path.");
+                        System.out.print("File name: ");
 
-                        int retryChoice = getUserChoice(2);
-                        if (retryChoice == 1) continue;
-                        uploadingFile = false;
-                        break;
-                    }
+                        String csvFilePath = scanner.nextLine().trim();
+                        File file = new File(csvFilePath);
+                        String fileName = file.getName();
 
-                    // check if year already exists
-                    if (moduleHub.hasDataForYear(currentUser, year)) {
-                        clearConsole();
-                        System.out.println("Data already exists for year " + year + ".");
-                        System.out.println("What would you like to do?");
-                        System.out.println("  1. Overwrite existing data");
-                        System.out.println("  2. Choose a different CSV");
-                        System.out.println("  3. Return to Finances Menu");
-                        System.out.print("Choice: ");
+                        // Extract year from filename (first 4 chars)
+                        int year;
+                        try {
+                            year = Integer.parseInt(fileName.substring(0, 4));
+                            if (year < 1900 || year > 2100) {
+                                throw new NumberFormatException();
+                            }
+                        } catch (NumberFormatException e) {
+                            clearConsole();
+                            System.out.println("Your CSV file must begin with a valid year.");
+                            System.out.println("Example: 2024_data.csv");
+                            System.out.println();
+                            System.out.println("  1. Try uploading again");
+                            System.out.println("  2. Return to Finances Menu");
+                            System.out.print("Choice: ");
 
-                        int overwriteChoice = getUserChoice(3);
-                        if (overwriteChoice == 2) continue;
-                        if (overwriteChoice == 3) {
+                            int retryChoice = getUserChoice(2);
+                            if (retryChoice == 1) continue;
                             uploadingFile = false;
                             break;
                         }
-                        // Choice 1 continues to overwrite
-                    }
 
-                    //  send everything to modulehub+validation
-                    ValidationResult result =
-                            moduleHub.uploadCSVData(currentUser, csvFilePath, year);
+                        // If that user already has data for that year, ask what to do
+                        if (moduleHub.hasDataForYear(currentUser, year)) {
+                            clearConsole();
+                            System.out.println("Data already exists for year " + year + ".");
+                            System.out.println("What would you like to do?");
+                            System.out.println("  1. Overwrite existing data");
+                            System.out.println("  2. Choose a different CSV");
+                            System.out.println("  3. Return to Finances Menu");
+                            System.out.print("Choice: ");
 
-                    clearConsole();
-
-                    // handle validation errors
-                    if (result.hasErrors()) {
-                        BeautifulDisplay.printError("CSV Upload Failed");
-
-                        for (String msg : result.getErrorMessages()) {
-                            System.out.println("  • " + msg);
-                        }
-
-                        System.out.println();
-                        System.out.println("  1. Try a different or corrected CSV");
-                        System.out.println("  2. Return to Finances Menu");
-                        System.out.print("Choice: ");
-
-                        int afterErrorChoice = getUserChoice(2);
-                        if (afterErrorChoice == 1) continue;
-
-                        uploadingFile = false;
-                    }
-
-                    //success and warnings
-                    else {
-                        if (!result.getWarningMessages().isEmpty()) {
-                            BeautifulDisplay.printWarning("Upload completed with warnings:");
-
-                            for (String msg : result.getWarningMessages()) {
-                                System.out.println("  • " + msg);
+                            int overwriteChoice = getUserChoice(3);
+                            if (overwriteChoice == 2) continue;
+                            if (overwriteChoice == 3) {
+                                uploadingFile = false;
+                                break;
                             }
-                        } else {
-                            BeautifulDisplay.printSuccess(
-                                    "CSV data for year " + year + " uploaded successfully.");
+                            //  overwrite and continue
                         }
 
-                        moveOn();
-                        uploadingFile = false;
+                        // Run upload + validation
+                        ValidationResult result =
+                                moduleHub.uploadCSVData(currentUser, csvFilePath, year);
+
+                        clearConsole();
+
+                        if (result.hasErrors()) {
+                            boolean viewingErrors = true;
+
+                            while (viewingErrors) {
+                                clearConsole();
+                                BeautifulDisplay.printError("CSV Upload Failed");
+                                System.out.println();
+                                System.out.println("We found " + result.getErrorMessages().size() + " error(s) in your CSV.");
+                                if (!result.getWarningMessages().isEmpty()) {
+                                    System.out.println("There were also " + result.getWarningMessages().size() + " warning(s).");
+                                }
+
+                                System.out.println();
+                                System.out.println("  1. Try a different or corrected CSV");
+                                System.out.println("  2. View error details");
+                                System.out.println("  3. Return to Finances Menu");
+                                System.out.print("Choice: ");
+
+                                int afterErrorChoice = getUserChoice(3);
+
+                                if (afterErrorChoice == 1) {
+                                    viewingErrors = false;
+                                    continue;  // pick another file
+                                }
+                                else if (afterErrorChoice == 2) {
+                                    clearConsole();
+                                    BeautifulDisplay.printError("CSV Error Details");
+                                    System.out.println();
+
+                                    int shown = 0;
+                                    for (String msg : result.getErrorMessages()) {
+                                        System.out.println("  • " + msg);
+                                        shown++;
+                                        if (shown >= 20) {
+                                            System.out.println();
+                                            System.out.println("  (Showing first 20 errors only...)");
+                                            break;
+                                        }
+                                    }
+
+                                    System.out.println();
+                                    moveOn(); // Press enter to return to summary
+                                }
+                                else {
+                                    uploadingFile = false;
+                                    viewingErrors = false;
+                                }
+                            }
+                        }
+
+                        // Success + Warnings
+                        else {
+                            clearConsole();
+
+                            if (!result.getWarningMessages().isEmpty()) {
+                                BeautifulDisplay.printWarning("Upload completed with warnings:");
+
+                                for (String msg : result.getWarningMessages()) {
+                                    System.out.println("  • " + msg);
+                                }
+                            } else {
+                                BeautifulDisplay.printSuccess(
+                                        "CSV data for year " + year + " uploaded successfully."
+                                );
+                            }
+
+                            moveOn();
+                            uploadingFile = false;
+                        }
                     }
-                }
                 break;
    	        	case 2: 
    	        		if(reportsMenu(currentUser)) {
