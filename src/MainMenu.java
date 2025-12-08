@@ -116,7 +116,7 @@ final class MainMenu {
 	/**
 	 * Handles recovery of the user's account
 	 * 
-	 * @param userNameRecovering - the account that the useris trying to recover
+	 * @param usernameRecovering - the account that the user is trying to recover
 	 * @return AccountRecoverState - an enum that tells us what happened when the user tried recovering their account
 	 * 
 	 * @author Shazadul Islam
@@ -1146,7 +1146,7 @@ final class MainMenu {
 			//returns true if password passes requirements and was saved
 			//returns false if password failed requirements and was not saved
 
-			boolean changedPasswordAccepted = moduleHub.changePasswordWithOldPassword(usernameChanging, oldCurrentPassword, decideNewPassword);
+			boolean changedPasswordAccepted = moduleHub.changePassword(usernameChanging, oldCurrentPassword, decideNewPassword);
 
 			//If their new password is valid...
 			if (changedPasswordAccepted) {
