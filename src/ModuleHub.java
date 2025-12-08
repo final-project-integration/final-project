@@ -498,7 +498,15 @@ public class ModuleHub {
         ArrayList<ReportManager.FinancialRecord> records = new ArrayList<>();
 
         for (Transaction t : budget.getAllTransactions()) {
-            String date = t.getDate(); // MM/DD/YYYY
+            String rawDate = t.getDate(); // MM/DD/YYYY (hopefully)
+
+            if (rawDate == null) {
+                System.err.println("[ModuleHub] Null date in transaction.");
+                continue;
+            }
+
+
+            String date = rawDate.trim();
             String[] parts = date.split("/");
 
             if (parts.length != 3) {
@@ -506,11 +514,19 @@ public class ModuleHub {
                 continue;
             }
 
-            int month = Integer.parseInt(parts[0]) - 1; // Convert to 0-based index
+            String monthPart = parts[0].trim();
+            int month;
+            try {
+                month = Integer.parseInt(monthPart) - 1;  // 0-based month index
+            } catch (NumberFormatException e) {
+                System.err.println("[ModuleHub] Invalid month in date: " + date);
+                continue;
+            }
 
             String category = t.getCategory();
-            String amount = String.valueOf(t.getAmount());
-            boolean isIncome = t.getAmount() > 0;
+            double amountValue = t.getAmount();
+            String amount = String.valueOf(amountValue);
+            boolean isIncome = amountValue > 0;
 
             ReportManager.FinancialRecord rec = new ReportManager.FinancialRecord(
                     amount, category, month, year, isIncome
