@@ -116,7 +116,7 @@ final class MainMenu {
 	/**
 	 * Handles recovery of the user's account
 	 * 
-	 * @param usernameRecovering - the account that the useris trying to recover
+	 * @param userNameRecovering - the account that the useris trying to recover
 	 * @return AccountRecoverState - an enum that tells us what happened when the user tried recovering their account
 	 * 
 	 * @author Shazadul Islam
@@ -988,8 +988,30 @@ final class MainMenu {
 				while (true) {
 					clearConsole();
 					moduleHub.callStorage("listyears", currentUser, 0);
-					System.out.print("Enter the year of the CSV file you would like to delete: ");
+					System.out.println("Enter the year of the CSV file you would like to delete below and then press enter. ");
+					System.out.println("If you have decided not to delete a CSV file anymore, just press enter without any input.");
+					System.out.print("Year of the CSV file you would like to delete or exit: ");
 					int year = getUserYear();
+					
+					if (!moduleHub.hasDataForYear(currentUser, year)) {
+						clearConsole();
+						System.out.println("What would you like to do?");
+						System.out.println("  1. Try to delete the data of a different year");
+						System.out.println("  2. Return to Finance Menu");
+						System.out.println("  3. Return to Main Menu");
+						System.out.print("Please enter the number associated with your desired option and then press enter: ");
+						userChoice = getUserChoice(3);
+
+						if (userChoice == 1) {
+							continue;
+						}
+						else if (userChoice == 2) {
+							return false;
+						}
+						else {
+							return true;
+						}
+					}
 
 					if (!moduleHub.hasDataForYear(currentUser, year)) {
 						clearConsole();
@@ -1113,7 +1135,7 @@ final class MainMenu {
 			//returns true if password passes requirements and was saved
 			//returns false if password failed requirements and was not saved
 
-			boolean changedPasswordAccepted = moduleHub.changePassword(usernameChanging, oldCurrentPassword, decideNewPassword);
+			boolean changedPasswordAccepted = moduleHub.changePasswordWithOldPassword(usernameChanging, oldCurrentPassword, decideNewPassword);
 
 			//If their new password is valid...
 			if (changedPasswordAccepted) {
