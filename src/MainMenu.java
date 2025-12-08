@@ -676,7 +676,7 @@ final class MainMenu {
 					System.out.print("File name: ");
 					String csvFilePath = scanner.nextLine().trim();
 
-					fixes the crash shown in your screenshot:
+					
 
             
 					File file = new File(csvFilePath);
