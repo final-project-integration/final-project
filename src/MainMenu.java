@@ -102,6 +102,7 @@ final class MainMenu {
 				return year;
 			} catch (NumberFormatException e) {
 				System.out.print("Please enter a valid year and then press enter: ");
+				continue;
 			}
 		}
 	}
@@ -596,7 +597,7 @@ final class MainMenu {
 
 			} else {
 				clearConsole();
-				System.out.println("What would you like to do?");
+				System.out.println("What would you like to do next?");
 				System.out.println("  1. Try creating an account again");
 				System.out.println("  2. Return to the login menu");
 				System.out.println("  3. Exit the application");
@@ -675,14 +676,11 @@ final class MainMenu {
 					System.out.println("• Otherwise, paste the full file path.");
 					System.out.print("File name: ");
 					String csvFilePath = scanner.nextLine().trim();
-
-					
-
             
 					File file = new File(csvFilePath);
                     String fileName = file.getName();
 
-                     // fixes StringIndexOutOfBoundsException: Range [0, 4) out of bounds for length 3-deni
+                    // fixes StringIndexOutOfBoundsException: Range [0, 4) out of bounds for length 3-deni
 					//The filename crash is now fixed with safe year parsing and retry handling.
 					// Extract year from filename
                     Integer year = null;
@@ -739,8 +737,28 @@ final class MainMenu {
 					ValidationResult result = moduleHub.uploadCSVData(currentUser, csvFilePath, year);
 
 					clearConsole();
+					
+					// Success + Warnings
+					if (!(result.hasErrors())) {
+						clearConsole();
 
-					if (result.hasErrors()) {
+						if (!result.getWarningMessages().isEmpty()) {
+							BeautifulDisplay.printWarning("Upload completed with warnings:");
+
+							for (String msg : result.getWarningMessages()) {
+								System.out.println("  • " + msg);
+							}
+						} else {
+							BeautifulDisplay.printSuccess(
+									"CSV data for " + year + " uploaded successfully."
+									);
+						}
+
+						moveOn();
+						uploadingFile = false;
+					}
+
+					else {
 						boolean viewingErrors = true;
 
 						while (viewingErrors) {
@@ -785,29 +803,11 @@ final class MainMenu {
 							}
 						}
 					}
-
-					// Success + Warnings
-					else {
-						clearConsole();
-
-						if (!result.getWarningMessages().isEmpty()) {
-							BeautifulDisplay.printWarning("Upload completed with warnings:");
-
-							for (String msg : result.getWarningMessages()) {
-								System.out.println("  • " + msg);
-							}
-						} else {
-							BeautifulDisplay.printSuccess(
-									"CSV data for " + year + " uploaded successfully."
-									);
-						}
-
-						moveOn();
-						uploadingFile = false;
-					}
+					
 				}
+				
 				break;
-
+				
 			case 2: 
 				if(reportsMenu(currentUser)) {
 					return;
@@ -996,18 +996,28 @@ final class MainMenu {
 
 			switch (userChoice) {
 			case 1:
+				boolean plzEnterYearInRange = false;
+				boolean plzEnterValidYear = false;
 				while (true) {
 					clearConsole();
 					moduleHub.callStorage("listyears", currentUser, 0);
 					System.out.println("Enter the year of the CSV file you would like to delete below and then press enter. ");
+					if (plzEnterYearInRange) {
+						System.out.println("Please make sure that the year you enter is between 1900 and 2100.");
+						plzEnterYearInRange = false;
+					}
+					else if (plzEnterValidYear) {
+						System.out.println("Please make sure that the year you enter is digits only(e.g., 1999 or 2024).");
+						plzEnterValidYear = false;
+					}
 					System.out.println("If you have decided not to delete a CSV file anymore, just press enter without any input.");
 					System.out.print("Year of the CSV file you would like to delete or exit: ");
-					int year = getUserYear();
+					String csvDelInput = scanner.nextLine();
 					
-					if (!moduleHub.hasDataForYear(currentUser, year)) {
+					if (csvDelInput.trim().isEmpty()) {
 						clearConsole();
-						System.out.println("What would you like to do?");
-						System.out.println("  1. Try to delete the data of a different year");
+						System.out.println("What would you like to do next?");
+						System.out.println("  1. Delete the data of a different year");
 						System.out.println("  2. Return to Finance Menu");
 						System.out.println("  3. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
@@ -1023,7 +1033,59 @@ final class MainMenu {
 							return true;
 						}
 					}
+					
+					int year;
+					try {
+						year = Integer.parseInt(csvDelInput);
+						if ((year < 1900) || (year > 2100)) {
+							clearConsole();
+							if (year < 1900) {
+							    System.out.println("The year you entered is too far into the past. The earliest allowed year is 1900.");
+							} 
+							else if (year > 2100) {
+							    System.out.println("The year you entered is too far into the future. The latest allowed year is 2100.");
+							}
+							System.out.println("What would you like to do next?");
+							System.out.println("  1. Try to delete the data of a different year");
+							System.out.println("  2. Return to Finance Menu");
+							System.out.println("  3. Return to Main Menu");
+							System.out.print("Please enter the number associated with your desired option and then press enter: ");
+							userChoice = getUserChoice(3);
 
+							if (userChoice == 1) {
+								plzEnterYearInRange = true;
+								continue;
+							}
+							else if (userChoice == 2) {
+								return false;
+							}
+							else {
+								return true;
+							}
+						}
+						
+					} catch (NumberFormatException e) {
+						clearConsole();
+						System.out.println("Your input, "+ csvDelInput + " , is not a valid year.");
+						System.out.println("What would you like to do next?");
+						System.out.println("  1. Try to delete the data of a different year");
+						System.out.println("  2. Return to Finance Menu");
+						System.out.println("  3. Return to Main Menu");
+						System.out.print("Please enter the number associated with your desired option and then press enter: ");
+						userChoice = getUserChoice(3);
+
+						if (userChoice == 1) {
+							plzEnterValidYear = true;
+							continue;
+						}
+						else if (userChoice == 2) {
+							return false;
+						}
+						else {
+							return true;
+						}
+					}
+					
 					if (!moduleHub.hasDataForYear(currentUser, year)) {
 						clearConsole();
 						System.out.println("There is no data for " + year);
@@ -1519,7 +1581,7 @@ final class MainMenu {
 
 					if (deleted) {
 						clearConsole();
-						System.out.println("Your account has been terminated.");
+						System.out.println("Your account has been deleted.");
 						System.out.print("Press enter when you are ready to return to the account settings menu...");
 						scanner.nextLine();
 						// Tell main() that the user is NO LONGER logged in
