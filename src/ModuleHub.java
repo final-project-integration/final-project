@@ -881,15 +881,12 @@ public class ModuleHub {
      *
      * @author Shazadul Islam
      */
-    public boolean followsUsernameRules(String passedUsername){
-    	if (!authModule.isInvalidUsernameFormat(passedUsername)) {
-    		return true;
-    	}
-    	else {
-    		return false;
-    	}
+    public boolean followsUsernameRules(String passedUsername) {
+        return !authModule.isInvalidUsernameFormat(passedUsername);
     }
-    
+
+
+
     /**
      * Checks if a password that is passed to it follows all of the password rules
      *
@@ -898,13 +895,9 @@ public class ModuleHub {
      *
      * @author Shazadul Islam
      */
-    public boolean followsPasswordRules(String passedPassword){
-    	if (!authModule.isInvalidPasswordFormat(passedPassword)) {
-    		return true;
-    	}
-    	else {
-    		return false;
-    	}
+
+    public boolean followsPasswordRules(String passedPassword) {
+        return !authModule.isInvalidPasswordFormat(passedPassword);
     }
     
     /**
