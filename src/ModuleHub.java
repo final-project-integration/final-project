@@ -540,7 +540,7 @@ public class ModuleHub {
                 case "summary": {
                     BeautifulDisplay.printGradientHeader("PREDICTION SUMMARY - " + year, 70);
                     String summary = predictionModule.buildFinancialSummary();
-                    System.out.println(BeautifulDisplay.BRIGHT_WHITE + summary + BeautifulDisplay.RESET);
+                    System.out.println(BeautifulDisplay.RESET + summary + BeautifulDisplay.RESET);
                     BeautifulDisplay.printGradientDivider(70);
                     return "Prediction summary completed for " + year + ".";
                 }
@@ -560,7 +560,7 @@ public class ModuleHub {
                     System.out.println();
                     String plan = predictionModule.buildDeficitProportionalPlan();
 
-                    System.out.println(BeautifulDisplay.BRIGHT_WHITE + plan + BeautifulDisplay.RESET);
+                    System.out.println(BeautifulDisplay.RESET + plan + BeautifulDisplay.RESET);
                     BeautifulDisplay.printGradientDivider(70);
                     return "Deficit analysis completed for " + year + ".";
                 }
@@ -578,7 +578,7 @@ public class ModuleHub {
                     BeautifulDisplay.printSuccess("Surplus detected. Suggested allocation plan:");
                     System.out.println();
                     String plan = predictionModule.buildSurplusProportionalPlan();
-                    System.out.println(BeautifulDisplay.BRIGHT_WHITE + plan + BeautifulDisplay.RESET);
+                    System.out.println(BeautifulDisplay.RESET + plan + BeautifulDisplay.RESET);
                     BeautifulDisplay.printGradientDivider(70);
                     return "Surplus analysis completed for " + year + ".";
                 }
