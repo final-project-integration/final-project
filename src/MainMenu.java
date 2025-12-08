@@ -654,6 +654,7 @@ final class MainMenu {
 	 * 
 	 * @author Aaron Madou
 	 * @author Shazadul Islam
+	 * @author Denisa Cakoni
 	 */ 
 	private void financesMenu(String currentUser) {
 		while(true) {
