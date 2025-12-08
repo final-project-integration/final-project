@@ -247,6 +247,7 @@ public class ModuleHub {
      * This method:
      * resolves the CSV file path
      * validates the CSV content using ValidationEngine
+     * optionally checks for duplicate transactions and adds a warning
      * if valid, imports it via StorageManager
      *
      * It does not print to the console; instead it returns a ValidationResult
@@ -255,7 +256,7 @@ public class ModuleHub {
      * @param username    the user who is uploading the CSV data
      * @param csvFilePath the path to the CSV file on disk (as typed by the user)
      * @param year        the year represented by the CSV data
-     * @return ValidationResult describing any validation errors, or ok() on success
+     * @return ValidationResult describing any validation errors or warnings
      *
      * @author Denisa Cakoni
      */
@@ -281,12 +282,76 @@ public class ModuleHub {
             ValidationResult csvValidation =
                     validationModule.validateCsvLines(csvFile.getName(), lines);
 
+            // If there are hard errors, stop here and return them.
             if (csvValidation.hasErrors()) {
                 return csvValidation;
             }
 
+            //  Duplicate Transaction WARNING non-blocking
+            try {
+                List<Object> txs = new ArrayList<>();
+
+                // Skip header (index 0), start from line 1
+                for (int i = 1; i < lines.size(); i++) {
+                    String line = lines.get(i);
+                    if (line == null) {
+                        continue;
+                    }
+                    line = line.trim();
+                    if (line.isEmpty()) {
+                        continue;
+                    }
+
+                    String[] parts = line.split(",", -1);
+                    if (parts.length < 3) {
+                        continue;
+                    }
+
+                    final String date = parts[0].trim();
+                    final String category = parts[1].trim();
+                    final String amountStr = parts[2].trim();
+
+                    if (date.isEmpty() || category.isEmpty() || amountStr.isEmpty()) {
+                        // missing fields; already handled by CSV validation
+                        continue;
+                    }
+
+                    final double amount;
+                    try {
+                        amount = Double.parseDouble(amountStr);
+                    } catch (NumberFormatException nfe) {
+                        // CSV validator already flags bad numbers; ignore for dupe-check
+                        continue;
+                    }
+
+                    txs.add(new Object() {
+                        public String getDate()     { return date; }
+                        public Double getAmount()   { return amount; }
+                        public String getMerchant() { return ""; } // CSV has no merchant column
+                        public String getCategory() { return category; }
+                    });
+                }
+
+                // Ask Validation/CrossFieldValidator if there are duplicates
+                ValidationResult dupResult = detectDuplicateTransactions(txs);
+
+                // If duplicate checker produced any messages, surface a warning
+                if (!dupResult.getMessages().isEmpty()) {
+                    csvValidation.addWarning(
+                            "Duplicate transactions detected (same Date, Category, and Amount). " +
+                                    "If this was unintentional, you may want to edit the CSV before importing."
+                    );
+                }
+
+            } catch (Exception ignored) {
+                // Never block upload on duplicate check – best-effort only
+            }
+
+            // If we reach here no hard errors; import into StorageManager
             storageModule.importCSV(username, year, csvFile.getPath());
-            return ValidationResult.ok();
+
+            // Return the full validation result (may contain warnings about duplicates)
+            return csvValidation;
 
         } catch (Exception e) {
             // Log technical details, but return a friendly message to caller.
@@ -296,6 +361,7 @@ public class ModuleHub {
             return vr;
         }
     }
+
 
     /**
      * Tries to resolve the CSV file path in a few common locations:
