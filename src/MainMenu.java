@@ -838,7 +838,7 @@ final class MainMenu {
 				clearConsole();
 				System.out.println("There is no data for " + year);
 				System.out.println("What would you like to do?");
-				System.out.println("  1. Try to delete the data of a different year");
+				System.out.println("  1. View the reports of a different year");
 				System.out.println("  2. Return to Finance Menu");
 				System.out.println("  3. Return to Main Menu");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
@@ -915,7 +915,7 @@ final class MainMenu {
 				clearConsole();
 				System.out.println("There is no data for " + year);
 				System.out.println("What would you like to do?");
-				System.out.println("  1. Try to delete the data of a different year");
+				System.out.println("  1. View the predictions of a different year");
 				System.out.println("  2. Return to Finance Menu");
 				System.out.println("  3. Return to Main Menu");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
