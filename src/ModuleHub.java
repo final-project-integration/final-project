@@ -899,23 +899,19 @@ public class ModuleHub {
     public boolean followsPasswordRules(String passedPassword) {
         return !authModule.isInvalidPasswordFormat(passedPassword);
     }
-    
+
     /**
-     * Checks if a password that is passed to it matches the password in storage associated with the passed username
+     * Verifies whether the provided password matches the stored password
+     * for the given username.
      *
-     * @param passedUsername - the username the the function is using to find the hashed password in stroage
-     * @param passedPassword - the password that the function is checking
-     * @return true if the passed password matches the password in storage associated with the passed username, false otherwise 
+     * @param passedUsername the username whose password is being checked
+     * @param passedPassword the password to verify
+     * @return true if the password matches the stored value, false otherwise
      *
      * @author Shazadul Islam
      */
     public boolean verifyPassword(String passedUsername, String passedPassword) {
-    	if (authModule.checkPassword(passedUsername, passedPassword)) {
-    		return true;
-    	}
-    	else {
-    		return false;
-    	}
+        return authModule.checkPassword(passedUsername, passedPassword);
     }
 
     /**
@@ -1127,6 +1123,34 @@ public class ModuleHub {
             if (!ok) {
                 System.out.println(
                         "[ModuleHub] Password reset failed: invalid secret answer, invalid password, or user may not exist."
+                );
+            }
+            return ok;
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Accounts", e);
+            return false;
+        }
+    }
+
+
+    /**
+     * Changes a user's password using their existing (old) password for verification.
+     *
+     * @param username    the username of the account whose password is being changed
+     * @param oldPassword the current (existing) password entered by the user
+     * @param newPassword the new password the user wishes to set
+     * @return  true if the password change succeeds false if the old password is incorrect
+     *
+     *@author Denisa Cakoni
+     */
+    public boolean changePasswordWithOldPassword(String username,
+                                                 String oldPassword,
+                                                 String newPassword) {
+        try {
+            boolean ok = accountsModule.changePassword(username, oldPassword, null, newPassword);
+            if (!ok) {
+                System.out.println(
+                        "[ModuleHub] Password change failed: incorrect old password or invalid new password."
                 );
             }
             return ok;
