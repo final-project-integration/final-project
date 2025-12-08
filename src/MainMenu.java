@@ -520,7 +520,7 @@ final class MainMenu {
 
 			System.out.println("Please enter the number associated with the question that you want to be your security question and then press enter: ");
 			System.out.print("What would you like your security question to be? ");
-			int secretQuestionChoice = getUserChoice(5);
+			int secretQuestionChoice = getUserChoice(6);
 
 			String registerSecretQuestion = null;
 			switch(secretQuestionChoice) {
@@ -675,33 +675,43 @@ final class MainMenu {
 					System.out.print("File name: ");
 					String csvFilePath = scanner.nextLine().trim();
 
+					fixes the crash shown in your screenshot:
+
+            
 					File file = new File(csvFilePath);
-					String fileName = file.getName();
+                    String fileName = file.getName();
 
-					// Extract year from filename (first 4 chars)
-					int year;
-					try {
-						year = Integer.parseInt(fileName.substring(0, 4));
-						System.out.println();
-						if (year < 1900 || year > 2100) {
-							throw new NumberFormatException();
-						}
-					} catch (NumberFormatException e) {
-						clearConsole();
-						System.out.println("Your CSV file must begin with a valid year.");
-						System.out.println("Example: 2024_data.csv");
-						System.out.println("Would you like to try uploading your CSV file again or return to the Finances Menu?");
-						System.out.println("  1. Try uploading a CSV file again");
-						System.out.println("  2. Return to Finances Menu");
-						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						int retryFileChoice = getUserChoice(2);
+                     // fixes StringIndexOutOfBoundsException: Range [0, 4) out of bounds for length 3-deni
+					//The filename crash is now fixed with safe year parsing and retry handling.
+					// Extract year from filename
+                    Integer year = null;
 
-						if (retryFileChoice == 1) {
-							continue;
-						}
-						uploadingFile = false;
-						break;
-					}
+                    if (fileName != null && fileName.length() >= 4) {
+                        String firstFour = fileName.substring(0, 4);
+                        try {
+                            year = Integer.parseInt(firstFour);
+                        } catch (NumberFormatException ignored) {
+
+                        }
+                    }
+
+                    // If no valid year in range, show a friendly message instead of crashing
+                    if (year == null || year < 1900 || year > 2100) {
+                        clearConsole();
+                        System.out.println("Your CSV file must begin with a valid year.");
+                        System.out.println("Example: 2024_data.csv");
+                        System.out.println("Would you like to try uploading your CSV file again or return to the Finances Menu?");
+                        System.out.println("  1. Try uploading a CSV file again");
+                        System.out.println("  2. Return to Finances Menu");
+                        System.out.print("Please enter the number associated with your desired option and then press enter: ");
+                        int retryFileChoice = getUserChoice(2);
+
+                        if (retryFileChoice == 1) {
+                            continue;   // ask for another filename
+                        }
+                        uploadingFile = false;
+                        break;          // back to Finances menu
+                    }
 
 					// If that user already has data for that year, ask what to do
 					if (moduleHub.hasDataForYear(currentUser, year)) {
@@ -1319,7 +1329,7 @@ final class MainMenu {
 					System.out.println();
 					System.out.println("Please enter the number associated with the question that you want to be your security question and then press enter: ");
 					System.out.print("What would you like your security question to be? ");
-					int newSecretQuestionChoice = getUserChoice(5);
+					int newSecretQuestionChoice = getUserChoice(6);
 
 					String newSecretQuestion = null;
 					switch(newSecretQuestionChoice) {
