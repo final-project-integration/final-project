@@ -1,4 +1,4 @@
-//Integration team
+// Integration team
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,21 +7,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * ModuleHub is the integration layer and traffic controller for the application.
  * It routes requests between Accounts, Storage, Reports, Prediction, and Validation modules.
  *
  * ModuleHub responsibilities:
- * Coordinate calls between team modules without re-implementing their logic
- * Convert data formats when passing information between modules
- * Provide a single integration entry point that MainMenu and the rest of the application can use
+ *  - Coordinate calls between team modules without re-implementing their logic
+ *  - Convert data formats when passing information between modules
+ *  - Provide a single integration entry point that MainMenu and the rest of
+ *    the application can use
  *
- * flow:
- * 1. Accept a request from MainMenu
- * 2. Forward the request and data to the correct team module
- * 3. Collect the response or result
- * 4. Return a simple result or status message back to the caller
+ * Flow:
+ *  1. Accept a request from MainMenu
+ *  2. Forward the request and data to the correct team module
+ *  3. Collect the response or result
+ *  4. Return a simple result or status message back to the caller
  *
  * All integration responsibilities are handled here, so other modules can focus
  * only on their core logic.
@@ -31,7 +31,6 @@ import java.util.List;
  */
 public class ModuleHub {
 
-
     /** Storage used by the authentication and accounts module. */
     private final Storage authStorage;
     /** Authentication module responsible for login, registration, and credentials. */
@@ -39,10 +38,8 @@ public class ModuleHub {
     /** Accounts module is responsible for user account operations. */
     private final Accounts accountsModule;
 
-
     /** StorageManager used for saving and loading user budgets by year. */
     private final StorageManager storageModule;
-
 
     /** ReportManager is responsible for computing summaries and balances. */
     private final ReportManager reportsModule;
@@ -64,56 +61,17 @@ public class ModuleHub {
     /** CrossFieldValidator used for cross-field and aggregate validations. */
     private final CrossFieldValidator crossFieldValidator;
 
-
     /** ErrorHandler used to log and handle module-level errors. */
     private final ErrorHandler errorHandler;
 
     /**
-     * Prints a colored header with horizontal lines of a fixed width,
-     * so the colored header bars line up with the white dividers (e.g., width 70).
+     * Reads all lines from the given file into a List&lt;String&gt;.
      *
-     * @param title text to show in the center
-     * @param color ANSI color from BeautifulDisplay
-     * @param width total width of the header line
+     * @param file the file to read
+     * @return list of lines read from the file
+     * @throws IOException if an I/O error occurs while reading
      *
      * @author Denisa Cakoni
-     */
-    private void printFixedWidthHeader(String title, String color, int width) {
-        if (title == null) {
-            title = "";
-        }
-
-        // Ensure width is at least slightly wider than the title
-        if (width < title.length() + 4) {
-            width = title.length() + 4;
-        }
-
-        // Build the top/bottom horizontal line
-        StringBuilder line = new StringBuilder();
-        for (int i = 0; i < width; i++) {
-            line.append('─');
-        }
-
-        // Center the title in a line of length `width.`
-        int padding = width - title.length();
-        int left = padding / 2;
-        int right = padding - left;
-
-        StringBuilder middle = new StringBuilder();
-        for (int i = 0; i < left; i++) {
-            middle.append(' ');
-        }
-        middle.append(title);
-        for (int i = 0; i < right; i++) {
-            middle.append(' ');
-        }
-
-        System.out.println(color + line.toString() + BeautifulDisplay.RESET);
-        System.out.println(color + middle.toString() + BeautifulDisplay.RESET);
-        System.out.println(color + line.toString() + BeautifulDisplay.RESET);
-    }
-    /**
-     * Reads all lines from the given file into a List<String>.
      */
     private List<String> readAllLines(File file) throws IOException {
         List<String> lines = new ArrayList<>();
@@ -145,7 +103,7 @@ public class ModuleHub {
         reportsModule   = new ReportManager();
         reportAnalyzer  = new ReportAnalyzer();
         reportFormatter = new ReportFormatter();
-        reportDisplay = new ReportDisplay();
+        reportDisplay   = new ReportDisplay();
 
         // Prediction
         predictionData   = new DataReader();
@@ -159,8 +117,8 @@ public class ModuleHub {
         errorHandler = new ErrorHandler();
     }
 
+    // -----------------------Storage Integration----------------------------
 
-    // Storage Integration
 
     /**
      * Routes a storage-related request to the StorageManager module.
@@ -169,8 +127,8 @@ public class ModuleHub {
      * @param action   the storage action to perform ("load", "delete", "listyears")
      * @param username the username whose data is being accessed
      * @param year     the year associated with the data
-     * @return true if the requested action completes without throwing an exception, false otherwise
-     *
+     * @return true if the requested action completes without throwing an exception,
+     *         false otherwise
      *
      * @author Denisa Cakoni
      */
@@ -261,7 +219,6 @@ public class ModuleHub {
         }
     }
 
-
     /**
      * Checks whether stored budget data exists for a given user and year.
      *
@@ -288,11 +245,11 @@ public class ModuleHub {
     /**
      * Uploads a CSV file for a specific user and year and stores it as a Budget.
      * This method:
-     *   - resolves the CSV file path
-     *   - validates the CSV content using ValidationEngine
-     *   - if valid, imports it via StorageManager
+     * resolves the CSV file path
+     * validates the CSV content using ValidationEngine
+     * if valid, imports it via StorageManager
      *
-     * It does NOT print to the console; instead it returns a ValidationResult
+     * It does not print to the console; instead it returns a ValidationResult
      * so the caller (MainMenu) can decide how to display messages.
      *
      * @param username    the user who is uploading the CSV data
@@ -300,10 +257,10 @@ public class ModuleHub {
      * @param year        the year represented by the CSV data
      * @return ValidationResult describing any validation errors, or ok() on success
      *
-     * @author Denisa Cakoni (integration refactor)
+     * @author Denisa Cakoni
      */
     public ValidationResult uploadCSVData(String username, String csvFilePath, int year) {
-        // Basic sanity checks
+        //  sanity checks
         if (csvFilePath == null || csvFilePath.trim().isEmpty()) {
             return ValidationResult.error("CSV file path cannot be empty.");
         }
@@ -317,7 +274,7 @@ public class ModuleHub {
         }
 
         try {
-            //  Read raw lines for Validation team
+            // Read raw lines for Validation team
             List<String> lines = readAllLines(csvFile);
 
             // Use ValidationEngine to validate header, dates, categories, amounts, etc.
@@ -325,12 +282,10 @@ public class ModuleHub {
                     validationModule.validateCsvLines(csvFile.getName(), lines);
 
             if (csvValidation.hasErrors()) {
-                // doesn't continue to Storage if validation failed.
                 return csvValidation;
             }
 
             storageModule.importCSV(username, year, csvFile.getPath());
-
             return ValidationResult.ok();
 
         } catch (Exception e) {
@@ -344,8 +299,8 @@ public class ModuleHub {
 
     /**
      * Tries to resolve the CSV file path in a few common locations:
-     * As given (relative or absolute), after trimming whitespace
-     * Inside a "data" subfolder (data/filename.csv)
+     *  As given (relative or absolute), after trimming whitespace
+     *  Inside a data subfolder (data/filename.csv)
      *
      * @param csvFilePath the path or filename the user typed
      * @return a File that exists on disk, or null if not found
@@ -357,7 +312,7 @@ public class ModuleHub {
             return null;
         }
 
-        String cleaned = csvFilePath.trim();   // kills the trailing space
+        String cleaned = csvFilePath.trim();   // kill trailing/leading spaces
 
         // As typed (absolute or relative)
         File direct = new File(cleaned);
@@ -377,24 +332,26 @@ public class ModuleHub {
 
     // Reports view from stored data (no CSV prompting)
 
+
     /**
      * Generates and prints a report for a given user and year from previously stored data.
      * This method:
-     * loads the Budget for the user and year from StorageManager
-     * converts the Budget to a list of FinancialRecord objects
-     * delegates summary calculations to ReportManager
-     * delegates additional analysis to ReportAnalyzer
-     *formats and prints the report sections to the console
+     *  - loads the Budget for the user and year from StorageManager
+     *  - converts the Budget to a list of FinancialRecord objects
+     *  - delegates summary calculations to ReportManager
+     *  - delegates additional analysis to ReportAnalyzer
+     *  - formats and prints the report sections to the console
      *
      * Report types:
-     * yearly:   yearly totals and analysis
-     * monthly:  monthly breakdown only
-     * category: category breakdown only
-     * full:     yearly, monthly, category, and analysis
+     *  yearly:   yearly totals and analysis
+     *  monthly:  monthly breakdown only
+     *  category: category breakdown only
+     *  full:     yearly, monthly, category, and analysis
      *
      * @param username   the user requesting the report
      * @param year       the year to generate the report for
-     * @param reportType the type of report to generate ("yearly", "monthly", "category", "full")
+     * @param reportType the type of report to generate ("yearly", "monthly",
+     *                   "category", "full")
      * @return a status message describing the outcome
      *
      * @author Denisa Cakoni
@@ -505,7 +462,6 @@ public class ModuleHub {
                 continue;
             }
 
-
             String date = rawDate.trim();
             String[] parts = date.split("/");
 
@@ -523,10 +479,10 @@ public class ModuleHub {
                 continue;
             }
 
-            String category = t.getCategory();
+            String category   = t.getCategory();
             double amountValue = t.getAmount();
-            String amount = String.valueOf(amountValue);
-            boolean isIncome = amountValue > 0;
+            String amount      = String.valueOf(amountValue);
+            boolean isIncome   = amountValue > 0;
 
             ReportManager.FinancialRecord rec = new ReportManager.FinancialRecord(
                     amount, category, month, year, isIncome
@@ -537,21 +493,18 @@ public class ModuleHub {
         return records;
     }
 
-
-
-    // Predictions
-
+    //------------------------------- Predictions-------------------------------------
 
     /**
      * Runs a prediction scenario on previously uploaded and stored data:
-     * loads the Budget for a user and year from StorageManager
-     * passes the Budget directly into the Prediction DataReader
-     * delegates the selected scenario to ScenarioSimulator
+     *  - loads the Budget for a user and year from StorageManager
+     *  - passes the Budget directly into the Prediction DataReader
+     *  - delegates the selected scenario to ScenarioSimulator
      *
      * Supported scenario types:
-     * summary–prints an overall income/expense/net summary
-     * deficit–checks for a deficit and prints a proportional reduction plan
-     * surplus–checks for a surplus and prints a proportional allocation plan
+     *  summary – prints an overall income/expense/net summary
+     *  deficit – checks for a deficit and prints a proportional reduction plan
+     *  surplus – checks for a surplus and prints a proportional allocation plan
      *
      * @param username     the user requesting the prediction
      * @param year         the year whose data should be analyzed
@@ -629,6 +582,7 @@ public class ModuleHub {
                     BeautifulDisplay.printGradientDivider(70);
                     return "Surplus analysis completed for " + year + ".";
                 }
+
                 default:
                     return "[ModuleHub] Unknown prediction scenarioType: " + scenarioType;
             }
@@ -639,9 +593,8 @@ public class ModuleHub {
         }
     }
 
+    // --------------------------Validation---------------------------------------
 
-
-    // Validation
 
     /**
      * Validates a single value using the ValidationEngine based on a given type.
@@ -695,6 +648,7 @@ public class ModuleHub {
 
     /**
      * Validates a transaction data transfer object using the ValidationEngine.
+     *
      * @param transactionData an object representing the transaction to be validated
      * @return a ValidationResult containing any validation errors or warnings
      *
@@ -870,14 +824,14 @@ public class ModuleHub {
     }
 
 
-    // Accounts
+    // -----------------Accounts / Authentication--------------------------------
 
-    //Authentication
     /**
-     * Checks if a username that is passed to it follows all of the username rules
+     * Checks if a username follows all of the username rules.
      *
-     * @param passedUsername - the username that the function is checking
-     * @return true if the passed username follows all of the username rules, false otherwise
+     * @param passedUsername the username that the function is checking
+     * @return true if the passed username follows all of the username rules,
+     *         false otherwise
      *
      * @author Shazadul Islam
      */
@@ -885,17 +839,15 @@ public class ModuleHub {
         return !authModule.isInvalidUsernameFormat(passedUsername);
     }
 
-
-
     /**
-     * Checks if a password that is passed to it follows all of the password rules
+     * Checks if a password follows all of the password rules.
      *
-     * @param passedPassword - the password that the function is checking
-     * @return true if the passed password follows all of the password rules, false otherwise 
+     * @param passedPassword the password that the function is checking
+     * @return true if the passed password follows all of the password rules,
+     *         false otherwise
      *
      * @author Shazadul Islam
      */
-
     public boolean followsPasswordRules(String passedPassword) {
         return !authModule.isInvalidPasswordFormat(passedPassword);
     }
@@ -917,8 +869,8 @@ public class ModuleHub {
     /**
      * Routes account action to the Accounts module.
      * Supported actions:
-     * logout: signs out the currently logged-in user
-     * deleteaccount: deletes the specified user account
+     *  "logout": signs out the currently logged-in user
+     *  "deleteaccount": deletes the specified user account
      *
      * @param action   the account action to perform
      * @param username the username affected by the action
@@ -980,9 +932,9 @@ public class ModuleHub {
     /**
      * Registers a new user account by delegating to the Accounts module.
      * This wrapper:
-     * forwards all user-centered fields,
-     * passes along the caller's confirmation flag,
-     * and reports any failure back to the console.
+     *  forwards all user-centered fields,
+     *  passes along the caller's confirmation flag,
+     *  reports any failure back to the console.
      *
      * @param username       the desired username
      * @param password       the chosen password
@@ -990,7 +942,7 @@ public class ModuleHub {
      * @param secretAnswer   the answer to the secret question
      * @param confirm        true if registration is confirmed, false otherwise
      * @return true if the account was created and saved successfully; false if
-     * validation fails, the username is taken, the user cancels, or saving fails
+     *         validation fails, the username is taken, the user cancels, or saving fails
      *
      * @author Denisa Cakoni
      */
@@ -1105,7 +1057,8 @@ public class ModuleHub {
 
     /**
      * Resets a user's password to a new value using the Accounts module.
-     * Any failure is reported through the console.
+     * This is the recovery flow, where the user proves identity using a
+     * secret answer instead of the old password.
      *
      * @param username     the username of the account being recovered
      * @param secretAnswer the plain-text secret answer entered by the user
@@ -1132,20 +1085,23 @@ public class ModuleHub {
         }
     }
 
-
     /**
      * Changes a user's password using their existing (old) password for verification.
      *
-     * @param username    the username of the account whose password is being changed
-     * @param oldPassword the current (existing) password entered by the user
-     * @param newPassword the new password the user wishes to set
-     * @return  true if the password change succeeds false if the old password is incorrect
+     * Internally, this delegates to Accounts.changePassword(...) and passes
+     * null for the secret answer, since verification is done via oldPassword.
      *
-     *@author Denisa Cakoni
+     * @param username    the username of the account whose password is being changed
+     * @param oldPassword the current password entered by the user
+     * @param newPassword the new password the user wishes to set
+     * @return true if the old password is correct and the new password is saved;
+     *         false if verification or validation fails
+     *
+     * @author Denisa Cakoni
      */
-    public boolean changePasswordWithOldPassword(String username,
-                                                 String oldPassword,
-                                                 String newPassword) {
+    public boolean changePassword(String username,
+                                  String oldPassword,
+                                  String newPassword) {
         try {
             boolean ok = accountsModule.changePassword(username, oldPassword, null, newPassword);
             if (!ok) {
@@ -1167,14 +1123,16 @@ public class ModuleHub {
      * @param username    the username whose password should be reset
      * @param newQuestion the new secret question to set
      * @param newAnswer   the new secret answer to set
-     * @return true if the security question answer reset succeeds, false otherwise
+     * @return true if the security question/answer reset succeeds, false otherwise
      *
      * @author Aaron Madou
      */
-    public boolean updateUserSecretQuestionAndAnswer(String username, String newQuestion, String newAnswer) {
+    public boolean updateUserSecretQuestionAndAnswer(String username,
+                                                     String newQuestion,
+                                                     String newAnswer) {
         try {
             boolean ok = accountsModule.setSecretQuestionAndAnswer(username, newQuestion, newAnswer);
-            if(!ok) {
+            if (!ok) {
                 System.out.println("[ModuleHub] Password reset failed (user may not exist).");
             }
             return ok;
@@ -1184,9 +1142,6 @@ public class ModuleHub {
         }
     }
 }
-
-
-
 
 /**
  * ErrorHandler manages all error handling and recovery operations for the application.
@@ -1202,10 +1157,11 @@ class ErrorHandler {
     /**
      * Creates a new ErrorHandler instance.
      * The handler provides a centralized way to display, log, and recover
-     * from errors across all modules
+     * from errors across all modules.
+     *
      * @author Kapil Tamang
      */
-    public ErrorHandler() {}
+    public ErrorHandler() { }
 
     /**
      * Handles an exception that was thrown by a module.
