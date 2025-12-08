@@ -116,7 +116,7 @@ final class MainMenu {
 	/**
 	 * Handles recovery of the user's account
 	 * 
-	 * @param userNameRecovering - the account that the useris trying to recover
+	 * @param userNameRecovering - the account that the user is trying to recover
 	 * @return AccountRecoverState - an enum that tells us what happened when the user tried recovering their account
 	 * 
 	 * @author Shazadul Islam
@@ -140,7 +140,7 @@ final class MainMenu {
 		System.out.print("Answer: ");
 		String loginSecretAnswer = scanner.nextLine();
 
-		//If the user's answer to the their account's security question is incorrect
+		//If the user's answer to their account's security question is incorrect
 		if (!moduleHub.verifyUserSecretAnswer(usernameRecovering,loginSecretAnswer)) {
 			clearConsole();
 			System.out.println("Your answer to the security question was incorrect.");
@@ -1068,7 +1068,7 @@ final class MainMenu {
 			//Check if the password we just received is valid
 			boolean validPass = moduleHub.verifyPassword(currentUsername, currentPassword);
 
-			//If the current password is valid, then change Password
+			//If the current password is valid, then change the Password
 			if (validPass) {
 				AccountRecoverState currentPassChange = changePassword(currentUsername, "account settings");
 				switch (currentPassChange) {
