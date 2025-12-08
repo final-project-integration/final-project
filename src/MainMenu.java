@@ -954,7 +954,7 @@ final class MainMenu {
 				// Pretty predictions screen
 				BeautifulDisplay.printPredictionsMenu(year);
 
-				userChoice = getUserChoice(6);
+				userChoice = getUserChoice(8);
 
 				switch (userChoice) {
 				case 1:
@@ -972,13 +972,60 @@ final class MainMenu {
 					moduleHub.runPrediction(currentUser, year, "surplus");
 					moveOn();
 					break;
-				case 4:
-					isWorkingWithYear = false;
-					break;
-				case 5: 
-					return false; 
+				
+				case 4: {clearConsole();
+                        List<String> categories=moduleHub.getDeficitAdjustableCategories(currentUser,year);
+                        if (categories==null || categories.isEmpty()) {
+                            System.out.println("No adjustable expense found for this year ");
+                            System.out.println("Your deficit might be caused by fixed costs or insufficient income.");
+                            moveOn();
+                            break;
+                        }
+                        System.out.println("Choose an expense category to see how reducing it affects your deficit:\n");
+                        for (int i=0; i<categories.size(); i++) {
+                            System.out.println(" " + (i+1) + ". " + categories.get(i));
+                        }
+                        System.out.println();
+                        System.out.println("Please enter the number associated with your desired option and then press enter:");
+                        int catChoice = getUserChoice(categories.size());
+                        String chosenCategory = categories.get(catChoice-1);
+                        clearConsole();
+                        String explanation= moduleHub.buildDeficitWhatifSummary(currentUser, year, chosenCategory);
+                        System.out.println(explanation);
+                        moveOn();
+                        break;
+                }
+				case 5: {
+                    clearConsole();
+                    List<String> categories = moduleHub.getDeficitAdjustableCategories(currentUser, year);
+                    if (categories == null || categories.isEmpty()) {
+                        System.out.println("No expense categories were found to increase for this year ");
+                        System.out.println("Upload CSV or check your data before running a surplus What-if.");
+                        moveOn();
+                        break;
+                    }
+                    System.out.println("Choose a category to see how much you can safely spend there without going into deficit:\n");
+                    for (int i = 0; i < categories.size(); i++) {
+                        System.out.println(" " + (i + 1) + ". " + categories.get(i));
+                    }
+                    System.out.println();
+                    System.out.println("Please enter the number associated with your desired option and then press enter:");
+                    int catChoice = getUserChoice(categories.size());
+                    String chosenCategory = categories.get(catChoice - 1);
+                    clearConsole();
+                    String explanation = moduleHub.buildSurplusWhatifSummary(currentUser, year, chosenCategory);
+                    System.out.println(explanation);
+                    moveOn();
+                    break;
+                }
+
 				case 6:
-					return true;
+					isWorkingWithYear = false;
+                    break;
+                    case 7:
+                        return false;
+                    case 8:
+                        return true;
 				}
 			}
 		}
