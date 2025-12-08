@@ -495,6 +495,9 @@ public class ModuleHub {
 
     //------------------------------- Predictions-------------------------------------
 
+
+
+
     /**
      * Runs a prediction scenario on previously uploaded and stored data:
      *  - loads the Budget for a user and year from StorageManager
@@ -593,7 +596,53 @@ public class ModuleHub {
         }
     }
 
-    // --------------------------Validation---------------------------------------
+    private boolean loadPredictionData(String username, int year) {
+        try {
+                Budget budget = storageModule.getUserBudget(username, year);
+                if (budget == null) {
+                    BeautifulDisplay.printError("No data found for year " + year);
+                    System.out.println();
+                    System.out.println("  " + BeautifulDisplay.BRIGHT_CYAN + "📤 To upload data:" +BeautifulDisplay.RESET);
+                    System.out.println("   " + BeautifulDisplay.DIM + "Main Menu -> Financial Data->Upload CSV" + BeautifulDisplay.RESET);
+                    System.out.println();
+                    return false;
+                }
+                predictionData.readFromBudget(budget);
+                return true;
+        }
+        catch (Exception e) {
+            errorHandler.handleModuleError("Prediction", e);
+            return false;
+        }
+    }
+
+    public List<String> getDeficitAdjustableCategories(String username, int year) {
+        List<String> result = new ArrayList<>();
+        if (!loadPredictionData(username, year)) {
+            return result;
+        }
+        DeficitSolver solver= new DeficitSolver(predictionData);
+        result.addAll(solver.getCategories());
+        return result;
+    }
+
+    public String buildDeficitWhatifSummary(String username, int year, String category) {
+        if (!loadPredictionData(username,year)) {
+            return "[ModuleHub] No data available for year " + year;
+        }
+        return predictionModule.buildDeficitWhatIfSummary(category);
+    }
+
+
+
+    public String buildSurplusWhatifSummary(String username, int year, String category) {
+        if (!loadPredictionData(username,year)) {
+            return "[ModuleHub] No data available for year " + year;
+        }
+        return predictionModule.buildSurplusWhatIfSummary(category);
+        }
+
+            // --------------------------Validation---------------------------------------
 
 
     /**
