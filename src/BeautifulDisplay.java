@@ -668,15 +668,19 @@ public class BeautifulDisplay {
         System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Summary Report");
         System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Deficit Analysis");
         System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Surplus Analysis");
+        System.out.println(BRIGHT_YELLOW + "  4. " + RESET + "Deficit What-if for a category");
+        System.out.println(BRIGHT_YELLOW + "  5. " + RESET + "Surplus What-if for a category");
+
+
         System.out.println();
 
         // Controls section with matching bar
         printFullWidthSectionHeader("CONTROLS", BRIGHT_GREEN, width);
         System.out.println();
 
-        System.out.println(BRIGHT_YELLOW + "  4. " + RESET + "View the Predictions for another year");
-        System.out.println(BRIGHT_YELLOW + "  5. " + RESET + "Return to Finances Menu");
-        System.out.println(BRIGHT_YELLOW + "  6. " + RESET + "Return to Main Menu");
+        System.out.println(BRIGHT_YELLOW + "  6. " + RESET + "View the Predictions for another year");
+        System.out.println(BRIGHT_YELLOW + "  7. " + RESET + "Return to Finances Menu");
+        System.out.println(BRIGHT_YELLOW + "  8. " + RESET + "Return to Main Menu");
         System.out.println();
 
         // Bottom divider + prompt (plain color)
