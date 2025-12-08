@@ -113,45 +113,7 @@ final class MainMenu {
 		RETURN_TO_MENU
 	}
 
-	/**
-	 * Handles recovery of the user's account
-	 * 
-	 * @param userNameRecovering - the account that the user is trying to recover
-	 * @return AccountRecoverState - an enum that tells us what happened when the user tried recovering their account
-	 * 
-	 * @author Shazadul Islam
-	 */
-	private AccountRecoverState accountRecover(String usernameRecovering) {
-		//If the account does not exist...
-		String secretQuestion = moduleHub.getUserSecretQuestion(usernameRecovering);
-		if (secretQuestion == null) {
-			clearConsole();
-			//Return the user to the login menu
-			System.out.println("No account with the username, " + usernameRecovering + ", exists.");
-			return AccountRecoverState.USERNAME_DNE;
-		}
-
-		//If the account exists...
-		clearConsole();
-		//Print out the user's security question
-		System.out.println("To recover your account, please answer the security question for the account, " + usernameRecovering + ", below and then press enter.");
-		System.out.println(secretQuestion);
-		//Get the user's answer to their security question
-		System.out.print("Answer: ");
-		String loginSecretAnswer = scanner.nextLine();
-
-		//If the user's answer to their account's security question is incorrect
-		if (!moduleHub.verifyUserSecretAnswer(usernameRecovering,loginSecretAnswer)) {
-			clearConsole();
-			System.out.println("Your answer to the security question was incorrect.");
-			return AccountRecoverState.INCORRECT_ANSWER;
-		}
-
-		//If the user's answer to their account's security question is correct
-		return changePassword(usernameRecovering, "login");
-	}
-
-	private AccountRecoverState changePassword(String usernameChanging, String whichMenu) {
+	private AccountRecoverState recoveryChangePassword(String usernameChanging, String verifiedSecQuestion, String verifiedSecAnswer) {
 		//If the user's answer to their account's security question is correct
 		while (true) {
 			clearConsole();
@@ -163,40 +125,40 @@ final class MainMenu {
 			System.out.println();
 			System.out.println("Enter a new password for the account, " + usernameChanging + ", below and then press enter.");
 			System.out.print("  New Password: ");
-			String loginSecretPassword = scanner.nextLine();
+			String recoverNewPassword = scanner.nextLine();
 
-			if (!(moduleHub.followsPasswordRules(loginSecretPassword))) {
+			if (!(moduleHub.followsPasswordRules(recoverNewPassword))) {
 				clearConsole();
 				System.out.println("Password does not follow the required format.");
 				System.out.println("What would you like to do?");
 				System.out.println("  1. Try creating a different password for your account, " + usernameChanging + ", again");
-				System.out.println("  2. Return to the " + whichMenu + " menu");
+				System.out.println("  2. Return to the login menu");
 				System.out.println("  3. Exit the application");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 
-				int secretPasswordChoice = getUserChoice(3);
-				if (secretPasswordChoice == 1) {
+				int recoverUserChoice = getUserChoice(3);
+				if (recoverUserChoice == 1) {
 					continue;
 				}
-				else if (secretPasswordChoice == 2) {
+				else if (recoverUserChoice == 2) {
 					return AccountRecoverState.RETURN_TO_MENU;
 				}
-				else if (secretPasswordChoice == 3) {
+				else if (recoverUserChoice == 3) {
 					exitApplication();
 				}
 			}
 
 			System.out.println();
 			System.out.println("Re-enter your password below to confirm it and then press enter. ");
-			System.out.print("Confirm your password: ");
-			String secretConfirmPassword = scanner.nextLine();
+			System.out.print("  Confirm your password: ");
+			String recoverConfirmPassword = scanner.nextLine();
 
-			if (!secretConfirmPassword.equals(loginSecretPassword)) {
+			if (!recoverConfirmPassword.equals(recoverNewPassword)) {
 				clearConsole();
 				System.out.println("Passwords do not match.");
 				System.out.println("What would you like to do?");
 				System.out.println("  1. Try creating a password for your account, " + usernameChanging + ",again");
-				System.out.println("  2. Return to the " + whichMenu + " menu");
+				System.out.println("  2. Return to the login menu");
 				System.out.println("  3. Exit the application");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 
@@ -215,21 +177,21 @@ final class MainMenu {
 			//Attempt to reset
 			//returns true if password passes requirements and was saved
 			//returns false if password failed requirements and was not saved
-			boolean passwordAccepted = moduleHub.resetUserPassword(usernameChanging, null, null);
+			boolean changedPasswordAccepted = moduleHub.resetUserPassword(usernameChanging, verifiedSecAnswer, recoverNewPassword);
 
 			//If their new password is valid...
-			if (passwordAccepted) {
+			if (changedPasswordAccepted) {
 				clearConsole();
 				System.out.println("The password for the account, " + usernameChanging + ", has been successfully changed.");
 				return AccountRecoverState.SUCCESSFUL_PASSWORD_CHANGE;
 			}
 
-			//If their new password is invalid..
+			//If their new password is invalid..(just for safety)
 			clearConsole();
 			System.out.println("Your new password did not meet the requirements.");
 			System.out.println("What would you like to do?");
 			System.out.println("  1. Try creating a new password for your account, " + usernameChanging + ", again");
-			System.out.println("  2. Return to the " + whichMenu + " menu");
+			System.out.println("  2. Return to the login menu");
 			System.out.println("  3. Exit the application");
 			System.out.print("Please enter the number associated with your desired option and then press enter: ");
 			int recoverUserChoice = getUserChoice(3);
@@ -247,6 +209,44 @@ final class MainMenu {
 				exitApplication();
 			}
 		}
+	}
+
+	/**
+	 * Handles recovery of the user's account
+	 * 
+	 * @param userNameRecovering - the account that the useris trying to recover
+	 * @return AccountRecoverState - an enum that tells us what happened when the user tried recovering their account
+	 * 
+	 * @author Shazadul Islam
+	 */
+	private AccountRecoverState accountRecover(String usernameRecovering) {
+		//If the account does not exist...
+		clearConsole();
+		String secureQuestion = moduleHub.getUserSecretQuestion(usernameRecovering);
+		if (secureQuestion == null) {
+			clearConsole();
+			//Return the user to the login menu
+			System.out.println("No account with the username, " + usernameRecovering + ", exists.");
+			return AccountRecoverState.USERNAME_DNE;
+		}
+
+		//If the account exists...
+		//Print out the user's security question
+		System.out.println("To recover your account, please answer the security question for the account, " + usernameRecovering + ", below and then press enter.");
+		System.out.println(secureQuestion);
+		//Get the user's answer to their security question
+		System.out.print("Answer: ");
+		String secureAnswer = scanner.nextLine();
+
+		//If the user's answer to the their account's security question is incorrect
+		if (!moduleHub.verifyUserSecretAnswer(usernameRecovering, secureAnswer)) {
+			clearConsole();
+			System.out.println("Your answer to the security question was incorrect.");
+			return AccountRecoverState.INCORRECT_ANSWER;
+		}
+
+		//If the user's answer to their account's security question is correct
+		return recoveryChangePassword(usernameRecovering, secureQuestion, secureAnswer  );
 	}
 
 	/**
@@ -292,7 +292,6 @@ final class MainMenu {
 			switch(loginRetryChoice) {
 			case 1:
 				continue;
-
 				//If the user forgot their password, go through the account recovery process
 			case 2: 
 				//Run account recovery process with username of their choice
@@ -314,9 +313,8 @@ final class MainMenu {
 					loginSecretUsername = scanner.nextLine();
 				}
 
-				boolean isNotDoneRecovering = true;
 				int retries = 0;
-				while (isNotDoneRecovering) {
+				while (true) {
 					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
@@ -374,14 +372,13 @@ final class MainMenu {
 							System.out.print("Please enter the number associated with your desired option and then press enter: ");
 
 							int exitChoice = getUserChoice(2);
-							if (exitChoice == 2) {
-								exitApplication();
+							if (exitChoice == 1) {
+								return null;
 							} 
 							else {
-								return null; 
+								exitApplication(); 
 							} 
 						}
-
 						break;
 
 					case SUCCESSFUL_PASSWORD_CHANGE:
@@ -836,7 +833,7 @@ final class MainMenu {
 			moduleHub.callStorage("listyears", currentUser, 0);
 			System.out.print("Please enter the year you would like reports about below and then press enter: ");
 			int year = getUserYear();
-			
+
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
 				System.out.println("There is no data for " + year);
@@ -846,7 +843,7 @@ final class MainMenu {
 				System.out.println("  3. Return to Main Menu");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 				int userChoice = getUserChoice(3);
-				
+
 				if (userChoice == 1) {
 					continue;
 				}
@@ -913,7 +910,7 @@ final class MainMenu {
 			moduleHub.callStorage("listyears", currentUser, 0);
 			System.out.print("Please enter the year you would like predictions about below and then press enter: ");
 			int year = getUserYear();
-			
+
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
 				System.out.println("There is no data for " + year);
@@ -923,7 +920,7 @@ final class MainMenu {
 				System.out.println("  3. Return to Main Menu");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 				int userChoice = getUserChoice(3);
-				
+
 				if (userChoice == 1) {
 					continue;
 				}
@@ -993,7 +990,7 @@ final class MainMenu {
 					moduleHub.callStorage("listyears", currentUser, 0);
 					System.out.print("Enter the year of the CSV file you would like to delete: ");
 					int year = getUserYear();
-					
+
 					if (!moduleHub.hasDataForYear(currentUser, year)) {
 						clearConsole();
 						System.out.println("There is no data for " + year);
@@ -1003,7 +1000,7 @@ final class MainMenu {
 						System.out.println("  3. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
 						userChoice = getUserChoice(3);
-						
+
 						if (userChoice == 1) {
 							continue;
 						}
@@ -1014,7 +1011,7 @@ final class MainMenu {
 							return true;
 						}
 					}
-					
+
 					moduleHub.callStorage("delete", currentUser, year);
 
 					clearConsole();
@@ -1051,6 +1048,105 @@ final class MainMenu {
 		}
 	}
 
+	private AccountRecoverState decideChangePassword(String usernameChanging, String oldCurrentPassword) {
+		//If the user's answer to their account's security question is correct
+		while (true) {
+			clearConsole();
+			//Let them enter a new password
+			System.out.println("Password Rules: ");
+			System.out.println("• Cannot be empty or only whitespace");
+			System.out.println("• Cannot begin or end with a space");
+			System.out.println("• Must be at least 5 characters and at most 30 characters");
+			System.out.println();
+			System.out.println("Enter a new password for the account, " + usernameChanging + ", below and then press enter.");
+			System.out.print("  New Password: ");
+			String decideNewPassword = scanner.nextLine();
+
+			if (!(moduleHub.followsPasswordRules(decideNewPassword))) {
+				clearConsole();
+				System.out.println("Password does not follow the required format.");
+				System.out.println("What would you like to do?");
+				System.out.println("  1. Try creating a different password for your account, " + usernameChanging + ", again");
+				System.out.println("  2. Return to the account settings menu");
+				System.out.println("  3. Exit the application");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+
+				int decideUserChoice = getUserChoice(3);
+				if (decideUserChoice == 1) {
+					continue;
+				}
+				else if (decideUserChoice == 2) {
+					return AccountRecoverState.RETURN_TO_MENU;
+				}
+				else if (decideUserChoice == 3) {
+					exitApplication();
+				}
+			}
+
+			System.out.println();
+			System.out.println("Re-enter your password below to confirm it and then press enter. ");
+			System.out.print("  Confirm your password: ");
+			String recoverConfirmPassword = scanner.nextLine();
+
+			if (!recoverConfirmPassword.equals(decideNewPassword)) {
+				clearConsole();
+				System.out.println("Passwords do not match.");
+				System.out.println("What would you like to do?");
+				System.out.println("  1. Try creating a password for your account, " + usernameChanging + ",again");
+				System.out.println("  2. Return to the account settings menu");
+				System.out.println("  3. Exit the application");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+
+				int decideComparePassRetryChoice = getUserChoice(3);
+				if (decideComparePassRetryChoice == 1) {
+					continue;
+				}
+				else if (decideComparePassRetryChoice == 2) {
+					return AccountRecoverState.RETURN_TO_MENU;
+				}
+				else if (decideComparePassRetryChoice == 3) {
+					exitApplication();
+				}
+			}
+
+			//Attempt to changed password with old password
+			//returns true if password passes requirements and was saved
+			//returns false if password failed requirements and was not saved
+
+			boolean changedPasswordAccepted = moduleHub.changePasswordWithOldPassword(usernameChanging, oldCurrentPassword, decideNewPassword);
+
+			//If their new password is valid...
+			if (changedPasswordAccepted) {
+				clearConsole();
+				System.out.println("The password for the account, " + usernameChanging + ", has been successfully changed.");
+				return AccountRecoverState.SUCCESSFUL_PASSWORD_CHANGE;
+			}
+
+			//If their new password is invalid..(just for safety)
+			clearConsole();
+			System.out.println("Your new password did not meet the requirements.");
+			System.out.println("What would you like to do?");
+			System.out.println("  1. Try creating a new password for your account, " + usernameChanging + ", again");
+			System.out.println("  2. Return to the account settings menu");
+			System.out.println("  3. Exit the application");
+			System.out.print("Please enter the number associated with your desired option and then press enter: ");
+			int decideUserChoice = getUserChoice(3);
+
+			//Try creating a new password for your account again
+			if (decideUserChoice == 1) {
+				continue;
+			}
+			//Return to login menu
+			else if (decideUserChoice == 2) {
+				return AccountRecoverState.RETURN_TO_MENU;
+			}
+			//Exit the application
+			else if (decideUserChoice == 3) {
+				exitApplication();
+			}
+		}
+	}
+
 	/**
 	 * Handles the changing of the user's password
 	 * 
@@ -1068,9 +1164,9 @@ final class MainMenu {
 			//Check if the password we just received is valid
 			boolean validPass = moduleHub.verifyPassword(currentUsername, currentPassword);
 
-			//If the current password is valid, then change the Password
+			//If the current password is valid, then change Password
 			if (validPass) {
-				AccountRecoverState currentPassChange = changePassword(currentUsername, "account settings");
+				AccountRecoverState currentPassChange = decideChangePassword(currentUsername, currentPassword);
 				switch (currentPassChange) {
 				case SUCCESSFUL_PASSWORD_CHANGE:
 					System.out.print("Press enter when you are ready to return to the account settings menu...");
@@ -1102,13 +1198,10 @@ final class MainMenu {
 				//If the user forgot their password, go through the account recovery process
 			case 2: 
 				//Run account recovery process with the username their logged in as
-				clearConsole();
-
 				String loginSecretUsername = currentUsername;
 
-				boolean isNotDoneRecovering = true;
 				int retries = 0;
-				while (isNotDoneRecovering) {
+				while (true) {
 					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
@@ -1287,9 +1380,8 @@ final class MainMenu {
 
 				String loginSecretUsername = currentUsername;
 
-				boolean isNotDoneRecovering = true;
 				int retries = 0;
-				while (isNotDoneRecovering) {
+				while (true) {
 					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
