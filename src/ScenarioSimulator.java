@@ -31,7 +31,16 @@ public class ScenarioSimulator {
      * No calculations except:
      *     net = income + expenses   (expenses are negative)
      *
-     * @return formatted summary string
+     * All numbers come from DataReader, DeficitSolver, and SurplusOptimizer.
+     * @bug 68237214 Fixed incorrect deficit detection. Previously, Prediction Summary and DeficitSolver reported 
+     * "You do not currently have a deficit" even when total expenses exceeded total income (e.g., overspending by $7000 in test CSV).
+     * Cause: net balance comparison used incorrect sign logic.
+     * Fix: netBalance &lt; 0 now correctly identifies deficit and reports deficit = -netBalance.
+     * @since December 2 2025, 12:30 AM
+     * @bug 68237256 Fixed: Removed negative sign from printed expenses. Expenses are already understood as money spent, so showing a '-' is unnecessary 
+     * and can confuse the user. Values are still stored correctly internally.
+     * @since December 2 2025, 2:40 AM
+     * @return formatted summary text for the UI to display
      * @author Tanzina Sumona
      */
     public String buildFinancialSummary() { 
