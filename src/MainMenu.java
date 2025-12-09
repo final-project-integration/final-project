@@ -873,13 +873,96 @@ final class MainMenu {
 	 * @author Shazadul Islam
 	 */ 
 	private boolean reportsMenu(String currentUser) {
+		boolean plzEnterYearInRangeRep = false;
+		boolean plzEnterValidYearRep = false;
 		while(true) {
 			clearConsole();
 			moduleHub.callStorage("listyears", currentUser, 0);
 			System.out.println();
 			System.out.println("Please enter the year you would like reports about below and then press enter. ");
+			if (plzEnterYearInRangeRep) {
+				System.out.println("Please make sure that the year you enter is between 1900 and 2100.");
+				plzEnterYearInRangeRep = false;
+			}
+			else if (plzEnterValidYearRep) {
+				System.out.println("Please make sure that the year you enter is digits only(e.g., 1999 or 2024).");
+				plzEnterValidYearRep = false;
+			}
+			System.out.println("If you have changed your mind about viewing the reports of a year, just press enter without any input.");
 			System.out.print("Year that you would like reports about: ");
-			int year = getUserYear();
+			String reportsInput = scanner.nextLine();
+			
+			if (reportsInput.trim().isEmpty()) {
+				clearConsole();
+				System.out.println("What would you like to do?");
+				System.out.println("  1. View the reports of a different year");
+				System.out.println("  2. Return to Finance Menu");
+				System.out.println("  3. Return to Main Menu");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				int exitChoice = getUserChoice(3);
+
+				if (exitChoice == 1) {
+					continue;
+				}
+				else if (exitChoice == 2) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+			
+			int year;
+			try {
+				year = Integer.parseInt(reportsInput);
+				if ((year < 1900) || (year > 2100)) {
+					clearConsole();
+					if (year < 1900) {
+					    System.out.println("The year you entered is too far into the past. The earliest allowed year is 1900.");
+					} 
+					else if (year > 2100) {
+					    System.out.println("The year you entered is too far into the future. The latest allowed year is 2100.");
+					}
+					System.out.println("What would you like to do?");
+					System.out.println("  1. View the reports of a different year");
+					System.out.println("  2. Return to Finance Menu");
+					System.out.println("  3. Return to Main Menu");
+					System.out.print("Please enter the number associated with your desired option and then press enter: ");
+					int rangeYearChoice = getUserChoice(3);
+
+					if (rangeYearChoice == 1) {
+						plzEnterYearInRangeRep = true;
+						continue;
+					}
+					else if (rangeYearChoice == 2) {
+						return false;
+					}
+					else {
+						return true;
+					}
+				}
+				
+			} catch (NumberFormatException e) {
+				clearConsole();
+				System.out.println("Your input, "+ reportsInput + " , is not a valid year.");
+				System.out.println("What would you like to do?");
+				System.out.println("  1. View the reports of a different year");
+				System.out.println("  2. Return to Finance Menu");
+				System.out.println("  3. Return to Main Menu");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				int invalidYearChoice = getUserChoice(3);
+
+				if (invalidYearChoice == 1) {
+					plzEnterValidYearRep = true;
+					continue;
+				}
+				else if (invalidYearChoice == 2) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
 
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
@@ -952,13 +1035,96 @@ final class MainMenu {
 	 * @author Shazadul Islam
 	 */ 
 	private boolean predictionMenu(String currentUser) {
+		boolean plzEnterYearInRangePred = false;
+		boolean plzEnterValidYearPred = false;
 		while(true) {
 			clearConsole();
 			moduleHub.callStorage("listyears", currentUser, 0);
 			System.out.println();
-			System.out.println("Please enter the year you would like predictions about below and then press enter. ");
+			System.out.println("Please enter the year you would like predictions about below and then press enter.");
+			if (plzEnterYearInRangePred) {
+				System.out.println("Please make sure that the year you enter is between 1900 and 2100.");
+				plzEnterYearInRangePred = false;
+			}
+			else if (plzEnterValidYearPred) {
+				System.out.println("Please make sure that the year you enter is digits only(e.g., 1999 or 2024).");
+				plzEnterValidYearPred = false;
+			}
+			System.out.println("If you have changed your mind about viewing the predictions of a year, just press enter without any input.");
 			System.out.print("Year that you would like predictions about: ");
-			int year = getUserYear();
+			String predictionInput = scanner.nextLine();
+			
+			if (predictionInput.trim().isEmpty()) {
+				clearConsole();
+				System.out.println("What would you like to do?");
+				System.out.println("  1. View the predictions of a different year");
+				System.out.println("  2. Return to Finance Menu");
+				System.out.println("  3. Return to Main Menu");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				int exitChoice = getUserChoice(3);
+
+				if (exitChoice == 1) {
+					continue;
+				}
+				else if (exitChoice == 2) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+			
+			int year;
+			try {
+				year = Integer.parseInt(predictionInput);
+				if ((year < 1900) || (year > 2100)) {
+					clearConsole();
+					if (year < 1900) {
+					    System.out.println("The year you entered is too far into the past. The earliest allowed year is 1900.");
+					} 
+					else if (year > 2100) {
+					    System.out.println("The year you entered is too far into the future. The latest allowed year is 2100.");
+					}
+					System.out.println("What would you like to do?");
+					System.out.println("  1. View the predictions of a different year");
+					System.out.println("  2. Return to Finance Menu");
+					System.out.println("  3. Return to Main Menu");
+					System.out.print("Please enter the number associated with your desired option and then press enter: ");
+					int rangeYearChoice = getUserChoice(3);
+
+					if (rangeYearChoice == 1) {
+						plzEnterYearInRangePred = true;
+						continue;
+					}
+					else if (rangeYearChoice == 2) {
+						return false;
+					}
+					else {
+						return true;
+					}
+				}
+				
+			} catch (NumberFormatException e) {
+				clearConsole();
+				System.out.println("Your input, "+ predictionInput + " , is not a valid year.");
+				System.out.println("What would you like to do?");
+				System.out.println("  1. View the predictions of a different year");
+				System.out.println("  2. Return to Finance Menu");
+				System.out.println("  3. Return to Main Menu");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				int invalidYearChoice = getUserChoice(3);
+
+				if (invalidYearChoice == 1) {
+					plzEnterValidYearPred = true;
+					continue;
+				}
+				else if (invalidYearChoice == 2) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
 
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
@@ -968,12 +1134,12 @@ final class MainMenu {
 				System.out.println("  2. Return to Finance Menu");
 				System.out.println("  3. Return to Main Menu");
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
-				int userChoice = getUserChoice(3);
+				int noDataChoice = getUserChoice(3);
 
-				if (userChoice == 1) {
+				if (noDataChoice == 1) {
 					continue;
 				}
-				else if (userChoice == 2) {
+				else if (noDataChoice == 2) {
 					return false;
 				}
 				else {
@@ -982,15 +1148,14 @@ final class MainMenu {
 			}
 
 			boolean isWorkingWithYear = true;
-			int userChoice;
 			while (isWorkingWithYear) {
 				clearConsole();
 				// Pretty predictions screen
 				BeautifulDisplay.printPredictionsMenu(year);
 
-				userChoice = getUserChoice(8);
+				int workingYearChoice = getUserChoice(8);
 
-				switch (userChoice) {
+				switch (workingYearChoice) {
 				case 1:
 					clearConsole();
 					moduleHub.runPrediction(currentUser, year, "summary");
@@ -1077,24 +1242,24 @@ final class MainMenu {
 		while(true) {
 			clearConsole();
 			BeautifulDisplay.printDataManagementMenu();
-			int userChoice = getUserChoice(3);
+			int dataManageChoice = getUserChoice(3);
 
-			switch (userChoice) {
+			switch (dataManageChoice) {
 			case 1:
-				boolean plzEnterYearInRange = false;
-				boolean plzEnterValidYear = false;
+				boolean plzEnterYearInRangeDel = false;
+				boolean plzEnterValidYearDel = false;
 				while (true) {
 					clearConsole();
 					moduleHub.callStorage("listyears", currentUser, 0);
 					System.out.println();
 					System.out.println("Please enter the year of the CSV file you would like to delete below and then press enter. ");
-					if (plzEnterYearInRange) {
+					if (plzEnterYearInRangeDel) {
 						System.out.println("Please make sure that the year you enter is between 1900 and 2100.");
-						plzEnterYearInRange = false;
+						plzEnterYearInRangeDel = false;
 					}
-					else if (plzEnterValidYear) {
+					else if (plzEnterValidYearDel) {
 						System.out.println("Please make sure that the year you enter is digits only(e.g., 1999 or 2024).");
-						plzEnterValidYear = false;
+						plzEnterValidYearDel = false;
 					}
 					System.out.println("If you have decided not to delete a CSV file anymore, just press enter without any input.");
 					System.out.print("Year of the CSV file you would like to delete or exit file deletion: ");
@@ -1107,12 +1272,12 @@ final class MainMenu {
 						System.out.println("  2. Return to Finance Menu");
 						System.out.println("  3. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						userChoice = getUserChoice(3);
+						int exitChoice = getUserChoice(3);
 
-						if (userChoice == 1) {
+						if (exitChoice == 1) {
 							continue;
 						}
-						else if (userChoice == 2) {
+						else if (exitChoice == 2) {
 							return false;
 						}
 						else {
@@ -1136,13 +1301,13 @@ final class MainMenu {
 							System.out.println("  2. Return to Finance Menu");
 							System.out.println("  3. Return to Main Menu");
 							System.out.print("Please enter the number associated with your desired option and then press enter: ");
-							userChoice = getUserChoice(3);
+							int rangeYearChoice = getUserChoice(3);
 
-							if (userChoice == 1) {
-								plzEnterYearInRange = true;
+							if (rangeYearChoice == 1) {
+								plzEnterYearInRangeDel = true;
 								continue;
 							}
-							else if (userChoice == 2) {
+							else if (rangeYearChoice == 2) {
 								return false;
 							}
 							else {
@@ -1158,13 +1323,13 @@ final class MainMenu {
 						System.out.println("  2. Return to Finance Menu");
 						System.out.println("  3. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						userChoice = getUserChoice(3);
+						int invalidYearChoice = getUserChoice(3);
 
-						if (userChoice == 1) {
-							plzEnterValidYear = true;
+						if (invalidYearChoice == 1) {
+							plzEnterValidYearDel = true;
 							continue;
 						}
-						else if (userChoice == 2) {
+						else if (invalidYearChoice == 2) {
 							return false;
 						}
 						else {
@@ -1180,12 +1345,12 @@ final class MainMenu {
 						System.out.println("  2. Return to Finance Menu");
 						System.out.println("  3. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						userChoice = getUserChoice(3);
+						int noDataChoice = getUserChoice(3);
 
-						if (userChoice == 1) {
+						if (noDataChoice == 1) {
 							continue;
 						}
-						else if (userChoice == 2) {
+						else if (noDataChoice == 2) {
 							return false;
 						}
 						else {
@@ -1200,9 +1365,9 @@ final class MainMenu {
 					System.out.println("  1. Yes");
 					System.out.println("  2. No");
 					System.out.print("Please enter the number associated with your desired option and then press enter: ");
-					userChoice = getUserChoice(2);
+					int deleteAnotherChoice = getUserChoice(2);
 
-					if (userChoice == 1) {
+					if (deleteAnotherChoice == 1) {
 						continue;
 					}
 					else {
@@ -1211,9 +1376,9 @@ final class MainMenu {
 						System.out.println("  1. Return to Finance Menu");
 						System.out.println("  2. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						userChoice = getUserChoice(2);
+						int returnChoice = getUserChoice(2);
 
-						if (userChoice == 1) {
+						if (returnChoice == 1) {
 							return false;
 						}
 						else {
