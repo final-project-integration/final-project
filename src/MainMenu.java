@@ -668,7 +668,6 @@ final class MainMenu {
 			switch (userChoice) {
                 case 1:
                     boolean uploadingFile = true;
-
                     while (uploadingFile) {
                         clearConsole();
                         System.out.println("--- CSV Loader ---");
@@ -682,6 +681,8 @@ final class MainMenu {
                         String fileName = file.getName();
 
                         // fixes StringIndexOutOfBoundsException for short names
+                        // fixes StringIndexOutOfBoundsException: Range [0, 4) out of bounds for length
+                        // Extract year from filename
                         Integer year = null;
                         if (fileName != null && fileName.length() >= 4) {
                             String firstFour = fileName.substring(0, 4);
@@ -882,7 +883,7 @@ final class MainMenu {
 
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
-				System.out.println("There is no data for " + year);
+				System.out.println("There is no data for " + year + ".");
 				System.out.println("What would you like to do?");
 				System.out.println("  1. View the reports of a different year");
 				System.out.println("  2. Return to Finance Menu");
