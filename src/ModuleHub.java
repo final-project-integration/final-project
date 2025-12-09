@@ -324,6 +324,7 @@ public class ModuleHub {
                         continue;
                     }
 
+                    // Lightweight adapter object with the getters CrossFieldValidator expects
                     txs.add(new Object() {
                         public String getDate()     { return date; }
                         public Double getAmount()   { return amount; }
@@ -347,8 +348,6 @@ public class ModuleHub {
                 // Never block upload on duplicate check – best-effort only
             }
 
-            // If we reach here no hard errors; import into StorageManager
-            storageModule.importCSV(username, year, csvFile.getPath());
 
             // Return the full validation result (may contain warnings about duplicates)
             return csvValidation;
@@ -362,6 +361,34 @@ public class ModuleHub {
         }
     }
 
+    /**
+     * Finalizes a CSV upload by actually importing the file into StorageManager.
+     * This is called AFTER uploadCSVData has validated the file and after
+     * the user confirms they want to proceed (even if duplicates exist).
+     *
+     * @param username    the user who owns the data
+     * @param year        the year represented by the CSV
+     * @param csvFilePath the path or filename the user entered
+     * @return true if import succeeds, false otherwise
+     *
+     * @author Denisa Cakoni
+     */
+    public boolean finalizeCsvUpload(String username, int year, String csvFilePath) {
+        // Re-resolve the file in the same way as uploadCSVData
+        File csvFile = resolveCsvFile(csvFilePath);
+        if (csvFile == null || !csvFile.exists()) {
+            System.out.println("[ModuleHub] CSV file not found during import: " + csvFilePath);
+            return false;
+        }
+
+        try {
+            storageModule.importCSV(username, year, csvFile.getPath());
+            return true;
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Storage", e);
+            return false;
+        }
+    }
 
     /**
      * Tries to resolve the CSV file path in a few common locations:
