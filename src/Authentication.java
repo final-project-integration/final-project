@@ -1,18 +1,30 @@
 import java.security.MessageDigest;
 
 /**
- * TEAM: ACCOUNTS
- * The Authentication class handles all security-related functionality for user accounts,
- * including verifying credentials, hashing passwords and secret answers, validating user input,
- * and retrieving authentication records from Storage. It ensures that no sensitive information
- * such as passwords or secret answers is ever stored in plain text.
- * Authentication uses SHA-256 hashing to secure all sensitive fields.
+ * The Authentication class handles all security-related functionality for user accounts including:
+ * - Hashing passwords and secret answers using SHA-256
+ * - Validating username and password formats
+ * - Checking secret answers for account recovery.
+ * - Accessing stored AuthRecord objects through Storage.
+ * 
+ * Authentication makes sure that no plain-text passwords or secret answers are
+ * stored.
+ * 
+ * The class does not store users itself. It depends on Storage for persistence and on
+ * Accounts for session management.
+ * 
+ * Required Storage interactions:
+ * - getAuthInfo() for authentication and memory.
+ * - addAuthRecord() indirectly (used by Accounts for password changes).
+ *  
  * @author  Zhengjun Xie
  * @author  Andony Ariza
  * @author  Jessica Ramirez
  * @author  Guarav Banepali
  * @since   2025-11-19
- *  */
+ * 
+ */
+
 
 
 public class Authentication {
@@ -31,16 +43,12 @@ public class Authentication {
     }
 
     /**
-     * ValidateCredentials () = login
-     * Validates user credentials by comparing the stored hashed password
-     * with a hashed version of the provided plain-text password.
-     *
-     * If validation succeeds, this method also updates the internal session
-     * state by setting the current user and marking the session as active.
+     * Validates login attempts by hashing the provided plain text password and 
+     * comparing it with the stored hashed password retrieved from Storage.getAuthInfo().
      *
      * @param username the username of the account
      * @param password the plain text password entered by the user
-     * @return true if the credentials match, or false otherwise
+     * @return true if the stored and computed hashes match, or false otherwise
      * @author Zhengjun Xie
      */
 
@@ -56,11 +64,19 @@ public class Authentication {
 
     /**
      * Checks whether the provided password matches the stored hashed password
-     * for the given username.
+     * for the given username. Uses Storage.getAuthInfo() to retrieve the record.
+     * 
+     * Behavior:
+     * - Retrieves the user's AuthRecord using Storage.getAuthInfo().
+     * - If no record exists (rec == null), the method returns false immediately.
+     * - Otherwise, the provided password is hashed and compared to the stored hash.
+     * 
+     * This method is used by Accounts.changePassword() when verifying a user's identity
+     * through their old password. 
      *
      * @param username the username whose password is being checked
      * @param password the plain-text password entered by the user
-     * @return true if the password matches the stored hash or false otherwise
+     * @return true if the user exists and the hashed password matches, or false otherwise
      * @author Zhengjun Xie
      */
 
@@ -72,10 +88,17 @@ public class Authentication {
     }
 
     /**
-     * Checks whether the given username exists in Storage.
+     * Checks whether the given username exists in persistent Storage.
      *
+     * Behavior:
+     * - Calls Storage.getAuthInfo(username) to look up the user's AuthRecord.
+     * - If getAuthInfo() returns null, the username does not exist. 
+     * - Otherwise, the username is already registered. 
+     * 
+     * This method supports early validation during account creation.
+     *  
      * @param username the username to look up
-     * @return true if the username exists, or false otherwise
+     * @return true if the username exists in storage, or false otherwise
      * @author Zhengjun Xie
      */
 
@@ -87,10 +110,17 @@ public class Authentication {
     /**
      * Validates a user's secret answer by hashing the user's answer and comparing
      * it with the stored hashed secret answer.
+     * 
+     * Behavior:
+     * - Retrieves the user's AuthRecord using Storage.getAuthInfo().
+     * - If no record exists (rec == null), the method returns false immediately.
+     * - Otherwise, the provided answer is hashed and compared with the stored hash. 
+     * 
+     * Used by Accounts.changePassword() for password recovery when user is not signed in.
      *
      * @param username the username of the account
      * @param answer   the plain-text secret answer entered by the user
-     * @return true if the hashed answers match; false otherwise
+     * @return true if the user exists in storage and hashed answers match, or false otherwise
      * @author Zhengjun Xie
      */
 
@@ -104,8 +134,12 @@ public class Authentication {
     /**
      * Retrieves a user's stored secret question for password recovery.
      *
+     * Behavior:
+     * - Looks up the user's AuthRecord using Storage.getAuthInfo().
+     * - If no record exists (rec == null), the method returns null immediately.
+     * - Otherwise, it returns the plain-text secret question stored in the record. 
      * @param username the username whose secret question is requested
-     * @return the stored secret question, or null if the user DNE
+     * @return the stored secret question, or null if the user does not exist
      * @author Zhengjun Xie
      */
 
@@ -120,10 +154,10 @@ public class Authentication {
     /**
      * Checks if a field is blank (null, empty, or only whitespace).
      * This supports early validation so the user is immediately notified
-     * when attempting to enter incomplete form data.
+     * when attempting to submit incomplete data.
      *
      * @param field the text to check
-     * @return true if the field is blank, false otherwise
+     * @return true if the field is blank, or false otherwise
      * @author Jessica Ramirez
      */
 
@@ -133,9 +167,15 @@ public class Authentication {
         
     /**
      * Hashes a plain-text string (password or secret answer) using SHA-256.
+     * 
+     * Behavior: 
+     * - Converts the input string into a SHA-256 hash.
+     * - Returns the hexadecimal string representation of the hash.
+     * - If any exception occurs during hashing, the method returns an 
+     * empty string ("") as a fallback value. 
      *
      * @param plain the plain-text string to be hashed
-     * @return the hashed output in hexadecimal format
+     * @return the SHA-256 hash as a hex string, or "" if hashing fails
      * @author Zhengjun Xie
      */
 
@@ -155,42 +195,90 @@ public class Authentication {
     }
 
     /**
-     * Stores authentication related data for a single user, including the hashed
-     * password, the secret question, and the hashed secret answer.
-     * No sensitive information is kept in plain text.
-     *
+     * A data container storing authentication information for a single user.
+     * 
+     * Fields:
+     * - hashedPassword (SHA-256 hashed password).
+     * - secretQuestion (stored as plain text).
+     * - hashedSecretAnswer (SHA-256 hashed version of the recovery answer).
+     * 
+     * No sensitive fields (password or secret answer) are ever stored in plain text.
+     * The secret question is stored normally because it does not reveal sensitive data.
+     * 
+     * Stored and retrieved through Storage using addAuthRecord(), getAuthInfo(), and removeAccount().
+ 
      * @author Zhengjun Xie
      */
 
-    
     public static class AuthRecord {
         private String hashedPassword;
         private String secretQuestion;
         private String hashedSecretAnswer;
+        
+        /**
+         * Creates a new AuthRecord storing hashed password, secret question,
+         * and hashed secret answer.
+         *
+         * @param hp the SHA-256 hashed password
+         * @param sq the plain-text secret question
+         * @param hsa the SHA-256 hashed secret answer
+         */
+
 
         public AuthRecord(String hp, String sq, String hsa) {
             this.hashedPassword = hp;
             this.secretQuestion = sq;
             this.hashedSecretAnswer = hsa;
         }
-
+        
+        /**
+         * Retrieves the stored hashed password.
+         * @return the SHA-256 hashed password string
+         */
+        
         public String getHashedPassword() { 
             return hashedPassword; 
         }
+        
+        /**
+         * Retrieves the stored secret recovery question. 
+         * @return the secret question in plain text
+         */
         public String getSecretQuestion() { 
             return secretQuestion; 
         }
+        
+        /** 
+         * Retrieves the stored hashed secret answer.
+         * @return the SHA-256 hashed secret answer
+         */
         public String getHashedSecretAnswer() { 
             return hashedSecretAnswer; 
         }
+        
+        /**
+         * Updates the stored hashed password.
+         * @param hashed the new hashed password value
+         */
 
         public void setHashedPassword(String hashed) {
             this.hashedPassword = hashed;
         }
+        
+        /**
+         * Updates the user's secret recovery question.
+         * @param question the new secret question in plain text
+         */
 
         public void setSecretQuestion(String question) {
             this.secretQuestion = question;
         }
+        
+        /**
+         * Updates the stored hashed secret answer.
+         *
+         * @param answer the new hashed secret answer
+         */
 
         public void setHashedSecretAnswer(String answer) {
             this.hashedSecretAnswer = answer;
@@ -203,7 +291,7 @@ public class Authentication {
      *
      * @param username the username of the account
      * @param password the password entered
-     * @return true if credentials are invalid; false otherwise
+     * @return true if username does not exist or password hash does not match, or false otherwise
      * @author Jessica Ramirez
      */
 
@@ -230,12 +318,13 @@ public class Authentication {
     /**
      * Checks whether a username has invalid formatting.
      * A valid username must: be non-null, contain only alphanumeric characters
-     * not contain leading/trailing spaces, and be at least 3 characters long
+     * (A-Z, a-z, 0-9), not contain leading/trailing spaces, and be at least 3 to 20 characters long.
      *
      * @param username the username of the account. 
-     * @return true if formatting is invalid,or false otherwise
+     * @return true if the username violates any rule, false if it is valid
      * @author Jessica Ramirez
      */
+    
     public boolean isInvalidUsernameFormat(String username) {
         if (username == null) return true;
 
@@ -259,14 +348,15 @@ public class Authentication {
     
     /**
      * Checks whether a password has invalid formatting.
-     * A valid password must be non-null, not be empty or only whitespace
-     * not contain leading/trailing spaces, have minimum length (default 5
-     * characters), and may include special characters.
+     * A valid password must be non-null, not be empty or whitespace-only,
+     * not contain leading or trailing spaces, and have 5 to 30 characters. 
+     * It may include special characters.
      *
      * @param password the password to check
-     * @return true if formatting is invalid, or false otherwise
+     * @return true if the password violates any formatting rule, or false if it is valid
      * @author Jessica Ramirez
      */
+    
     public boolean isInvalidPasswordFormat(String password) {
         if (password == null) return true;
 
@@ -284,15 +374,14 @@ public class Authentication {
 
         return false;
     }
-
-
     
     /**
      * Checks whether required login or registration fields are empty.
      *
      * @param username the username of the account
      * @param password the password entered
-     * @return true if any required field is missing, or false otherwise
+     * @return true if any required field is null, empty, or whitespace only; or false 
+     * if both fields are valid
      * @author Jessica Ramirez
      */
 

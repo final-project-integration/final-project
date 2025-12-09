@@ -11,377 +11,531 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * DataReader class for the Prediction Team Module Reads, validates, calculates
- * income and expenses, compares calculations, and summarizes report.
+ * DataReader class for the Prediction Team Module reads, validates, calculates
+ * income and expenses, compares calculations, and summarizes report. This class
+ * provides functionality to:
+ * <ul>
+ * <li>Read budget data from a CSV file or Budget object</li>
+ * <li>Validate date, category, and amount fields</li>
+ * <li>Store categories and amounts in internal lists</li>
+ * <li>Compute totals for income, expenses, and individual categories</li>
+ * <li>Provide defensive copies of stored data for external use</li>
+ * </ul>
+ * The class maintains separate lists for categories and amounts, and enforces
+ * consistency rules such as:
+ * <ul>
+ * <li>All dates must be in MM/DD/YYYY format and must be from the same year
+ * </li>
+ * <li>All transactions must belong to a recognized income or expense category
+ * </li>
+ * <li>Income amounts must be positive and expense amounts must be negative</li>
+ * </ul>
  *
  * @author Jessica Barrera Saguay
  */
+
+
 public class DataReader {
 
-    final private List<String> categoriesList = new ArrayList<>();
-    final private List<Integer> amountsList = new ArrayList<>();
-    private Integer firstYear = null; // Used for isDataValid method
+	/**
+	 * Default constructor for the DataReader class.
+	 * Initializes an empty reader with no loaded budget or CSV data.
+	 * Provides a clean starting point before calling readData() or readFromBudget().
+	 * @author Jessica Barrera Saguay
+	 */
+	public DataReader() {
+	    // fields start empty.
+	}
 
-    private static final List<String> incomeCategories = Arrays.asList("Compensation", "Allowance", "Investments",
-            "Other Income","Other" ); // List that stores the valid income categories
+	/**
+	 * Stores the list of category names extracted from the data and can correspond
+	 * to either an income or expense category.
+	 */
+	final private List<String> categoriesList = new ArrayList<>();
+	/**
+	 * Stores the list of amounts extracted from the data. Amounts are positive for
+	 * income categories and negative for expense categories.
+	 */
+	final private List<Integer> amountsList = new ArrayList<>();
+	/**
+	 * Tracks the first year encountered in the data set and is used to ensure that
+	 * all dates have the same year.
+	 */
+	private Integer firstYear = null; // Used for isDataValid method
 
-    private static final List<String> expenseCategories = Arrays.asList("Home", "Rent", "Utilities", "Food",
-            "Appearance", "Work", "Education", "Transportation", "Entertainment", "Professional Services",
-            "Other Expense", "Other"); // List that stores the valid expense categories
+	/**
+	 * List of valid income categories. Used for validation and classification of
+	 * input data.
+	 */
+	private static final List<String> incomeCategories = Arrays.asList("Compensation", "Allowance", "Investments",
+			"Other Income"); // List that stores the valid income categories
+	/**
+	 * List of valid expense categories. Used for validation and classification of
+	 * input data.
+	 */
+	private static final List<String> expenseCategories = Arrays.asList("Home", "Rent", "Utilities", "Food",
+			"Appearance", "Work", "Education", "Transportation", "Entertainment", "Professional Services",
+			"Other Expense"); // List that stores the valid expense categories
 
-    public List<String> getCategories() {
-        return new ArrayList<>(categoriesList); // defensive copy
-    }
+	/**
+	 * Returns a defensive copy of all category names recorded from the user's data.
+	 *
+	 * @return a new list containing all stored categories
+	 * @author Jessica Barrera Saguay
+	 */
+	public List<String> getCategories() {
+		return new ArrayList<>(categoriesList); // defensive copy
+	}
 
-    public List<Integer> getAmounts() {
-        return new ArrayList<>(amountsList); // defensive copy
-    }
+	/**
+	 * Returns a defensive copy of all recorded amounts.
+	 *
+	 * @return a new list containing all stored amounts
+	 * @author Jessica Barrera Saguay
+	 */
+	public List<Integer> getAmounts() {
+		return new ArrayList<>(amountsList); // defensive copy
+	}
 
-    public static boolean isIncomeCategory(String category) {
-        return incomeCategories.contains(category);
-    }
+	/**
+	 * Determines whether the given category is an income category.
+	 * 
+	 * @param category the category name to evaluate
+	 * @return {@code true} if the category is listed as an income category;
+	 *         {@code false} otherwise
+	 * @author Jessica Barrera Saguay
+	 */
+	public static boolean isIncomeCategory(String category) {
+		return incomeCategories.contains(category);
+	}
 
-    public static boolean isExpenseCategory(String category) {
-        return expenseCategories.contains(category);
-    }
+	/**
+	 * Determines whether the given category is an expense category.
+	 * 
+	 * @param category the category name to evaluate
+	 * @return {@code true} if the category is an expense category; {@code false}
+	 *         otherwise
+	 * @author Jessica Barrera Saguay
+	 */
+	public static boolean isExpenseCategory(String category) {
+		return expenseCategories.contains(category);
+	}
 
-    /**
-     * Reads stored budget data from the file provided. This method does not
-     * return a value but prepares the data for further processing.
-     *
-     * @author Jessica Barrera Saguay
-     */
-    public void readData(String fileName) {
-        categoriesList.clear();
-        amountsList.clear();
-        firstYear = null;
+	/**
+	 * Reads and processes stored budget data from the CSV file provided.
+	 * 
+	 * This method validates the file header, reads each data row, checks
+	 * formatting, and logical errors such as invalid dates, categories, or amounts,
+	 * and stores valid entries into internal lists for later analysis. Invalid rows
+	 * are skipped and error messages are printed.
+	 * 
+	 * @param fileName the path to the CSV file to be read. The file must contain
+	 *                 exactly three columns labeled: Date, Category, and Amount
+	 * @author Jessica Barrera Saguay
+	 */
+	public void readData(String fileName) {
 
-        File file = new File(fileName);
+		File file = new File(fileName);
 
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String headerLine = br.readLine(); // Read the first line
-            if (headerLine == null) {
-                System.err.println("Error: File is empty.");
-                return;
-            }
-            // checks if the header is valid
-            String[] headerFields = headerLine.split(",");
-            String[] expectedHeader = {"Date", "Category", "Amount"};
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			String headerLine = br.readLine(); // Read the first line
+			if (headerLine == null) {
+				System.err.println("Error: File is empty.");
+				return;
+			}
+			// checks if the header is valid
+			String[] headerFields = headerLine.split(",");
+			String[] expectedHeader = { "Date", "Category", "Amount" }; // header that is expected from a correctly
+																		// formatted CSV file
 
-            if (headerFields.length < expectedHeader.length) {
-                System.err.println("Error: Header has missing columns.");
-                return;
-            }
+			// check if header length is less than the expected header length
+			if (headerFields.length < expectedHeader.length) {
+				System.err.println("Error: Header has missing columns.");
+				return;
+			}
 
-            for (int i = 0; i < expectedHeader.length; i++) {
-                if (!headerFields[i].trim().equalsIgnoreCase(expectedHeader[i])) {
-                    System.err.println("Error: Expected " + expectedHeader[i] + " but found " + headerFields[i]);
-                    return;
-                }
-            }
+			for (int i = 0; i < expectedHeader.length; i++) {
+				if (!headerFields[i].trim().equalsIgnoreCase(expectedHeader[i])) { // header is not the same as expected
+																					// header length
+					System.err.println("Error: Expected " + expectedHeader[i] + " but found " + headerFields[i]);
+					return;
+				}
+			}
 
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] columns = line.split(",");
+			// read through the rest of the file
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] columns = line.split(",");
 
-                if (columns.length != 3) { // should check if it is greater than, or change to != 3
-                    System.err.println("Error: row does not have exactly 3 columns: " + line);
-                    continue;
-                }
-                String date = columns[0].trim();
-                String category = columns[1].trim();
-                String amount = columns[2].trim();
+				if (columns.length != 3) { // should check if it is greater than, or change to != 3
+					System.err.println("Error: row does not have exactly 3 columns: " + line);
+					continue;
+				}
+				String date = columns[0].trim();
+				String category = columns[1].trim();
+				String amount = columns[2].trim();
 
-                // If row is not valid then it will continue (or skip it)
-                if (!isDataValid(date, category, amount)) {
-                    System.err.println("Error validating the row: " + line);
-                    continue;
-                }
-                categoriesList.add(category);
-                amountsList.add(Integer.valueOf(amount)); // amountsList.add(Integer.parseInt(amount)); --> I think both
-                // work but just to be safe added valueOf so the complier
-                // doesn't complain -- Tanzina
+				// If row is not valid then it will continue (or skip it)
+				if (!isDataValid(date, category, amount)) {
+					System.err.println("Error validating the row: " + line);
+					continue;
+				}
+				categoriesList.add(category);
+				amountsList.add(Integer.valueOf(amount)); // amountsList.add(Integer.parseInt(amount)); --> I think both
+															// work but just to be safe added valueOf so the complier
+															// doesn't complain -- Tanzina
 
-            }
-        } catch (FileNotFoundException e) { // If there is no file
-            System.err.println("Error: File not found.");
-        } catch (IOException e) { // If something went wrong
-            System.err.println("Error reading the file: " + e.getMessage());
-        }
-    }
+			}
+		} catch (FileNotFoundException e) { // If there is no file
+			System.err.println("Error: File not found.");
+		} catch (IOException e) { // If something went wrong
+			System.err.println("Error reading the file: " + e.getMessage());
+		}
+	}
 
-    /**
-     * Reads stored budget data from memory. This method does not return a value
-     * but prepares the data for further processing.
-     *
-     * @author Jessica Barrera Saguay
-     */
-    public void readFromBudget(Budget budget) {
-        categoriesList.clear();
-        amountsList.clear();
+	/**
+	 * Loads categories and amounts from a Budget object into the internal lists.
+	 * Existing data is cleared before loading. Income amounts are stored as
+	 * positive values and expense amounts are stored as negative values.
+	 * 
+	 * @param budget the budget object containing transactions to read
+	 * @author Jessica Barrera Saguay
+	 */
+	public void readFromBudget(Budget budget) {
+		// Clear lists
+		categoriesList.clear();
+		amountsList.clear();
 
-        if (budget == null) {
-            System.err.println("Error: Budget is null.");
-            return;
-        }
+		if (budget == null) {
+			System.err.println("Error: Budget is null.");
+			return;
+		}
 
-        if (budget.getAllTransactions() == null || budget.getAllTransactions().isEmpty()) {
-            System.err.println("Error: Budget contains no transactions.");
-            return;
-        }
+		if (budget.getAllTransactions() == null || budget.getAllTransactions().isEmpty()) {
+			System.err.println("Error: Budget contains no transactions.");
+			return;
+		}
 
 //    		Loop through Transaction objects
-        for (Transaction t : budget.getAllTransactions()) {
-            // Extract category and amount
-            String category = t.getCategory();
-            int amount = (int) Math.round(t.getAmount());
+		for (Transaction t : budget.getAllTransactions()) {
+			// Extract category and amount
+			String category = t.getCategory();
+			int amount = (int) t.getAmount();
 
-            if (category == null) {
-                System.err.println("Error: Transaction has null category.");
-                continue;
-            }
+			if (category == null) {
+				System.err.println("Error: Transaction has null category.");
+				continue;
+			}
 
-            if (incomeCategories.contains(category)) {
-                categoriesList.add(category);
-                amountsList.add(Math.abs(amount));
-            } else if (expenseCategories.contains(category)) {
-                categoriesList.add(category);
-                amountsList.add(-Math.abs(amount));
-            } else {
-                System.err.println("Error: Unrecoginized category " + category);
-            }
-        }
-    }
+			if (incomeCategories.contains(category)) {
+				categoriesList.add(category);
+				amountsList.add(Math.abs(amount)); // adds the absolute value of amount to the amountsList if it is an
+													// income category
+			} else if (expenseCategories.contains(category)) {
+				categoriesList.add(category);
+				amountsList.add(-Math.abs(amount));// adds the negative absolute value of amount to the amountsList if
+													// it is an expense category
+			} else {
+				System.err.println("Error: Unrecoginized category " + category);
+			}
+		}
+	}
 
-    /**
-     * Validates that the data in the file is correct and has no missing
-     * information.
-     *
-     * @return {@code true} if the data is valid, {@code false} otherwise
-     * @author Jessica Barrera Saguay
-     */
-    public boolean isDataValid(String date, String category, String amount) {
-        boolean isValid = true;
-        if (date == null || date.trim().isEmpty()) {
-            System.err.println("Error: Date is missing." + date);
-            isValid = false;
-        } else {
-            // check to see if date is in valid date format and must be from the same
-            // year(example: 2024)
-            if (!date.matches("^(0[1-9]|1[0-2])\\/(0[1-9]|[12]\\d|3[01])\\/(\\d{4})$")) {
-                isValid = false;
-                System.err.println("Error: Date must be in MM/DD/YYYY format. Invalid date: " + date);
-            } else {
-                try { // Check if year is a valid year
-                    LocalDate.parse(date.trim(),
-                            DateTimeFormatter.ofPattern("MM/dd/uuuu").withResolverStyle(ResolverStyle.STRICT));
-                    int year = Integer.parseInt(date.substring(date.length() - 4));
-                    if (firstYear == null) {
-                        firstYear = year;
-                    } else if (year != firstYear) {
-                        isValid = false;
-                        System.err.println("Error: All the years in the date column should be the same year " + date);
-                    }
-                } catch (DateTimeParseException e) {
-                    isValid = false;
-                    System.err.println("Error: Invalid date: " + date + " (" + e.getMessage() + ")");
-                }
-            }
-        }
+	/**
+	 * Validates a single row of data by checking the date, category, and amount
+	 * fields for correctness and consistency.
+	 *
+	 * This method performs the following validations:
+	 * <ul>
+	 * <li>Ensures the date is in MM/DD/YYYY format and represents an actual
+	 * calendar date.</li>
+	 * <li>Ensures all dates belong to the same year on the first read.</li>
+	 * <li>Ensures the category is not empty, contains no digits, and matches one of
+	 * the predefined income or expense categories.</li>
+	 * <li>Ensures the amount is an integer and has the correct sign(positive for
+	 * income, negative for expenses).</li>
+	 * </ul>
+	 * 
+	 * @param date     the date string to validate
+	 * @param category the category name to validate
+	 * @param amount   the string representing the amount
+	 * @return {@code true} if all the data is valid, {@code false} otherwise
+	 * @author Jessica Barrera Saguay
+	 */
+	public boolean isDataValid(String date, String category, String amount) {
+		boolean isValid = true;
+		// check if date is not missing
+		if (date == null || date.trim().isEmpty()) {
+			System.err.println("Error: Date is missing." + date);
+			isValid = false;
+		} else {
+			// check to see if date is in valid date format and must be from the same
+			// year(example: 2024)
+			if (!date.matches("^(0[1-9]|1[0-2])\\/(0[1-9]|[12]\\d|3[01])\\/(\\d{4})$")) {
+				isValid = false;
+				System.err.println("Error: Date must be in MM/DD/YYYY format. Invalid date: " + date);
+			} else {
+				try { // Check if year is a valid year
+						// use strict resolution to ensure that all parsed values are within the outer
+					// range of valid values for the field
+					LocalDate.parse(date.trim(),
+							DateTimeFormatter.ofPattern("MM/dd/uuuu").withResolverStyle(ResolverStyle.STRICT));
+					int year = Integer.parseInt(date.substring(date.length() - 4)); // takes the last four digits of the
+					// date string and turns it into an
+					// integer
+					if (firstYear == null) { // if there is no first year yet before checking the years
+						firstYear = year; // set the first year from data as the first year to check if the rest of the
+						// years are the same
+					} else if (year != firstYear) { // checks if year isn't the same as the first year previously stored
+						isValid = false;
+						System.err.println("Error: All the years in the date column should be the same year " + date);
+					}
+				} catch (DateTimeParseException e) {
+					isValid = false;
+					System.err.println("Error: Invalid date: " + date + " (" + e.getMessage() + ")");
+				}
+			}
+		}
 
-        if (category == null || category.trim().isEmpty()) {
-            isValid = false;
-        } else {
-            // check if category is a valid category from lists
-            if (!incomeCategories.contains(category) && !expenseCategories.contains(category)) {
-                System.err.println("Error: Category " + category + " is not recognized.");
-                isValid = false;
-            }
+		if (category == null || category.trim().isEmpty()) {
+			isValid = false;
+		} else {
+			// check if category is a valid category from lists
+			if (!incomeCategories.contains(category) && !expenseCategories.contains(category)) {
+				System.err.println("Error: Category " + category + " is not recognized.");
+				isValid = false;
+			}
+			// checks if category is an integer
+			if (category.matches(".*\\d.*")) {
+				System.err.println("Error: Category contains numbers: " + category);
+				isValid = false;
 
-            if (category.matches(".*\\d.*")) {
-                System.err.println("Error: Category contains numbers: " + category);
-                isValid = false;
+			}
+		}
+		if (amount == null || amount.trim().isEmpty()) {
+			isValid = false;
+		} else {
+			// check to see if amount is an integer
+			if (!amount.matches("^-?\\d+$")) { // positive or negative integer
+				isValid = false;
+				System.err.println("Error: Amount is not an integer." + amount);
+			} else {
+				int amountInt = Integer.parseInt(amount);
+				if (incomeCategories.contains(category) && amountInt < 0) { // checks if income amount is positive
+					isValid = false;
+					System.err.println(
+							"Error: Income category " + category + " should have a postive amount " + amountInt);
 
-            }
-        }
-        if (amount == null || amount.trim().isEmpty()) {
-            isValid = false;
-        } else {
-            // check to see if amount is an integer
-            if (!amount.matches("^-?\\d+$")) { // positive or negative integer
-                isValid = false;
-                System.err.println("Error: Amount is not an integer." + amount);
-            } else {
-                int amountInt = Integer.parseInt(amount);
-                if (incomeCategories.contains(category) && amountInt < 0) {
-                    isValid = false;
-                    System.err.println(
-                            "Error: Income category " + category + " should have a postive amount " + amountInt);
+				} else if (expenseCategories.contains(category) && amountInt > 0) { // checks if expense amount is
+																					// negative
+					isValid = false;
+					System.err.println(
+							"Error: Expense category " + category + " should have a negative amount " + amountInt);
 
-                } else if (expenseCategories.contains(category) && amountInt > 0) {
-                    isValid = false;
-                    System.err.println(
-                            "Error: Expense category " + category + " should have a negative amount " + amountInt);
+				}
 
-                }
+			}
+		}
+		return isValid; // if data is valid
+	}
 
-            }
-        }
-        return isValid;
-    }
+	/**
+	 * Calculates the total income by adding up all sources of income such as
+	 * compensation, allowance, investments, and other money received (e.g.,
+	 * alimony, child support, or government benefits like unemployment or Social
+	 * Security). The result should be positive since income amounts are positive.
+	 *
+	 * @return the sum of all income sources
+	 * @author Jessica Barrera Saguay
+	 */
+	public int calculateTotalIncome() {
+		int totalIncome = 0;
+		for (int i = 0; i < categoriesList.size(); i++) {
+			if (incomeCategories.contains(categoriesList.get(i))) { // if category is in incomeCategories list
+				totalIncome += amountsList.get(i); // add amount to the total income
+			}
+		}
+		return totalIncome;
+	}
 
-    /**
-     * Calculates the total income by adding up all sources of income such as
-     * compensation, allowance, investments, and other money received (e.g.,
-     * alimony, child support, or government benefits like unemployment or
-     * Social Security).
-     *
-     * @return the sum of all income sources
-     * @author Jessica Barrera Saguay
-     */
-    public int calculateTotalIncome() {
-        int totalIncome = 0;
-        for (int i = 0; i < categoriesList.size(); i++) {
-            if (incomeCategories.contains(categoriesList.get(i))) {
-                totalIncome += amountsList.get(i);
-            }
-        }
-        return totalIncome;
-    }
+	/**
+	 * Returns the total income computed from all the income category entries. The
+	 * value should be positive since income is stored as positive amounts.
+	 *
+	 * @return the sum of all income amounts
+	 * @author Jessica Barrera Saguay
+	 */
+	public int getTotalIncome() {
+		return calculateTotalIncome();
+	}
 
-    public int getTotalIncome() {
-        return calculateTotalIncome();
-    }
+	/**
+	 * Calculates the total expenses by adding up all expenses such as home,
+	 * utilities, food, appearance, work, education, transportation, entertainment,
+	 * professional services, and other expenses. The result should be negative
+	 * since expense amounts are negative.
+	 *
+	 * @return the total amount of all expenses combined
+	 * @author Jessica Barrera Saguay
+	 */
+	public int calculateTotalExpenses() {
+		int totalExpenses = 0;
+		for (int i = 0; i < categoriesList.size(); i++) {
+			if (expenseCategories.contains(categoriesList.get(i))) { // if category is in expenseCategories list
+				totalExpenses += amountsList.get(i); // add the amount to the total expenses
+			}
+		}
+		return totalExpenses;
+	}
 
-    /**
-     * Calculates the total expenses by adding up all expenses such as home,
-     * utilities, food, appearance, work, education, transportation,
-     * entertainment, professional services, and other expenses.
-     *
-     * @return the total amount of all expenses combined
-     * @author Jessica Barrera Saguay
-     */
-    public int calculateTotalExpenses() {
-        int totalExpenses = 0;
-        for (int i = 0; i < categoriesList.size(); i++) {
-            if (expenseCategories.contains(categoriesList.get(i))) {
-                totalExpenses += amountsList.get(i);
-            }
-        }
-        return totalExpenses;
-    }
+	/**
+	 * Returns the total expenses computed from all the expense category entries.
+	 * The value should be negative since expenses are stored as negative amounts.
+	 * 
+	 * @return the sum of all expense amounts
+	 * @author Jessica Barrera Saguay
+	 */
+	public int getTotalExpenses() {
+		return calculateTotalExpenses();
+	}
 
-    public int getTotalExpenses() {
-        return calculateTotalExpenses();
-    }
+	/**
+	 * Compares the total income and total expenses to determine if there is a
+	 * surplus.
+	 *
+	 * @param totalIncome   the total income calculated from all sources
+	 * @param totalExpenses the total amount of all expenses
+	 * @return {@code true} if total income is greater than total expenses;
+	 *         {@code false} otherwise
+	 * @author Jessica Barrera Saguay
+	 */
+	public boolean compareIncomeVsExpenses(int totalIncome, int totalExpenses) {
+		return totalIncome > totalExpenses;
+	}
 
-    /**
-     * Compares the total income and total expenses to determine if there is a
-     * surplus.
-     *
-     * @param totalIncome the total income calculated from all sources
-     * @param totalExpenses the total amount of all expenses
-     * @return {@code true} if total income is greater than total expenses;
-     * {@code false} otherwise
-     * @author Jessica Barrera Saguay
-     */
-    public boolean compareIncomeVsExpenses(int totalIncome, int totalExpenses) {
-        return totalIncome > totalExpenses;
-    }
+	/**
+	 * Creates a summary report using the calculated income and expense data. The
+	 * report may include totals and indicate whether there is a surplus or deficit.
+	 *
+	 * @return the summary report
+	 * @author Jessica Barrera Saguay
+	 */
+	public String createSummaryReport() {
+		StringBuilder report = new StringBuilder(); // used to return the summary report
 
-    /**
-     * Creates a summary report using the calculated income and expense data.
-     * The report may include totals and indicate whether there is a surplus or
-     * deficit.
-     *
-     * @return the summary report
-     * @author Jessica Barrera Saguay
-     */
-    public String createSummaryReport() {
-        StringBuilder report = new StringBuilder();
-
-        int totalIncome = calculateTotalIncome();
-        int totalExpenses = calculateTotalExpenses();
-        int finalTotal = totalIncome + (-totalExpenses);
+		int totalIncome = calculateTotalIncome();
+		int totalExpenses = calculateTotalExpenses();
+		int finalTotal = totalIncome + (-totalExpenses); // calculates the final total
 
 //        report.append("===== Summary Report =====\n\n");
 //        report.append("Total Income: $").append(String.format("%d", totalIncome)).append("\n");
 //        report.append("Total Expenses: $").append(String.format("%d", totalExpenses)).append("\n");
 //        report.append("Final Total: $").append(String.format("%d", (finalTotal))).append("\n");
-        return report.toString();
-    }
 
-    public List<String> getCategoriesList() {
-        return categoriesList;
-    }
+		return report.toString(); // used to return the summary report
+	}
 
-    /**
-     * Creates a duplicate-free list of expense categories
-     *
-     * @return the list of expense categories
-     * @author Jessica Barrera Saguay
-     */
-    public List<String> getUniqueExpenseCategories() {
-        List<String> unique = new ArrayList<>();
-        for (String category : categoriesList) {
-            if (expenseCategories.contains(category) && !unique.contains(category)) {
-                unique.add(category);
-            }
-        }
-        return unique;
-    }
+	/**
+	 * Returns the internal list of categories exactly as stored.
+	 *
+	 * @return the internal categories list
+	 * @author Jessica Barrera Saguay
+	 */
+	public List<String> getCategoriesList() {
+		return categoriesList;
+	}
 
-    /**
-     * Calculates the total amount for one specific category
-     *
-     * @return the total for a category
-     * @author Jessica Barrera Saguay
-     */
-    public int getTotalForCategory(String category) {
-        int total = 0;
-        for (int i = 0; i < categoriesList.size(); i++) {
-            if (categoriesList.get(i).equals(category)) {
-                total += amountsList.get(i);
-            }
-        }
-        return total;
-    }
+	/**
+	 * Builds and returns a list containing all expense categories that actually
+	 * appear in the recorded expenses, with no duplicates. A category is included
+	 * only if it exists in expenseCategories and appears at least once in
+	 * categoriesList.
+	 *
+	 * @return a list of distinct expense categories
+	 * @author Jessica Barrera Saguay
+	 */
+	public List<String> getUniqueExpenseCategories() {
+		List<String> unique = new ArrayList<>();
+		for (String category : categoriesList) {
+			if (expenseCategories.contains(category) && !unique.contains(category)) {
+				unique.add(category);
+			}
+		}
+		return unique;
+	}
 
-    /**
-     * Calculates the totals for every expense category
-     *
-     * @return a map of the totals for every expense category
-     * @author Jessica Barrera Saguay
-     */
-    public Map<String, Integer> getExpenseTotalsByCategory() {
-        Map<String, Integer> totals = new HashMap<>();
-        for (int i = 0; i < categoriesList.size(); i++) {
-            if (expenseCategories.contains(categoriesList.get(i))) {
-                totals.put(categoriesList.get(i), totals.getOrDefault(categoriesList.get(i), 0) + amountsList.get(i));
-            }
-        }
-        return totals;
-    }
+	/**
+	 * Computes the total amount spent for a specific expense category.
+	 * 
+	 * @param category the category whose total amount should be calculated
+	 * @return the total amount spent in the given category
+	 * @author Jessica Barrera Saguay
+	 */
+	public int getTotalForCategory(String category) {
+		int total = 0;
+		for (int i = 0; i < categoriesList.size(); i++) {
+			if (categoriesList.get(i).equals(category)) {
+				total += amountsList.get(i);
+			}
+		}
+		return total;
+	}
 
-    /**
-     * Calculates the category share of expenses
-     *
-     * @return a map of the expense percentages
-     * @author Jessica Barrera Saguay
-     */
-    public Map<String, Double> getExpensePercentages() {
-        Map<String, Integer> totals = getExpenseTotalsByCategory();
-        Map<String, Double> percentages = new HashMap<>();
-        for (Map.Entry<String, Integer> entry : totals.entrySet()) {
-            double percent = (double) entry.getValue() / calculateTotalExpenses();
-            percentages.put(entry.getKey(), percent);
-        }
-        return percentages;
-    }
+	/**
+	 * Calculates the total expense amount for each valid expense category. Only
+	 * categories that are in expenseCategories are included.
+	 * 
+	 * @return a map where each key is a valid expense category and each value is
+	 *         the total dollar amount recorded for that category
+	 * @author Jessica Barrera Saguay
+	 */
+	public Map<String, Integer> getExpenseTotalsByCategory() {
+		Map<String, Integer> totals = new HashMap<>();
+		for (int i = 0; i < categoriesList.size(); i++) {
+			if (expenseCategories.contains(categoriesList.get(i))) {
+				totals.put(categoriesList.get(i), totals.getOrDefault(categoriesList.get(i), 0) + amountsList.get(i));
+			}
+		}
+		return totals;
+	}
+
+	/**
+	 * Computes the percentage share of total expenses represented by each category.
+	 * Only categories that are in categoriesList are included. If
+	 * calculateTotalExpenses is positive then the method will print an error and
+	 * return an empty map since totalExpenses is meant to return a negative total.
+	 * If calculateTotalExpenses is negative then it will calculate the percentage
+	 * as normal by dividing categoryTotal/totalExpenses. If calculateTotalExpenses
+	 * is zero then the method will print an error and return an empty map.
+	 *
+	 * @return a map where each key is an expense category and each value is its
+	 *         percentage of the total expenses percentages
+	 * @author Jessica Barrera Saguay
+	 */
+	public Map<String, Double> getExpensePercentages() {
+		Map<String, Integer> totals = getExpenseTotalsByCategory(); // stores the totals calculated by the
+																	// getExpenseTotalsByCategory method earlier
+		Map<String, Double> percentages = new HashMap<>(); // stores the percentages
+		if (calculateTotalExpenses() == 0) { // can't divide by zero
+			System.err.println("Error: Total expenses is 0 and can't be evaluated as percentages.");
+			return Collections.emptyMap(); // return an empty map if total expenses is 0
+		}
+		if (calculateTotalExpenses() > 0) { // total expenses should be negative
+			System.err.println("Error: Total expenses should be negative not positive.");
+			return Collections.emptyMap(); // return an empty map if total expenses is positive.
+		}
+		for (Map.Entry<String, Integer> entry : totals.entrySet()) {
+			double percent = (double) entry.getValue() / calculateTotalExpenses(); // calculate the percentage
+																					// categoryTotal/totalExpenses
+			percentages.put(entry.getKey(), percent); // add the percentage to the map
+		}
+		return percentages;
+	}
 
 }

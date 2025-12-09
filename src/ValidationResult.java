@@ -5,8 +5,7 @@ import java.util.List;
 
 /**
  * Stores and manages validation results!
- * 
- * @author Aung Latt
+ * * @author Aung Latt
  */
 public class ValidationResult {
 
@@ -14,7 +13,14 @@ public class ValidationResult {
      * Severity levels for messages.
      */
     public enum Severity {
+        /**
+         * Represents a critical failure that prevents processing.
+         */
         ERROR,
+
+        /**
+         * Represents a potential issue that does not stop processing.
+         */
         WARNING
     }
 
@@ -68,6 +74,10 @@ public class ValidationResult {
     private boolean debugMode = false;
 
     // Constructor
+
+    /**
+     * Initializes a new, empty ValidationResult instance.
+     */
     public ValidationResult() {
         this.allMessages = new ArrayList<>();
         this.errorMessages = new ArrayList<>();
@@ -79,6 +89,8 @@ public class ValidationResult {
 
     /**
      * Create a ValidationResult that represents "no issues found".
+     *
+     * @return a new empty ValidationResult instance
      */
     public static ValidationResult ok() {
         return new ValidationResult();
@@ -86,6 +98,9 @@ public class ValidationResult {
 
     /**
      * Create a ValidationResult that contains a single error.
+     *
+     * @param message the error message to add
+     * @return a new ValidationResult containing the specified error
      */
     public static ValidationResult error(String message) {
         ValidationResult vr = new ValidationResult();
@@ -96,6 +111,12 @@ public class ValidationResult {
     /**
      * Create a ValidationResult with a summary message and optional details.
      * If ok == false, the summary is treated as an error; otherwise as a warning.
+     *
+     * @param ok      true to treat the summary as a warning, false to treat as an
+     *                error
+     * @param summary the main summary message
+     * @param details a list of detailed messages to append (can be null)
+     * @return a new ValidationResult populated with the summary and details
      */
     public static ValidationResult withDetails(boolean ok, String summary, List<String> details) {
         ValidationResult vr = new ValidationResult();
@@ -179,6 +200,8 @@ public class ValidationResult {
 
     /**
      * Returns only error messages, for detailed reporting.
+     *
+     * @return a read-only list of error string representations
      */
     public List<String> getErrorMessages() {
         List<String> output = new ArrayList<>();
@@ -190,6 +213,8 @@ public class ValidationResult {
 
     /**
      * Returns only warnings.
+     *
+     * @return a read-only list of warning string representations
      */
     public List<String> getWarningMessages() {
         List<String> output = new ArrayList<>();
@@ -201,6 +226,8 @@ public class ValidationResult {
 
     /**
      * Enable or disable debug mode.
+     *
+     * @param enabled true to enable debug output to stdout, false to disable
      */
     public void setDebugMode(boolean enabled) {
         this.debugMode = enabled;
@@ -218,6 +245,9 @@ public class ValidationResult {
 
     /**
      * Get messages by severity.
+     *
+     * @param severity the Severity level to filter by
+     * @return a read-only list of messages matching the specified severity
      */
     public List<String> getMessagesBySeverity(Severity severity) {
         List<String> output = new ArrayList<>();
@@ -230,7 +260,33 @@ public class ValidationResult {
     }
 
     /**
+     * Merge another ValidationResult into this one.
+     * Severity is inferred from the string form (as in aggregateResults).
+     *
+     * @param other another ValidationResult (may be null)
+     * @return this (for chaining)
+     */
+    public ValidationResult merge(ValidationResult other) {
+        if (other == null) {
+            return this;
+        }
+        for (String msg : other.getMessages()) {
+            if (msg.contains("[ERROR]")) {
+                this.addError(msg);
+            } else if (msg.contains("[WARNING]")) {
+                this.addWarning(msg);
+            } else {
+                // Default to warning if severity cannot be inferred
+                this.addWarning(msg);
+            }
+        }
+        return this;
+    }
+
+    /**
      * Quick summary for integration debugging.
+     *
+     * @return a string summary of the error and warning counts
      */
     public String summary() {
         return "ValidationResult Summary: " +

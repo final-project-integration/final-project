@@ -5,12 +5,15 @@ import java.util.List;
  * including currency values and text-based tables for console or log output.
  * 
  * @author Angelo Samir Alvarez
- * @author Furkan Bilgi
- * @author Chukwuemeka Okwuka
- * @author Omar Piron
  */
 public class ReportFormatter {
 
+    /**
+     * Default constructor.
+     */
+    public ReportFormatter(){
+        // default constructor 
+    }
     /**
      * Attaches a currency symbol to the amount string.
      *
@@ -29,7 +32,7 @@ public class ReportFormatter {
      * Builds a monospace table string from headers and rows.
      *
      * @param headers list of column headers
-     * @param rows    list of row data, where each row is a List<String>
+     * @param rows    list of row data, where each row is a {@code List<String>}. 
      * @return a printable table string
      */
     public String formatTable(List<String> headers, List<List<String>> rows) {

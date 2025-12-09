@@ -23,12 +23,13 @@ public class CSVHandler {
 	/**
 	 * Reads all the transactions from the specified CSV file and converts them into {@link Transaction} objects.
 	 * 
-	 * This method will skip header rows if the first row contains the column names (Date, Category, Amount). 
-	 * It will also check for invalid rows and will skip them if found
+	 * This method will skip header rows if the first row
+	 * contains the column names (Date, Category, Amount). 
 	 * 
 	 * @param file the name of the CSV file that we're reading into
 	 * @return an array list of {@link Transaction} objects loaded from the CSV file
 	 * @throws IOException if the file can't be read
+	 * @throws NumberFormatException if the amount can't be parsed as a number
 	 * @author Eddie Zhu
 	 */
 	public ArrayList<Transaction> readCSV(String file) throws IOException {
