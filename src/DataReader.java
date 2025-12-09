@@ -36,7 +36,9 @@ import java.util.Map;
  * </li>
  * <li>Income amounts must be positive and expense amounts must be negative</li>
  * </ul>
- *
+ * The valid income categories list is: "compensation", "allowance", "investments", "other"
+ * The valid expense categories list is: "home", "rent", "utilities", "food", "appearance", "work", "education", "transportation", "entertainment". "professional services"
+ * The category "other" is only for income and cannot be used for expenses.
  * @author Jessica Barrera Saguay
  */
 
@@ -73,15 +75,14 @@ public class DataReader {
 	 * List of valid income categories. Used for validation and classification of
 	 * input data.
 	 */
-	private static final List<String> incomeCategories = Arrays.asList("Compensation", "Allowance", "Investments",
-			"Other Income"); // List that stores the valid income categories
+	private static final List<String> incomeCategories = Arrays.asList("compensation", "allowance", "investments",
+			"other"); // List that stores the valid income categories
 	/**
 	 * List of valid expense categories. Used for validation and classification of
 	 * input data.
 	 */
-	private static final List<String> expenseCategories = Arrays.asList("Home", "Rent", "Utilities", "Food",
-			"Appearance", "Work", "Education", "Transportation", "Entertainment", "Professional Services",
-			"Other Expense"); // List that stores the valid expense categories
+	private static final List<String> expenseCategories = Arrays.asList("home", "rent", "utilities", "food",
+			"appearance", "work", "education", "transportation", "entertainment", "professional services"); // List that stores the valid expense categories
 
 	/**
 	 * Returns a defensive copy of all category names recorded from the user's data.
@@ -178,7 +179,7 @@ public class DataReader {
 					continue;
 				}
 				String date = columns[0].trim();
-				String category = columns[1].trim();
+				String category = columns[1].trim().toLowerCase(); //turns categories from file to lower case
 				String amount = columns[2].trim();
 
 				// If row is not valid then it will continue (or skip it)
@@ -199,14 +200,14 @@ public class DataReader {
 		}
 	}
 
-	/**
-	 * Loads categories and amounts from a Budget object into the internal lists.
-	 * Existing data is cleared before loading. Income amounts are stored as
-	 * positive values and expense amounts are stored as negative values.
-	 * 
-	 * @param budget the budget object containing transactions to read
-	 * @author Jessica Barrera Saguay
-	 */
+//	/**
+//	 * Loads categories and amounts from a Budget object into the internal lists.
+//	 * Existing data is cleared before loading. Income amounts are stored as
+//	 * positive values and expense amounts are stored as negative values.
+//	 * 
+//	 * @param budget the budget object containing transactions to read
+//	 * @author Jessica Barrera Saguay
+//	 */
 	public void readFromBudget(Budget budget) {
 		// Clear lists
 		categoriesList.clear();
@@ -226,12 +227,19 @@ public class DataReader {
 		for (Transaction t : budget.getAllTransactions()) {
 			// Extract category and amount
 			String category = t.getCategory();
-			int amount = (int) t.getAmount();
-
 			if (category == null) {
 				System.err.println("Error: Transaction has null category.");
 				continue;
 			}
+			category = category.trim().toLowerCase(); //ensures that category matches the valid categories from lists by turning it to lower case
+			int amount = (int) t.getAmount();
+
+			// "other" cannot be used for expenses
+			if (category.equals("other") && amount < 0) {
+				System.err.println("Error: Category 'other' is income-only and cannot be used for expenses. Skipping entry: " + amount);
+				continue; // skip this transaction
+}
+
 
 			if (incomeCategories.contains(category)) {
 				categoriesList.add(category);
@@ -256,7 +264,7 @@ public class DataReader {
 	 * <li>Ensures the date is in MM/DD/YYYY format and represents an actual
 	 * calendar date.</li>
 	 * <li>Ensures all dates belong to the same year on the first read.</li>
-	 * <li>Ensures the category is not empty, contains no digits, and matches one of
+	 * <li>Ensures the category is not empty, contains no digits, "Other" is income-only and cannot be used for expenses, and matches one of
 	 * the predefined income or expense categories.</li>
 	 * <li>Ensures the amount is an integer and has the correct sign(positive for
 	 * income, negative for expenses).</li>
@@ -269,81 +277,89 @@ public class DataReader {
 	 * @author Jessica Barrera Saguay
 	 */
 	public boolean isDataValid(String date, String category, String amount) {
-		boolean isValid = true;
-		// check if date is not missing
-		if (date == null || date.trim().isEmpty()) {
-			System.err.println("Error: Date is missing." + date);
-			isValid = false;
-		} else {
-			// check to see if date is in valid date format and must be from the same
-			// year(example: 2024)
-			if (!date.matches("^(0[1-9]|1[0-2])\\/(0[1-9]|[12]\\d|3[01])\\/(\\d{4})$")) {
-				isValid = false;
-				System.err.println("Error: Date must be in MM/DD/YYYY format. Invalid date: " + date);
-			} else {
-				try { // Check if year is a valid year
-						// use strict resolution to ensure that all parsed values are within the outer
-					// range of valid values for the field
-					LocalDate.parse(date.trim(),
-							DateTimeFormatter.ofPattern("MM/dd/uuuu").withResolverStyle(ResolverStyle.STRICT));
-					int year = Integer.parseInt(date.substring(date.length() - 4)); // takes the last four digits of the
-					// date string and turns it into an
-					// integer
-					if (firstYear == null) { // if there is no first year yet before checking the years
-						firstYear = year; // set the first year from data as the first year to check if the rest of the
-						// years are the same
-					} else if (year != firstYear) { // checks if year isn't the same as the first year previously stored
-						isValid = false;
-						System.err.println("Error: All the years in the date column should be the same year " + date);
-					}
-				} catch (DateTimeParseException e) {
-					isValid = false;
-					System.err.println("Error: Invalid date: " + date + " (" + e.getMessage() + ")");
-				}
-			}
-		}
+    boolean isValid = true;
+    // check if date is not missing
+    if (date == null || date.trim().isEmpty()) { 
+        System.err.println("Error: Date is missing." + date); // debug line
+        isValid = false; // date is missing
+    } else {
+        // check to see if date is in valid date format and must be from the same
+        // year(example: 2024)
+        if (!date.matches("^(0[1-9]|1[0-2])\\/(0[1-9]|[12]\\d|3[01])\\/(\\d{4})$")) {
+            isValid = false;
+            System.err.println("Error: Date must be in MM/DD/YYYY format. Invalid date: " + date);
+        } else {
+            try { // Check if year is a valid year
+                LocalDate.parse(date.trim(),
+                        DateTimeFormatter.ofPattern("MM/dd/uuuu").withResolverStyle(ResolverStyle.STRICT)); // checks if date is valid
+                int year = Integer.parseInt(date.substring(date.length() - 4));
+                if (firstYear == null) {
+                    firstYear = year; // set the first year encountered
+                } else if (year != firstYear) {
+                    isValid = false; // all years must be the same
+                    System.err.println("Error: All the years in the date column should be the same year " + date);
+                }
+            } catch (DateTimeParseException e) {
+                isValid = false; // date is invalid
+                System.err.println("Error: Invalid date: " + date + " (" + e.getMessage() + ")"); 
+            }
+        }
+    }
 
-		if (category == null || category.trim().isEmpty()) {
-			isValid = false;
-		} else {
-			// check if category is a valid category from lists
-			if (!incomeCategories.contains(category) && !expenseCategories.contains(category)) {
-				System.err.println("Error: Category " + category + " is not recognized.");
-				isValid = false;
-			}
-			// checks if category is an integer
-			if (category.matches(".*\\d.*")) {
-				System.err.println("Error: Category contains numbers: " + category);
-				isValid = false;
+    if (category == null || category.trim().isEmpty()) { // check if category is not missing
+		System.err.println("Error: Category is missing." + category); // debug line
+        isValid = false;
+    } else {
+        category = category.trim().toLowerCase(); // make sure category has no whitespace and is lower case
 
-			}
-		}
-		if (amount == null || amount.trim().isEmpty()) {
-			isValid = false;
-		} else {
-			// check to see if amount is an integer
-			if (!amount.matches("^-?\\d+$")) { // positive or negative integer
-				isValid = false;
-				System.err.println("Error: Amount is not an integer." + amount);
-			} else {
-				int amountInt = Integer.parseInt(amount);
-				if (incomeCategories.contains(category) && amountInt < 0) { // checks if income amount is positive
-					isValid = false;
-					System.err.println(
-							"Error: Income category " + category + " should have a postive amount " + amountInt);
+        // check if category is a valid category from lists
+        if (!incomeCategories.contains(category) && !expenseCategories.contains(category)) { // category is not recognized
+            System.err.println("Error: Category " + category + " is not recognized.");
+            isValid = false;
+        }
 
-				} else if (expenseCategories.contains(category) && amountInt > 0) { // checks if expense amount is
-																					// negative
-					isValid = false;
-					System.err.println(
-							"Error: Expense category " + category + " should have a negative amount " + amountInt);
+        // checks if category is an integer
+        if (category.matches(".*\\d.*")) { // category contains numbers
+            System.err.println("Error: Category contains numbers: " + category);
+            isValid = false;
+        }
+    }
 
-				}
+    if (amount == null || amount.trim().isEmpty()) { // check if amount is not missing
+		System.err.println("Error: Amount is missing." + amount); // debug line
+        isValid = false;
+    } else {
+        // check to see if amount is an integer
+        if (!amount.matches("^-?\\d+$")) { // positive or negative integer
+            isValid = false;
+            System.err.println("Error: Amount is not an integer." + amount);
+        } else {
+            int amountInt = Integer.parseInt(amount); // convert amount to integer
 
-			}
-		}
-		return isValid; // if data is valid
-	}
+            // income must be positive
+            if (incomeCategories.contains(category) && amountInt < 0) { // income category with negative amount
+                isValid = false; // income must be positive
+                System.err.println(
+                        "Error: Income category " + category + " should have a positive amount " + amountInt); // debug line
+            }
+            // expense must be negative
+            else if (expenseCategories.contains(category) && amountInt > 0) { // expense category with positive amount
+                isValid = false; // expense must be negative
+                System.err.println(
+                        "Error: Expense category " + category + " should have a negative amount " + amountInt); // debug line
+            }
+
+            // "other" cannot be an expense ***
+            if (category.equals("other") && amountInt < 0) { // other used as expense
+                isValid = false; // other is income-only
+                System.err.println(
+                        "Error: Category 'other' is income-only and cannot be used for expenses."); 
+            }
+        }
+    }
+    return isValid; // if data is valid
+}
+
 
 	/**
 	 * Calculates the total income by adding up all sources of income such as
