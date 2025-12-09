@@ -247,6 +247,7 @@ public class ModuleHub {
      * This method:
      * resolves the CSV file path
      * validates the CSV content using ValidationEngine
+     * optionally checks for duplicate transactions and adds a warning
      * if valid, imports it via StorageManager
      *
      * It does not print to the console; instead it returns a ValidationResult
@@ -255,7 +256,7 @@ public class ModuleHub {
      * @param username    the user who is uploading the CSV data
      * @param csvFilePath the path to the CSV file on disk (as typed by the user)
      * @param year        the year represented by the CSV data
-     * @return ValidationResult describing any validation errors, or ok() on success
+     * @return ValidationResult describing any validation errors or warnings
      *
      * @author Denisa Cakoni
      */
@@ -281,12 +282,75 @@ public class ModuleHub {
             ValidationResult csvValidation =
                     validationModule.validateCsvLines(csvFile.getName(), lines);
 
+            // If there are hard errors, stop here and return them.
             if (csvValidation.hasErrors()) {
                 return csvValidation;
             }
 
-            storageModule.importCSV(username, year, csvFile.getPath());
-            return ValidationResult.ok();
+            //  Duplicate Transaction WARNING non-blocking
+            try {
+                List<Object> txs = new ArrayList<>();
+
+                // Skip header (index 0), start from line 1
+                for (int i = 1; i < lines.size(); i++) {
+                    String line = lines.get(i);
+                    if (line == null) {
+                        continue;
+                    }
+                    line = line.trim();
+                    if (line.isEmpty()) {
+                        continue;
+                    }
+
+                    String[] parts = line.split(",", -1);
+                    if (parts.length < 3) {
+                        continue;
+                    }
+
+                    final String date = parts[0].trim();
+                    final String category = parts[1].trim();
+                    final String amountStr = parts[2].trim();
+
+                    if (date.isEmpty() || category.isEmpty() || amountStr.isEmpty()) {
+                        // missing fields; already handled by CSV validation
+                        continue;
+                    }
+
+                    final double amount;
+                    try {
+                        amount = Double.parseDouble(amountStr);
+                    } catch (NumberFormatException nfe) {
+                        // CSV validator already flags bad numbers; ignore for dupe-check
+                        continue;
+                    }
+
+                    // Lightweight adapter object with the getters CrossFieldValidator expects
+                    txs.add(new Object() {
+                        public String getDate()     { return date; }
+                        public Double getAmount()   { return amount; }
+                        public String getMerchant() { return ""; } // CSV has no merchant column
+                        public String getCategory() { return category; }
+                    });
+                }
+
+                // Ask Validation/CrossFieldValidator if there are duplicates
+                ValidationResult dupResult = detectDuplicateTransactions(txs);
+
+                // If duplicate checker produced any messages, surface a warning
+                if (!dupResult.getMessages().isEmpty()) {
+                    csvValidation.addWarning(
+                            "Duplicate transactions detected (same Date, Category, and Amount). " +
+                                    "If this was unintentional, you may want to edit the CSV before importing."
+                    );
+                }
+
+            } catch (Exception ignored) {
+                // Never block upload on duplicate check – best-effort only
+            }
+
+
+            // Return the full validation result (may contain warnings about duplicates)
+            return csvValidation;
 
         } catch (Exception e) {
             // Log technical details, but return a friendly message to caller.
@@ -294,6 +358,35 @@ public class ModuleHub {
             ValidationResult vr = new ValidationResult();
             vr.addError("Internal error while uploading CSV. Please try again or contact support.");
             return vr;
+        }
+    }
+
+    /**
+     * Finalizes a CSV upload by actually importing the file into StorageManager.
+     * This is called AFTER uploadCSVData has validated the file and after
+     * the user confirms they want to proceed (even if duplicates exist).
+     *
+     * @param username    the user who owns the data
+     * @param year        the year represented by the CSV
+     * @param csvFilePath the path or filename the user entered
+     * @return true if import succeeds, false otherwise
+     *
+     * @author Denisa Cakoni
+     */
+    public boolean finalizeCsvUpload(String username, int year, String csvFilePath) {
+        // Re-resolve the file in the same way as uploadCSVData
+        File csvFile = resolveCsvFile(csvFilePath);
+        if (csvFile == null || !csvFile.exists()) {
+            System.out.println("[ModuleHub] CSV file not found during import: " + csvFilePath);
+            return false;
+        }
+
+        try {
+            storageModule.importCSV(username, year, csvFile.getPath());
+            return true;
+        } catch (Exception e) {
+            errorHandler.handleModuleError("Storage", e);
+            return false;
         }
     }
 
@@ -495,6 +588,9 @@ public class ModuleHub {
 
     //------------------------------- Predictions-------------------------------------
 
+
+
+
     /**
      * Runs a prediction scenario on previously uploaded and stored data:
      *  - loads the Budget for a user and year from StorageManager
@@ -593,7 +689,53 @@ public class ModuleHub {
         }
     }
 
-    // --------------------------Validation---------------------------------------
+    private boolean loadPredictionData(String username, int year) {
+        try {
+                Budget budget = storageModule.getUserBudget(username, year);
+                if (budget == null) {
+                    BeautifulDisplay.printError("No data found for year " + year);
+                    System.out.println();
+                    System.out.println("  " + BeautifulDisplay.BRIGHT_CYAN + "📤 To upload data:" +BeautifulDisplay.RESET);
+                    System.out.println("   " + BeautifulDisplay.DIM + "Main Menu -> Financial Data->Upload CSV" + BeautifulDisplay.RESET);
+                    System.out.println();
+                    return false;
+                }
+                predictionData.readFromBudget(budget);
+                return true;
+        }
+        catch (Exception e) {
+            errorHandler.handleModuleError("Prediction", e);
+            return false;
+        }
+    }
+
+    public List<String> getDeficitAdjustableCategories(String username, int year) {
+        List<String> result = new ArrayList<>();
+        if (!loadPredictionData(username, year)) {
+            return result;
+        }
+        DeficitSolver solver= new DeficitSolver(predictionData);
+        result.addAll(solver.getCategories());
+        return result;
+    }
+
+    public String buildDeficitWhatifSummary(String username, int year, String category) {
+        if (!loadPredictionData(username,year)) {
+            return "[ModuleHub] No data available for year " + year;
+        }
+        return predictionModule.buildDeficitWhatIfSummary(category);
+    }
+
+
+
+    public String buildSurplusWhatifSummary(String username, int year, String category) {
+        if (!loadPredictionData(username,year)) {
+            return "[ModuleHub] No data available for year " + year;
+        }
+        return predictionModule.buildSurplusWhatIfSummary(category);
+        }
+
+            // --------------------------Validation---------------------------------------
 
 
     /**

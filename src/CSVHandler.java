@@ -47,14 +47,21 @@ public class CSVHandler {
 					String[] parts = line.split(",");
 				
 					if (parts.length != 3) {
-						throw new IOException("Invalid line: " + line);
+						System.out.println("Skipping invalid row: " + line);
+						line = br.readLine();
+						continue;
 					}	
 				
 					String date = parts[0];
 					String category = parts[1];
-					double amount = Double.parseDouble(parts[2]);
+					String amountStr = parts[2];
 					
-					transactions.add(new Transaction(date, category, amount));
+					try {
+						double amount = Double.parseDouble(amountStr);
+						transactions.add(new Transaction(date, category, amount));
+					} catch (NumberFormatException e) {
+						System.out.println("Skipping row with invalid amount: " + line);
+					}
 				}
 				line = br.readLine();
 			}
