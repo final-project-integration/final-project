@@ -1,34 +1,49 @@
-//Prediction Team Module
+// Prediction Team Module
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
- * DeficitSolver class for the Prediction Team module. Declares methods used to
- * analyze a financial deficit and determine adjustments/reductions to achieve a
- * balanced budget.
+ * DeficitSolver class for the Prediction Team module.
+ * Analyzes a financial deficit and determines proportional
+ * adjustments to eliminate or reduce a budget shortfall.
+ *
+ * Stores adjustable expense categories only (non-negotiable
+ * categories excluded), calculates proportional reductions,
+ * detects impossible deficits, and generates detailed summaries.
  *
  * @author Sahadat Amzad
  */
 public class DeficitSolver {
 
+    /** Total annual income. */
     private final double income;
+
+    /** Total deficit (positive value) or 0 if none. */
     private final double overallDeficit;
 
-    // corresponding lists for categories and expense amounts
+    /** Names of adjustable categories. */
     private final ArrayList<String> categories;
+
+    /** Expense amount for each adjustable category. */
     private final ArrayList<Double> expenses;
-    // stores the last round of adjustments, used to undo
+
+    /** Last applied adjustment list (for undo operations). */
+    /**
+     * #UnusedField
+     * The name suggests an intended “undo last adjustment” feature, 
+     * but no such capability exists in the current implementation.
+     */
     private final ArrayList<Double> lastAdjustments;
 
     /**
-     * Default constructor for the DeficitSolver class. Initializes the object
-     * without any parameters.
+     * Constructs a DeficitSolver by reading income and expense data
+     * from a DataReader instance. Essential categories are excluded
+     * from adjustment.
      *
-     * @param reader DataReader object to fetch income and expenses
+     * @param reader DataReader supplying income and categorized amounts
      * @author Sahadat Amzad
      */
     public DeficitSolver(DataReader reader) {
@@ -37,29 +52,25 @@ public class DeficitSolver {
         this.expenses = new ArrayList<>();
         this.lastAdjustments = new ArrayList<>();
 
-        // NEW: compute overall deficit from ALL expenses (fixed + adjustable)
-        int totalIncomeAll   = reader.getTotalIncome();
+        int totalIncomeAll = reader.getTotalIncome();
         int totalExpensesNeg = reader.getTotalExpenses(); // negative
-        int net              = totalIncomeAll + totalExpensesNeg;
-        this.overallDeficit  = (net < 0) ? -net : 0.0;
+        int net = totalIncomeAll + totalExpensesNeg;
+
+        // cleaner deficit calculation
+        this.overallDeficit = Math.max(0, -net);
 
         List<String> allCategories = reader.getCategories();
-        List<Integer> allAmounts   = reader.getAmounts();
+        List<Integer> allAmounts = reader.getAmounts();
 
-        // (keep your existing adjustable-category aggregation logic)
+        // aggregate adjustable expenses
         Map<String, Double> expenseTotals = new HashMap<>();
         for (int i = 0; i < allCategories.size(); i++) {
             String cat = allCategories.get(i);
             int amount = allAmounts.get(i);
 
             if (amount < 0 && DataReader.isExpenseCategory(cat)) {
-                if (cat.equalsIgnoreCase("Rent")
-                        || cat.equalsIgnoreCase("Home")
-                        || cat.equalsIgnoreCase("Utilities")
-                        || cat.equalsIgnoreCase("Work")) {
-                    continue; // skip fixed
-                }
-                double positiveExpense = -1.0 * amount;
+                if (isNonNegotiable(cat)) continue;
+                double positiveExpense = -amount;
                 expenseTotals.merge(cat, positiveExpense, Double::sum);
             }
         }
@@ -71,33 +82,62 @@ public class DeficitSolver {
     }
 
     /**
+     * Determines whether a category is essential and cannot be reduced.
+     *
+     * @param cat name of category
+     * @return true if the category is non-negotiable
+     * @author Sahadat Amzad
+     */
+    private boolean isNonNegotiable(String cat) {
+        return (cat.equalsIgnoreCase("Rent")
+                || cat.equalsIgnoreCase("Home")
+                || cat.equalsIgnoreCase("Utilities")
+                || cat.equalsIgnoreCase("Work"));
+    }
+
+    /**
      * Calculates how much deficit must be covered by adjustable categories.
      *
-     * This uses the overallDeficit (from all income and expenses) and limits it
-     * to what we actually spend in the adjustable categories tracked in this solver.
-     *
-     * @return the deficit amount to be covered by adjustable categories; 0 if none
+     * @return deficit limited to adjustable total, or 0 if no deficit exists
+     * @author Sahadat Amzad
      */
     public double calculateDeficit() {
         double totalAdjustable = 0.0;
-        for (double cost : expenses) {
-            totalAdjustable += Math.abs(cost); // expenses are already positive, but abs is safe
-        }
+        for (double cost : expenses) totalAdjustable += cost;
 
-        if (overallDeficit <= 0.0 || totalAdjustable <= 0.0) {
+        if (overallDeficit <= 0.0 || totalAdjustable <= 0.0)
             return 0.0;
-        }
 
-        // We can’t cut more than we spend in adjustable categories.
         return Math.min(overallDeficit, totalAdjustable);
     }
 
+    /**
+     * Determines whether non-negotiable expenses alone exceed income.
+     * If true, no solution exists by only reducing adjustable spending.
+     *
+     * @param reader DataReader providing categorized expenses
+     * @return true if essential expenses exceed income
+     * @author Sahadat Amzad
+     */
+    public boolean essentialExpensesCauseDeficit(DataReader reader) {
+        double nonNegotiableTotal = 0.0;
+
+        List<String> cats = reader.getCategories();
+        List<Integer> amts = reader.getAmounts();
+
+        for (int i = 0; i < cats.size(); i++) {
+            if (isNonNegotiable(cats.get(i)) && amts.get(i) < 0) {
+                nonNegotiableTotal += -amts.get(i);
+            }
+        }
+        return nonNegotiableTotal > income;
+    }
 
     /**
-     * Identifies possible adjustments to reduce expenses and eliminate the
-     * deficit using a simple fixed reduction approach (non-rent 10%).
+     * Identifies simple recommended adjustments of 10% per category.
      *
-     * @return a list of recommended expense reductions for each category
+     * @return list of recommended reductions per category (10% each)  
+     *         or 0 for all if no deficit exists.
      * @author Sahadat Amzad
      */
     public ArrayList<Double> identifyAdjustments() {
@@ -105,128 +145,141 @@ public class DeficitSolver {
         ArrayList<Double> reductions = new ArrayList<>();
 
         if (deficit == 0) {
-            for (int i = 0; i < categories.size(); i++) {
+            for (int i = 0; i < categories.size(); i++)
                 reductions.add(0.0);
-            }
             return reductions;
         }
 
-        for (int i = 0; i < categories.size(); i++) {
-            String name = categories.get(i);
-            double cost = expenses.get(i);
-
-            if (name.equalsIgnoreCase("Rent")) {
-                reductions.add(0.0);
-            } else {
-                reductions.add(cost * 0.10);
-            }
-        }
+        for (double expense : expenses)
+            reductions.add(expense * 0.10);
 
         return reductions;
     }
 
     /**
-     * Generates a summary of the user's financial deficit and proposed
-     * adjustments (simple 10% reduction for non-rent categories).
+     * Computes proportional reductions across all adjustable categories
+     * to eliminate the deficit. Includes zero-capping and redistribution
+     * to ensure mathematical correctness.
      *
-     * @return string detailing a summary of the deficit and adjustment plan
+     * @return list of proportional reductions for each category
      * @author Sahadat Amzad
      */
-    // public String generateSummary() {
-    //     double deficit = calculateDeficit();
-    //     StringBuilder sb = new StringBuilder();
+    public ArrayList<Double> proportionalReductions() {
+        ArrayList<Double> reductions = new ArrayList<>();
 
-    //     sb.append("=== Financial Deficit Summary ===\n");
-    //     sb.append("Income: $").append(income).append("\n");
+        double totalAdjustable = 0.0;
+        for (double e : expenses) totalAdjustable += e;
 
-    //     double total = 0;
-    //     for (double e : expenses) {
-    //         total += e;
-    //     }
-    //     sb.append("Total Expenses: $").append(total).append("\n");
-    //     sb.append("Deficit: $").append(deficit).append("\n\n");
+        if (overallDeficit <= 0.0 || totalAdjustable <= 0.0) {
+            for (int i = 0; i < categories.size(); i++)
+                reductions.add(0.0);
+            return reductions;
+        }
 
-    //     ArrayList<Double> recs = identifyAdjustments();
-    //     sb.append("Recommended Adjustments:\n");
+        double amountToCut = Math.min(overallDeficit, totalAdjustable);
 
-    //     for (int i = 0; i < recs.size(); i++) {
-    //         if (recs.get(i) > 0) {
-    //             sb.append(" - ").append(categories.get(i)).append(": reduce by $").append(recs.get(i)).append("\n");
-    //         }
-    //     }
+        // initial proportion
+        for (double expense : expenses) {
+            double share = expense / totalAdjustable;
+            reductions.add(share * amountToCut);
+        }
 
-    //     return sb.toString();
-    // }
+        redistributeAfterZeroCap(reductions);
+        return reductions;
+    }
 
     /**
-     * Applies adjustments to the user's expense data. By default, uses simple
-     * 10% non-rent reductions.
+     * Ensures reductions never exceed category expenses and redistributes
+     * overflow reductions proportionally.
      *
-     * @return true if adjustments were applied, false otherwise
+     * @param reductions preliminary list of reductions
      * @author Sahadat Amzad
      */
-    // public boolean applyAdjustments() {
-    //     return applyAdjustments(false); // default = simple 10% reduction
-    // }
+    private void redistributeAfterZeroCap(ArrayList<Double> reductions) {
+        double remaining = 0.0;
+
+        // Cap reductions at category max
+        for (int i = 0; i < reductions.size(); i++) {
+            double maxAllowed = expenses.get(i);
+            if (reductions.get(i) > maxAllowed) {
+                remaining += (reductions.get(i) - maxAllowed);
+                reductions.set(i, maxAllowed);
+            }
+        }
+
+        // redistribute remaining amount
+        while (remaining > 0.01) {
+            double pool = 0.0;
+
+            for (int i = 0; i < reductions.size(); i++) {
+                double room = expenses.get(i) - reductions.get(i);
+                if (room > 0) pool += room;
+            }
+
+            if (pool <= 0) break;
+
+            for (int i = 0; i < reductions.size(); i++) {
+                double room = expenses.get(i) - reductions.get(i);
+                if (room > 0) {
+                    double share = room / pool;
+                    double give = Math.min(room, remaining * share);
+                    reductions.set(i, reductions.get(i) + give);
+                    remaining -= give;
+                }
+            }
+        }
+    }
 
     /**
-     * Applies adjustments to the user's expense data.
+     * Generates a full explanation of the deficit and recommended reductions,
+     * including annual and monthly values, proportional math explanation,
+     * and special warnings for impossible scenarios.
      *
-     * @param useProportional if true, applies proportional reductions based on
-     * deficit; if false, uses simple 10% reduction for non-rent
-     * @return true if adjustments were applied, false otherwise
+     * @param reader DataReader for checking essential expenses
+     * @return formatted multi-line human-readable summary
      * @author Sahadat Amzad
      */
-    // public boolean applyAdjustments(boolean useProportional) {
-    //     ArrayList<Double> adjustments = useProportional ? proportionalReductions() : identifyAdjustments();
+    public String generateDetailedSummary(DataReader reader) {
 
-    //     boolean hasAdjustments = false;
-    //     for (double a : adjustments) {
-    //         if (a > 0) {
-    //             hasAdjustments = true;
-    //             break;
-    //         }
-    //     }
+        if (essentialExpensesCauseDeficit(reader)) {
+            return """
+                Your essential expenses (such as rent, utilities, and required transportation)
+                exceed your total income. As a result you cannot reduce your deficit.
+                """;
+        }
 
-    //     if (!hasAdjustments) {
-    //         return false;
-    //     }
+        double deficitAnnual = overallDeficit;
+        double deficitMonthly = deficitAnnual / 12.0;
 
-    //     lastAdjustments.clear();
+        ArrayList<Double> recs = proportionalReductions();
 
-    //     for (int i = 0; i < expenses.size(); i++) {
-    //         lastAdjustments.add(adjustments.get(i));
-    //         expenses.set(i, expenses.get(i) - adjustments.get(i));
-    //     }
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Annual Budget Deficit Summary ===\n");
+        sb.append("Annual deficit: $").append(deficitAnnual).append("\n");
+        sb.append("Monthly equivalent: $")
+          .append(String.format("%.2f", deficitMonthly)).append("\n\n");
 
-    //     return true;
-    // }
+        sb.append("Reductions are proportional — categories where you spend more receive\n");
+        sb.append("larger reductions to ensure fairness.\n\n");
 
-    /**
-     * Reverts previously applied adjustments to restore the original expense
-     * data.
-     *
-     * @return true if the adjustments are successfully undone; false otherwise
-     * @author Sahadat Amzad
-     */
-    // public boolean undoAdjustment() {
-    //     if (lastAdjustments.isEmpty()) {
-    //         return false;
-    //     }
+        sb.append("=== Recommended Annual Reductions ===\n");
+        for (int i = 0; i < categories.size(); i++) {
+            double annual = recs.get(i);
+            double monthly = annual / 12.0;
 
-    //     for (int i = 0; i < expenses.size(); i++) {
-    //         expenses.set(i, expenses.get(i) + lastAdjustments.get(i));
-    //     }
+            sb.append(" - ").append(categories.get(i)).append(": reduce $")
+              .append(String.format("%.2f", annual)).append(" annually (≈ $")
+              .append(String.format("%.2f", monthly)).append("/month)\n");
+        }
 
-    //     lastAdjustments.clear();
-    //     return true;
-    // }
+        return sb.toString();
+    }
 
     /**
-     * Returns the total expense amount for a given category.
+     * Returns the total adjustable spending for a specific category.
      *
-     * @param category the category name
-     * @return total expense amount; 0 if category not found
+     * @param category category name
+     * @return total spending in that category
      * @author Sahadat Amzad
      */
     public double getTotalForCategory(String category) {
@@ -240,10 +293,10 @@ public class DeficitSolver {
     }
 
     /**
-     * Calculates how much to reduce a specific category to eliminate deficit.
+     * Runs a what-if scenario where one category is reduced first.
      *
-     * @param category the chosen category
-     * @return a double array: [amountToReduce, remainingDeficit]
+     * @param category category to reduce
+     * @return array: [amount reduced, deficit remaining]
      * @author Sahadat Amzad
      */
     public double[] whatIfReduceCategory(String category) {
@@ -251,56 +304,17 @@ public class DeficitSolver {
         double catTotal = getTotalForCategory(category);
 
         if (catTotal >= deficit) {
-            return new double[]{deficit, 0.0}; // enough to cover deficit
+            return new double[]{deficit, 0.0};
         } else {
-            return new double[]{catTotal, deficit - catTotal}; // reduce all, remaining deficit
+            return new double[]{catTotal, deficit - catTotal};
         }
     }
 
     /**
-     * Calculates proportional reductions across all categories to eliminate
-     * deficit. Reductions are distributed based on each category's share of
-     * total non-rent expenses.
+     * Generates a formatted summary of a what-if scenario.
      *
-     * @return list of reductions (aligned with categories list)
-     * @author Sahadat Amzad
-     */
-    public ArrayList<Double> proportionalReductions() {
-        ArrayList<Double> reductions = new ArrayList<>();
-
-        // If there is no overall deficit, or no adjustable spending,
-        // then there is nothing to cut.
-        double totalAdjustable = 0.0;
-        for (double e : expenses) {
-            totalAdjustable += e;
-        }
-
-        if (overallDeficit <= 0.0 || totalAdjustable <= 0.0) {
-            for (int i = 0; i < categories.size(); i++) {
-                reductions.add(0.0);
-            }
-            return reductions;
-        }
-
-        // We cannot cut more than we spend in adjustable categories.
-        double amountToCut = Math.min(overallDeficit, totalAdjustable);
-
-        // Distribute amountToCut proportional to each category's share
-        for (int i = 0; i < categories.size(); i++) {
-            double share = expenses.get(i) / totalAdjustable;
-            reductions.add(share * amountToCut);
-        }
-
-        return reductions;
-    }
-
-
-    /**
-     * Generates a human-readable What-If scenario for reducing a single
-     * category to break even.
-     *
-     * @param category the chosen category
-     * @return string summarizing the reduction and remaining deficit if any
+     * @param category category being reduced
+     * @return explanation of impact on deficit
      * @author Sahadat Amzad
      */
     public String generateWhatIfSummary(String category) {
@@ -315,8 +329,8 @@ public class DeficitSolver {
         if (remaining == 0.0) {
             sb.append("This eliminates your deficit of $").append(calculateDeficit()).append("\n");
         } else {
-            sb.append("Even reducing ").append(category).append(" to zero only covers $")
-                    .append(reduced).append(" of the deficit.\n");
+            sb.append("Reducing ").append(category)
+              .append(" to zero covers $").append(reduced).append(" of the deficit.\n");
             sb.append("Remaining deficit: $").append(remaining).append("\n");
         }
 
@@ -324,7 +338,7 @@ public class DeficitSolver {
     }
 
     /**
-     * Returns a copy of the list of categories.
+     * Returns a copy of the adjustable category list.
      *
      * @return list of category names
      * @author Sahadat Amzad
@@ -334,9 +348,9 @@ public class DeficitSolver {
     }
 
     /**
-     * Returns a copy of the current expense list.
+     * Returns a copy of the adjustable expense list.
      *
-     * @return list of expense amounts
+     * @return list of expenses per category
      * @author Sahadat Amzad
      */
     public ArrayList<Double> getExpenses() {
