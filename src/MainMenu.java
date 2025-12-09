@@ -1038,7 +1038,7 @@ final class MainMenu {
                         moveOn();
                         break;
                     }
-                    System.out.println("Choose a category to see how much you can safely spend there without going into deficit:\n");
+                    System.out.println("Choose a category to see the maximum you can safely spend there without going into deficit:\n");
                     for (int i = 0; i < categories.size(); i++) {
                         System.out.println(" " + (i + 1) + ". " + categories.get(i));
                     }
