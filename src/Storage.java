@@ -20,7 +20,7 @@ import java.io.*;
  */
 
 public class Storage {
-
+	
 	/** 
      * A map storing all authentication records, where each key is a username 
      * and each value is the corresponding AuthRecord.
@@ -233,14 +233,17 @@ public class Storage {
             // Rebuild AuthRecord
             Authentication.AuthRecord rec =
                     new Authentication.AuthRecord(hashedPassword, secretQuestion, hashedSecretAnswer);
+            
+            // Normalize username before storing
+            authData.put(username.toLowerCase(), rec);
 
-            authData.put(username, rec);
+            
         }
 
     } catch (Exception e) {
         System.out.println("Error loading auth data: " + e.getMessage());
+        
     }
-    
     
 }
 }
