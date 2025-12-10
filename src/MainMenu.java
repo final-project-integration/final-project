@@ -821,8 +821,8 @@ final class MainMenu {
 			}
 		}
 	}
-    
-    
+
+
     /**
      * Displays and manages the Finances Menu for the currently signed-in user.
      *
@@ -1149,99 +1149,7 @@ final class MainMenu {
         return s;
     }
 
-    /**
-     * Handles the complete CSV upload workflow for the currently logged-in user.
-     *
-     * This method:
-     *  Prompts the user for a CSV file name or full file path
-     *  Prompts for the year associated with the CSV data
-     *  Sends the file to ModuleHub for validation
-     *  Displays summarized error messages if validation fails
-     *  Displays a success message if the upload succeeds
-     *  Allows the user to optionally view detailed warnings
-     *
-     * Invalid rows are automatically skipped while valid rows are still imported.
-     * This prevents a few bad entries from blocking the entire CSV upload.
-     *
-     * All user messaging and display logic is handled here, while actual
-     * processing and validation are delegated to ModuleHub.
-     *
-     * @param username the currently logged-in user uploading the CSV file
-     *
-     * @author Denisa Cakoni
-     */
-
-    private void handleCsvUpload(String username) {
-        clearConsole();
-
-        System.out.println("Please enter the name of the CSV file you want to upload below and");
-        System.out.println("then press enter.");
-        System.out.println("  • If the CSV is in the same folder as the JAR, just type the");
-        System.out.println("    file name (Ex: 2024_data.csv)");
-        System.out.println("  • Otherwise, paste the full file path.");
-        System.out.println();
-        System.out.print("   File name: ");
-
-        String csvFilePath = scanner.nextLine().trim();
-
-        System.out.print("Enter the year for this CSV (e.g., 2024) and press enter: ");
-        int year = getUserYear();
-
-        ValidationResult result = moduleHub.uploadCSVData(username, csvFilePath, year);
-
-        if (result == null) {
-            System.out.println();
-            System.out.println(" Unexpected error while uploading CSV.");
-            moveOn();
-            return;
-        }
-
-        if (result.hasErrors()) {
-            System.out.println();
-            System.out.println(" Your CSV could not be imported.");
-            System.out.println("Please fix the issues below and try again:");
-            System.out.println();
-
-            java.util.List<String> errors = result.getErrorMessages();
-            int limit = Math.min(errors.size(), 5);
-            for (int i = 0; i < limit; i++) {
-                String msg = errors.get(i);
-                System.out.println("  • " + msg);
-            }
-            if (errors.size() > limit) {
-                System.out.println("  (+ " + (errors.size() - limit) + " more error(s) not shown)");
-            }
-
-            moveOn();
-            return;
-        }
-
-        System.out.println();
-        System.out.println(" CSV data for " + year + " imported successfully for " + username + ".");
-
-        java.util.List<String> warnings = result.getWarningMessages();
-        if (warnings != null && !warnings.isEmpty()) {
-            System.out.println();
-            System.out.println("⚠ " + warnings.size() + " issue(s) were detected.");
-            System.out.println("   Bad rows were automatically skipped, but your valid data was saved.");
-            System.out.println();
-            System.out.print("Type 'details' to see the full list, or just press Enter to continue: ");
-
-            String choice = scanner.nextLine().trim();
-            if (choice.equalsIgnoreCase("details")) {
-                System.out.println();
-                for (String w : warnings) {
-                    System.out.println("  • " + w);
-                }
-                System.out.println();
-                System.out.println("End of validation details.");
-                moveOn();
-            }
-        } else {
-            moveOn();
-        }
-    }
-
+   
 	/**
 	 * Reports Menu
 	 * 
