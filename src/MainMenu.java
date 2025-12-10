@@ -23,12 +23,14 @@ final class MainMenu {
 	 * Connects the MainMenu to the rest of the functions from the accounts, reports, prediction, validation, and storage teams
 	 */
 	private final ModuleHub moduleHub;
+	private final ReportDisplay reportDisplay;
 
 	/**
 	 * Default constructor for MainMenu. Creates a new ModuleHub instance.
 	 */
 	private MainMenu() {
 		moduleHub = new ModuleHub();
+		reportDisplay = new ReportDisplay();
 	}
 
 	/**
@@ -126,18 +128,28 @@ final class MainMenu {
 	private AccountRecoverState accountRecover(String usernameRecovering) {
 		//If the account does not exist...
 		clearConsole();
+		BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
+		System.out.println();
+		
 		String secureQuestion = moduleHub.getUserSecretQuestion(usernameRecovering);
 		if (secureQuestion == null) {
 			clearConsole();
-			//Return the user to the login menu
-			System.out.println("No account with the username, " + usernameRecovering + ", exists.");
+			// Return the user to the login menu
+			BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
+			System.out.println();
+
+			System.out.println(BeautifulDisplay.RED + "Error: " + BeautifulDisplay.RESET
+					+ "No account with the username, " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN
+					+ usernameRecovering + BeautifulDisplay.RESET + ", exists.");
 			return AccountRecoverState.USERNAME_DNE;
 		}
 
 		//If the account exists...
 		//Print out the user's security question
-		System.out.println("To recover your account, please answer the security question for the account, " + usernameRecovering + ", below and then press enter.");
-		System.out.println(secureQuestion);
+		System.out.println("To recover your account, please answer the security question for the \naccount, "
+				+ BeautifulDisplay.BOLD + BeautifulDisplay.CYAN + usernameRecovering + BeautifulDisplay.RESET
+				+ ", below and then press enter.\n");
+		System.out.println(BeautifulDisplay.BOLD + secureQuestion + BeautifulDisplay.RESET + "\n");
 		//Get the user's answer to their security question
 		System.out.print("Answer: ");
 		String secureAnswer = scanner.nextLine();
@@ -145,6 +157,9 @@ final class MainMenu {
 		//If the user's answer to the their account's security question is incorrect
 		if (!moduleHub.verifyUserSecretAnswer(usernameRecovering, secureAnswer)) {
 			clearConsole();
+			BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
+			System.out.println();
+
 			System.out.println("Your answer to the security question was incorrect.");
 			return AccountRecoverState.INCORRECT_ANSWER;
 		}
@@ -158,24 +173,38 @@ final class MainMenu {
 		while (true) {
 			clearConsole();
 			//Let them enter a new password
-			System.out.println("Password Rules: ");
-			System.out.println("• Cannot be empty or only whitespace");
-			System.out.println("• Cannot begin or end with a space");
-			System.out.println("• Must be at least 5 characters and at most 30 characters");
+			BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
 			System.out.println();
-			System.out.println("Enter a new password for the account, " + usernameChanging + ", below and then press enter.");
-			System.out.print("  New Password: ");
+
+			System.out.println(BeautifulDisplay.BOLD + "\nPassword Rules: " + BeautifulDisplay.RESET);
+			System.out.println("   • Cannot be empty or only whitespace");
+			System.out.println("   • Cannot begin or end with a space");
+			System.out.println("   • Must be at least 5 characters and at most 30 characters");
+			BeautifulDisplay.printGradientDivider(70);
+			System.out.println();
+			System.out.println("Enter a new password for the account, " + BeautifulDisplay.CYAN + usernameChanging
+					+ BeautifulDisplay.RESET + ", below and then press enter.");
+			System.out.print(BeautifulDisplay.BOLD + "  New Password:" + BeautifulDisplay.RESET + " ");
 			String recoverNewPassword = scanner.nextLine();
 
 			if (!(moduleHub.followsPasswordRules(recoverNewPassword))) {
 				clearConsole();
-				System.out.println("Password does not follow the required format.");
-				System.out.println("What would you like to do?");
-				System.out.println("  1. Try creating a different password for your account, " + usernameChanging + ", again");
-				System.out.println("  2. Return to the login menu");
-				System.out.println("  3. Exit the application");
-				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
+				System.out.println();
 
+				BeautifulDisplay.printError("Password does not follow the required format.");
+				System.out.println("\nWhat would you like to do?");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+						+ " Try creating a different password for your account, " + BeautifulDisplay.BOLD
+						+ BeautifulDisplay.CYAN + usernameChanging + BeautifulDisplay.RESET + ", again");
+				System.out.println(
+						BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to the login menu");
+				System.out.println(
+						BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.println();
+				System.out.print("Please enter the number associated with your desired option: ");
+				
 				int recoverUserChoice = getUserChoice(3);
 				if (recoverUserChoice == 1) {
 					continue;
@@ -190,16 +219,24 @@ final class MainMenu {
 
 			System.out.println();
 			System.out.println("Re-enter your password below to confirm it and then press enter. ");
-			System.out.print("  Confirm your password: ");
+			System.out.print(BeautifulDisplay.BOLD + "  Confirm your password:" + BeautifulDisplay.RESET + " ");
 			String recoverConfirmPassword = scanner.nextLine();
 
 			if (!recoverConfirmPassword.equals(recoverNewPassword)) {
 				clearConsole();
-				System.out.println("Passwords do not match.");
-				System.out.println("What would you like to do?");
-				System.out.println("  1. Try creating a password for your account, " + usernameChanging + ",again");
-				System.out.println("  2. Return to the login menu");
-				System.out.println("  3. Exit the application");
+				BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
+				System.out.println();
+
+				BeautifulDisplay.printError("Passwords do not match.");
+				System.out.println("\nWhat would you like to do?");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+						+ " Try creating a password for your account, " + usernameChanging + ",again");
+				System.out.println(
+						BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to the login menu");
+				System.out.println(
+						BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.println();
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 
 				int secretComparePassRetryChoice = getUserChoice(3);
@@ -228,12 +265,23 @@ final class MainMenu {
 
 			//If their new password is invalid..(just for safety)
 			clearConsole();
-			System.out.println("Your new password did not meet the requirements.");
-			System.out.println("What would you like to do?");
-			System.out.println("  1. Try creating a new password for your account, " + usernameChanging + ", again");
-			System.out.println("  2. Return to the login menu");
-			System.out.println("  3. Exit the application");
+			BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
+			System.out.println();
+
+			BeautifulDisplay.printError("Your new password did not meet the requirements.");
+			System.out.println("\nWhat would you like to do?");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+					+ " Try creating a new password for your account, " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN
+					+ usernameChanging + BeautifulDisplay.RESET + ", again");
+			System.out.println(
+					BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to the login menu");
+			System.out.println(
+					BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+			BeautifulDisplay.printGradientDivider(70);
+			System.out.println();
+
 			System.out.print("Please enter the number associated with your desired option and then press enter: ");
+			
 			int recoverUserChoice = getUserChoice(3);
 
 			//Try creating a new password for your account again
@@ -263,13 +311,16 @@ final class MainMenu {
 		while (true) {
 			clearConsole();
 			//Go through login process
-			System.out.println("Enter your username below and then press enter. ");
-			System.out.print("  Username: ");
+			BeautifulDisplay.printGradientHeader("Sign In", 70);
+			System.out.println();
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "   1. " + BeautifulDisplay.RESET
+					+ "Enter your username below and then press enter. ");
+			System.out.print(BeautifulDisplay.BOLD + "         Username:" + BeautifulDisplay.RESET + " ");
 			String loginUsername = scanner.nextLine();
-			System.out.println("Enter your password below and then press enter. ");
-			System.out.print("  Password: ");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "   2. " + BeautifulDisplay.RESET
+					+ "Enter your password below and then press enter. ");
+			System.out.print(BeautifulDisplay.BOLD + "         Password:" + BeautifulDisplay.RESET + " ");
 			String loginPassword = scanner.nextLine();
-
 			//Check if the login is valid
 			boolean validLogin = moduleHub.loginUser(loginUsername, loginPassword);
 
@@ -281,13 +332,27 @@ final class MainMenu {
 			//If the login is invalid, then print invalid login menu
 			clearConsole();
 			//Print invalid login menu
-			System.out.println("The username or password you entered was incorrect.");
-			System.out.println("What would you like to do? ");
-			System.out.println("  1. Try logging in again");
-			System.out.println("  2. Forgot your password?");
-			System.out.println("  3. Return to the login menu");
-			System.out.println("  4. Exit application");
-			System.out.print("Please enter the number associated with your desired option and then press enter: ");
+			BeautifulDisplay.printGradientHeader("Sign In", 70);
+			System.out.println();
+			System.out.println("The username or password you entered was " + BeautifulDisplay.RED + "incorrect."
+					+ BeautifulDisplay.RESET);
+			System.out.println();
+
+			BeautifulDisplay.printFullWidthSectionHeader("WHAT WOULD YOU LIKE TO DO?", BeautifulDisplay.BRIGHT_GREEN,
+					70);
+			System.out.println();
+			System.out.println(
+					BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Try logging in again");
+			System.out.println(
+					BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Forgot your password?");
+			System.out.println(
+					BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to the login menu");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  4." + BeautifulDisplay.RESET + " Exit application");
+
+			System.out.println();
+			BeautifulDisplay.printGradientDivider(70);
+			System.out.print("Please enter the number associated with your desired option: ");
+			
 			int loginRetryChoice = getUserChoice(4);
 
 			//If the user wants to try logging in again, jump back to the start of the loop, so that they can try logging in again
@@ -298,10 +363,19 @@ final class MainMenu {
 			case 2: 
 				//Run account recovery process with username of their choice
 				clearConsole();
-				System.out.println("Is " + loginUsername + " the account you are trying to recover?");
-				System.out.println("  1. Yes");
-				System.out.println("  2. No");
-				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				BeautifulDisplay.printGradientHeader("Sign In", 70);
+				System.out.println();
+				BeautifulDisplay.printFullWidthSectionHeader("FORGOT PASSWORD", BeautifulDisplay.BRIGHT_GREEN, 70);
+				System.out.println();
+				System.out.println("Is " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN + loginUsername
+						+ BeautifulDisplay.RESET + " the account you are trying to recover?\n");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Yes");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " No");
+
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
+
+				System.out.print("Please enter the number associated with your desired option: ");
 				int correctUsername = getUserChoice(2);
 
 				String loginSecretUsername = null;
@@ -309,9 +383,12 @@ final class MainMenu {
 					loginSecretUsername = loginUsername;
 				}
 				else {
-					clearConsole(); 
-					System.out.println("Please enter the username of the account you are trying to recover and then press enter."); 
-					System.out.print("  Username: "); 
+					BeautifulDisplay.printGradientHeader("Sign In", 70);
+					System.out.println();
+					BeautifulDisplay.printFullWidthSectionHeader("FORGOT PASSWORD", BeautifulDisplay.BRIGHT_GREEN, 70);
+					System.out.println();
+					System.out.println("Please enter the username of the account you are trying to recover.");
+					System.out.print(BeautifulDisplay.BOLD + "     Username:" + BeautifulDisplay.RESET + " ");				
 					loginSecretUsername = scanner.nextLine();
 				}
 
@@ -321,17 +398,28 @@ final class MainMenu {
 
 					switch (forgotPasswordReturn) {
 					case USERNAME_DNE:
-						System.out.println("What would you like to do?");
-						System.out.println("  1. Try recovering a different account");
-						System.out.println("  2. Return to the login menu");
-						System.out.println("  3. Exit the application");
-						System.out.print("Please enter the number associated with your desired option and then press enter: ");
+						System.out.println("\nWhat would you like to do?\n");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+								+ " Try recovering a different account");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+								+ " Return to the login menu");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET
+								+ " Exit the application");
+						System.out.println();
+						BeautifulDisplay.printGradientDivider(70);
+						System.out.print("Please enter the number associated with your desired option: ");
+						
 						int recoverAgainChoice = getUserChoice(3);
 
 						if (recoverAgainChoice == 1) {
 							clearConsole(); 
-							System.out.println("Please enter the username of the account you are trying to recover and then press enter."); 
-							System.out.print("  Username: "); 
+							
+							BeautifulDisplay.printGradientHeader("ACCOUNT RECOVERY", 70);
+							System.out.println();
+							System.out.println(
+									"Please enter the username of the account you are trying to recover and \nthen press enter.");
+							System.out.print(BeautifulDisplay.BOLD + "  Username:" + BeautifulDisplay.RESET + " ");
+							
 							loginSecretUsername = scanner.nextLine();
 							continue;
 						}
@@ -346,10 +434,16 @@ final class MainMenu {
 					case INCORRECT_ANSWER:
 						if (retries < 3) {
 							System.out.println("What would you like to do?");
-							System.out.println("  1. Try answering your security question again");
-							System.out.println("  2. Return to the login menu");
-							System.out.println("  3. Exit the application");
-							System.out.print("Please enter the number associated with your desired option and then press enter: ");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+									+ " Try answering your security question again");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+									+ " Return to the login menu");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET
+									+ " Exit the application");
+							System.out.println();
+							BeautifulDisplay.printGradientDivider(70);
+							System.out.print("Please enter the number associated with your desired option: ");
+						
 							int incorrectChoice = getUserChoice(3);
 
 							if (incorrectChoice == 1) {
@@ -366,12 +460,16 @@ final class MainMenu {
 
 						else {
 							System.out.println();
-							System.out.println("Too many account recovery attempts.");
-							System.out.println("You can either return to the login menu or exit the application.");
-							System.out.println("What would you like to do?");
-							System.out.println("  1. Return to the login menu");
-							System.out.println("  2. Exit the application");
-							System.out.print("Please enter the number associated with your desired option and then press enter: ");
+							BeautifulDisplay.printError("Too many account recovery attempts.");
+							System.out.println("\nYou can either return to the login menu or exit the application.");
+							System.out.println("What would you like to do?\n");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+									+ " Return to the login menu");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+									+ " Exit the application");
+							System.out.println();
+							BeautifulDisplay.printGradientDivider(70);
+							System.out.print("Please enter the number associated with your desired option: ");
 
 							int exitChoice = getUserChoice(2);
 							if (exitChoice == 1) {
@@ -410,15 +508,17 @@ final class MainMenu {
 			String registerUsername = null;
 			while (true) {
 				clearConsole();
-				System.out.println("Username Rules: ");
+				BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+				System.out.println();
+				System.out.println(BeautifulDisplay.BOLD + "Username Rules: " + BeautifulDisplay.RESET);
 				System.out.println("• Cannot be empty or only whitespace");
 				System.out.println("• Cannot begin or end with a space");
-				System.out.println("• Must only include letter or numbers");
+				System.out.println("• Must only include letters or numbers");
 				System.out.println("• Must be at least 3 characters and at most 20 characters");
 				System.out.println();
-
-				System.out.println("Enter your username below and then press enter. ");
-				System.out.print("What would you like your username to be? ");
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.print(BeautifulDisplay.BOLD + "Enter your username here:" + BeautifulDisplay.RESET + " ");
+				
 				registerUsername = scanner.nextLine();
 
 				if (moduleHub.followsUsernameRules(registerUsername)) {
@@ -426,13 +526,19 @@ final class MainMenu {
 				}
 				else {
 					clearConsole();
-					System.out.println("Username does not follow the required format.");
-					System.out.println("What would you like to do?");
-					System.out.println("  1. Try creating a different username for your new account");
-					System.out.println("  2. Return to the login menu");
-					System.out.println("  3. Exit the application");
-					System.out.print("Please enter the number associated with your desired option and then press enter: ");
-
+					BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+					BeautifulDisplay.printError("Username does not follow the required format.");
+					System.out.println("\nWhat would you like to do?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+							+ " Try creating a different username for your new account");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+							+ " Return to the login menu");
+					System.out.println(
+							BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
+					System.out.print("Please enter the number associated with your desired option: ");
+					
 					int usernameRetryChoice = getUserChoice(3);
 					if (usernameRetryChoice == 1) {
 						continue;
@@ -449,24 +555,34 @@ final class MainMenu {
 			String registerPassword = null;
 			while(true) {
 				clearConsole();
-				System.out.println("Password Rules: ");
-				System.out.println("• Cannot be empty or only whitespace");
-				System.out.println("• Cannot begin or end with a space");
-				System.out.println("• Must be at least 5 characters and at most 30 characters");
+				BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
 				System.out.println();
-
-				System.out.println("Enter your password below and then press enter. ");
-				System.out.print("What would you like your password to be? ");
+				System.out.println(BeautifulDisplay.BOLD + "Password Rules: " + BeautifulDisplay.RESET);
+				System.out.println("   • Cannot be empty or only whitespace");
+				System.out.println("   • Cannot begin or end with a space");
+				System.out.println("   • Must be at least 5 characters and at most 30 characters");
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.print(BeautifulDisplay.BOLD + "Enter your password here:" + BeautifulDisplay.RESET + " ");
+				
 				registerPassword = scanner.nextLine();
 
 				if (!(moduleHub.followsPasswordRules(registerPassword))) {
 					clearConsole();
-					System.out.println("Password does not follow the required format.");
+					
+					BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+					BeautifulDisplay.printError("Password does not follow the required format.");
+					System.out.println();
 					System.out.println("What would you like to do?");
-					System.out.println("  1. Try creating a different password for your new account");
-					System.out.println("  2. Return to the login menu");
-					System.out.println("  3. Exit the application");
-					System.out.print("Please enter the number associated with your desired option and then press enter: ");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+							+ " Try creating a different password for your new account");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+							+ " Return to the login menu");
+					System.out.println(
+							BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
+					System.out.print("Please enter the number associated with your desired option: ");
 
 					int passwordRetryChoice = getUserChoice(3);
 					if (passwordRetryChoice == 1) {
@@ -482,7 +598,8 @@ final class MainMenu {
 
 				System.out.println();
 				System.out.println("Re-enter your password below to confirm it and then press enter. ");
-				System.out.print("Confirm your password: ");
+				System.out.print(BeautifulDisplay.BOLD + "Confirm your password:" + BeautifulDisplay.RESET + " ");
+	
 				String confirmPassword = scanner.nextLine();
 
 				if (confirmPassword.equals(registerPassword)) {
@@ -490,13 +607,19 @@ final class MainMenu {
 				}
 				else {
 					clearConsole();
-					System.out.println("Passwords do not match.");
-					System.out.println("What would you like to do?");
-					System.out.println("  1. Try creating a password for your new account again");
-					System.out.println("  2. Return to the login menu");
-					System.out.println("  3. Exit the application");
-					System.out.print("Please enter the number associated with your desired option and then press enter: ");
-
+					BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+					BeautifulDisplay.printError("Passwords do not match.");
+					System.out.println("\nWhat would you like to do?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+							+ " Try creating a password for your new account again");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+							+ " Return to the login menu");
+					System.out.println(
+							BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
+					System.out.print("Please enter the number associated with your desired option: ");
+					
 					int comparePassRetryChoice = getUserChoice(3);
 					if (comparePassRetryChoice == 1) {
 						continue;
@@ -511,17 +634,26 @@ final class MainMenu {
 			}
 
 			clearConsole();
-			System.out.println("Pick one of the security questions below and then press enter. ");
-			System.out.println("  1. What was your childhood nickname?");
-			System.out.println("  2. What is the name of your favorite childhood friend?");
-			System.out.println("  3. What was the name of your first stuffed animal?");
-			System.out.println("  4. What was the name of the first school you remember attending?");
-			System.out.println("  5. What was the destination of your most memorable school field trip?");
-			System.out.println("  6. What was your driving instructor’s first name?");
+			BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
 			System.out.println();
-
-			System.out.println("Please enter the number associated with the question that you want to be your security question and then press enter: ");
-			System.out.print("What would you like your security question to be? ");
+			System.out.println("Pick one of the security questions below and then press enter. ");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+					+ " What was your childhood nickname?");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+					+ " What is the name of your favorite childhood friend?");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET
+					+ " What was the name of your first stuffed animal?");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  4." + BeautifulDisplay.RESET
+					+ " What was the name of the first school you remember attending?");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  5." + BeautifulDisplay.RESET
+					+ " What was the destination of your most memorable school field trip?");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  6." + BeautifulDisplay.RESET
+					+ " What was your driving instructor’s first name?");
+			System.out.println();
+			BeautifulDisplay.printGradientDivider(70);
+			System.out.println(
+					"Please enter the number associated with the question that you want to \nbe your security question and then press enter: ");
+			
 			int secretQuestionChoice = getUserChoice(6);
 
 			String registerSecretQuestion = null;
@@ -547,20 +679,36 @@ final class MainMenu {
 			}
 
 			clearConsole();
-			System.out.println("The security question you chose was: " + registerSecretQuestion);
-			System.out.print("What would you like your answer to your chosen security question to be? ");
+			BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+			System.out.println();
+
+			System.out.println("The security question you chose was: \n\n" + BeautifulDisplay.BOLD
+					+ registerSecretQuestion + BeautifulDisplay.RESET);
+			System.out.println("\nWhat would you like your answer to your chosen security question to be? ");
+			System.out.print(BeautifulDisplay.BOLD + "   ▶" + BeautifulDisplay.RESET + " ");
 			String registerSecretAnswer = scanner.nextLine();
 
 			clearConsole();
+			BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+			System.out.println();
+
 			System.out.println("Please confirm that these are the credentials that you want for your account.");
-			System.out.println("Username: " + registerUsername);
-			System.out.println("Password: " + "*".repeat(registerPassword.length()));
-			System.out.println("Security Question: " + registerSecretQuestion);
-			System.out.println("Security Question Answer: " + "*".repeat(registerSecretAnswer.length()));
-			System.out.println("Are you sure these are the credentials that you want for your account? ");
-			System.out.println(" 1. Yes");
-			System.out.println(" 2. No");
-			System.out.print("Please enter the number associated with your desired option and then press enter: ");
+			System.out.println("Username: " + BeautifulDisplay.BOLD + registerUsername + BeautifulDisplay.RESET);
+			System.out.println("Password: " + BeautifulDisplay.BOLD + "*".repeat(registerPassword.length())
+					+ BeautifulDisplay.RESET);
+			System.out.println(
+					"Security Question: " + BeautifulDisplay.BOLD + registerSecretQuestion + BeautifulDisplay.RESET);
+			System.out.println("Security Question Answer: " + BeautifulDisplay.BOLD
+					+ "*".repeat(registerSecretAnswer.length()) + BeautifulDisplay.RESET);
+			System.out.println("\nAre you sure these are the credentials that you want for your account?\n");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + " 1." + BeautifulDisplay.RESET + " Yes");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + " 2." + BeautifulDisplay.RESET + " No");
+
+			System.out.println();
+			BeautifulDisplay.printGradientDivider(70);
+			System.out.print("Please enter the number associated with your desired option: ");
+
+			
 			int surety = getUserChoice(2);
 
 			if (surety == 1) {
@@ -569,7 +717,10 @@ final class MainMenu {
 
 				if (isValidAccount) {
 					clearConsole();
-					System.out.println("Your account has been successfully created.");
+					BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+					System.out.println();
+
+					BeautifulDisplay.printSuccess("Your account has been successfully created!");
 					System.out.print("Press enter when you are ready to return to the login menu...");
 					scanner.nextLine();
 					return;
@@ -577,12 +728,23 @@ final class MainMenu {
 
 				else {
 					clearConsole();
-					System.out.println("The account credentials you entered were invalid or the username is already in use.");
+					BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+					System.out.println();
+
+					System.out.println(
+							"The account credentials you entered were invalid or the username is already in use.");
 					System.out.println("What would you like to do?");
-					System.out.println("  1. Try creating an account again");
-					System.out.println("  2. Return to the login menu");
-					System.out.println("  3. Exit the application");
-					System.out.print("Please enter the number associated with your desired option and then press enter: ");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+							+ " Try creating an account again");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+							+ " Return to the login menu");
+					System.out.println(
+							BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
+					System.out.print("Please enter the number associated with your desired option: ");
+
 					int sureRetryChoice = getUserChoice(3);
 
 					if (sureRetryChoice == 1) {
@@ -598,11 +760,21 @@ final class MainMenu {
 
 			} else {
 				clearConsole();
+				BeautifulDisplay.printGradientHeader("ACCOUNT CREATION", 70);
+				System.out.println();
+
 				System.out.println("What would you like to do next?");
-				System.out.println("  1. Try creating an account again");
-				System.out.println("  2. Return to the login menu");
-				System.out.println("  3. Exit the application");
-				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+						+ " Try creating an account again");
+				System.out.println(
+						BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to the login menu");
+				System.out.println(
+						BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.print("Please enter the number associated with your desired option: ");
+				
 				int unsureRetryChoice = getUserChoice(3);
 
 				if (unsureRetryChoice == 1) {
@@ -670,12 +842,16 @@ final class MainMenu {
                     boolean uploadingFile = true;
                     while (uploadingFile) {
                         clearConsole();
-                        System.out.println("--- CSV Loader ---");
-                        System.out.println("Please enter the name of the CSV file you want to upload below and then press enter.");
-                        System.out.println("• If the CSV is in the same folder as the JAR, just type the file name (Ex: 2024_data.csv)");
-                        System.out.println("• Otherwise, paste the full file path.");
-                        System.out.print("File name: ");
-                        String csvFilePath = scanner.nextLine().trim();
+                        BeautifulDisplay.printGradientHeader("CSV Loader", 70);
+    					System.out.println(
+    							"\n   Please enter the name of the CSV file you want to upload below and\n   then press enter.");
+    					System.out.println(
+    							"        • If the CSV is in the same folder as the JAR, just type the\n        file name (Ex: 2024_data.csv)");
+    					System.out.println("        • Otherwise, paste the full file path.\n");
+    					BeautifulDisplay.printGradientDivider(70);
+    					System.out.print(BeautifulDisplay.BOLD + "\n   File name:" + BeautifulDisplay.RESET + " ");
+    					
+    					String csvFilePath = scanner.nextLine().trim();
 
                         File file = new File(csvFilePath);
                         String fileName = file.getName();
@@ -694,12 +870,22 @@ final class MainMenu {
                         // If no valid year in range, show a friendly message instead of crashing
                         if (year == null || year < 1900 || year > 2100) {
                             clearConsole();
-                            System.out.println("Your CSV file must begin with a valid year.");
-                            System.out.println("Example: 2024_data.csv");
-                            System.out.println("Would you like to try uploading your CSV file again or return to the Finances Menu?");
-                            System.out.println("  1. Try uploading a CSV file again");
-                            System.out.println("  2. Return to Finances Menu");
-                            System.out.print("Please enter the number associated with your desired option and then press enter: ");
+                            BeautifulDisplay.printGradientHeader("CSV Loader", 70);
+    						System.out.println(BeautifulDisplay.BOLD + "\nERROR: " + BeautifulDisplay.RESET
+    								+ "Your CSV file must begin with a valid year.");
+    						System.out.println(BeautifulDisplay.BOLD + "Example: 2024_data.csv\n" + BeautifulDisplay.RESET);
+    						
+    						BeautifulDisplay.printFullWidthSectionHeader("WHAT WOULD YOU LIKE TO DO?",
+    								BeautifulDisplay.BRIGHT_GREEN, 70);
+    						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "\n  1." + BeautifulDisplay.RESET
+    								+ " Try uploading a CSV file again");
+    						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+    								+ " Return to Finances Menu");
+
+    						System.out.println();
+    						BeautifulDisplay.printGradientDivider(70);
+    						System.out.print("Please enter the number associated with your desired option: ");
+    						
                             int retryFileChoice = getUserChoice(2);
 
                             if (retryFileChoice == 1) {
@@ -712,12 +898,21 @@ final class MainMenu {
                         // If that user already has data for that year, ask what to do
                         if (moduleHub.hasDataForYear(currentUser, year)) {
                             clearConsole();
-                            System.out.println("Data already exists for " + year + ".");
-                            System.out.println("What would you like to do?");
-                            System.out.println("  1. Overwrite existing data");
-                            System.out.println("  2. Choose a different CSV");
-                            System.out.println("  3. Return to Finances Menu");
-                            System.out.print("Please enter the number associated with your desired option and then press enter: ");
+                            BeautifulDisplay.printGradientHeader("CSV Loader", 70);
+    						System.out.println(BeautifulDisplay.BOLD + "Data already exists for " + year + ".\n" + BeautifulDisplay.RESET);
+    						
+    						System.out.println("What would you like to do?");
+    						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+    								+ " Overwrite existing data");
+    						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+    								+ " Choose a different CSV");
+    						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET
+    								+ " Return to Finances Menu");
+
+    						System.out.println();
+    						BeautifulDisplay.printGradientDivider(70);
+    						System.out.print("Please enter the number associated with your desired option: ");
+                            
                             int overwriteChoice = getUserChoice(3);
 
                             if (overwriteChoice == 2) {
@@ -741,17 +936,27 @@ final class MainMenu {
 
                             while (viewingErrors) {
                                 clearConsole();
-                                BeautifulDisplay.printError("CSV Upload Failed:");
-                                System.out.println();
-                                System.out.println("We found " + result.getErrorMessages().size() + " error(s) in your CSV.");
-                                if (!result.getWarningMessages().isEmpty()) {
-                                    System.out.println("There were also " + result.getWarningMessages().size() + " warning(s).");
-                                }
-                                System.out.println("What would you like to do?");
-                                System.out.println("  1. Try a different CSV");
-                                System.out.println("  2. View error details");
-                                System.out.println("  3. Return to Finances Menu");
-                                System.out.print("Please enter the number associated with your desired option and then press enter: ");
+                                BeautifulDisplay.printGradientHeader("CSV Loader", 70);
+    							BeautifulDisplay.printError("CSV Upload Failed:");
+
+    							System.out.println();
+    							System.out.println("We found " + result.getErrorMessages().size() + BeautifulDisplay.RED
+    									+ " error(s) " + BeautifulDisplay.RESET + "in your CSV.");
+    							if (!result.getWarningMessages().isEmpty()) {
+    								System.out.println(
+    										"There were also " + result.getWarningMessages().size() + " warning(s).");
+    							}
+    							System.out.println("What would you like to do?");
+    							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+    									+ " Try a different CSV");
+    							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+    									+ " View error details");
+    							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET
+    									+ " Return to Finances Menu");
+    							System.out.println();
+    							BeautifulDisplay.printGradientDivider(70);
+    							System.out.print("Please enter the number associated with your desired option: ");
+
                                 int afterErrorChoice = getUserChoice(3);
 
                                 if (afterErrorChoice == 1) {
@@ -760,7 +965,9 @@ final class MainMenu {
                                 }
                                 else if (afterErrorChoice == 2) {
                                     clearConsole();
-                                    BeautifulDisplay.printError("CSV Error Details:");
+                                    BeautifulDisplay.printGradientHeader("CSV Loader", 70);
+    								BeautifulDisplay.printError("CSV Error Details:");
+                                    
                                     int shown = 0;
                                     for (String msg : result.getErrorMessages()) {
                                         System.out.println(" • " + msg);
@@ -802,12 +1009,16 @@ final class MainMenu {
                         //  If duplicates exist, give the user the required choice:
                         // "Continue import with duplicates" vs "Cancel and clean CSV."
                         if (hasDuplicateWarning) {
-                            System.out.println("Duplicate transactions were found in this CSV.");
-                            System.out.println("What would you like to do?");
-                            System.out.println("  1. Continue import with duplicates");
-                            System.out.println("  2. Cancel and clean CSV");
-                            System.out.print("Please enter the number associated with your desired option and then press enter: ");
-                            int dupChoice = getUserChoice(2);
+                        	System.out.println(BeautifulDisplay.BOLD + "Duplicate transactions were found in this CSV." + BeautifulDisplay.RESET);
+    						System.out.println("What would you like to do?");
+    						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Continue import with duplicates");
+    						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Cancel and clean CSV");
+    						
+    						System.out.println();
+    						BeautifulDisplay.printGradientDivider(70);
+    						System.out.print("Please enter the number associated with your desired option: ");
+    						
+                        	int dupChoice = getUserChoice(2);
 
                             if (dupChoice == 2) {
                                 clearConsole();
@@ -873,22 +1084,111 @@ final class MainMenu {
 	 * @author Shazadul Islam
 	 */ 
 	private boolean reportsMenu(String currentUser) {
+		boolean plzEnterYearInRangeRep = false;
+		boolean plzEnterValidYearRep = false;
 		while(true) {
 			clearConsole();
 			moduleHub.callStorage("listyears", currentUser, 0);
 			System.out.println();
 			System.out.println("Please enter the year you would like reports about below and then press enter. ");
+			if (plzEnterYearInRangeRep) {
+				System.out.println("Please make sure that the year you enter is between 1900 and 2100.");
+				plzEnterYearInRangeRep = false;
+			} else if (plzEnterValidYearRep) {
+				System.out.println("Please make sure that the year you enter is digits only(e.g., 1999 or 2024).");
+				plzEnterValidYearRep = false;
+			}
+			System.out.println(
+					"If you have changed your mind about viewing the reports of a year, just press enter without any input.");
 			System.out.print("Year that you would like reports about: ");
-			int year = getUserYear();
+
+			String reportsInput = scanner.nextLine();
+
+			if (reportsInput.trim().isEmpty()) {
+				clearConsole();
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " View the reports of a different year");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.print("Please enter the number associated with your desired option: ");
+				int exitChoice = getUserChoice(3);
+
+				if (exitChoice == 1) {
+					continue;
+				} else if (exitChoice == 2) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+			
+			int year;
+			try {
+				year = Integer.parseInt(reportsInput);
+				if ((year < 1900) || (year > 2100)) {
+					clearConsole();
+					if (year < 1900) {
+						System.out.println(
+								"The year you entered is too far into the past. The earliest allowed year is 1900.");
+					} else if (year > 2100) {
+						System.out.println(
+								"The year you entered is too far into the future. The latest allowed year is 2100.");
+					}
+					System.out.println("What would you like to do?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " View the reports of a different year");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
+					System.out.print("Please enter the number associated with your desired option: ");
+					
+					int rangeYearChoice = getUserChoice(3);
+
+					if (rangeYearChoice == 1) {
+						plzEnterYearInRangeRep = true;
+						continue;
+					} else if (rangeYearChoice == 2) {
+						return false;
+					} else {
+						return true;
+					}
+				}
+
+			} catch (NumberFormatException e) {
+				clearConsole();
+				System.out.println("Your input, " + reportsInput + " , is not a valid year.");
+				System.out.println("What would you like to do?");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " View the reports of a different year");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.print("Please enter the number associated with your desired option: ");
+				
+				int invalidYearChoice = getUserChoice(3);
+
+				if (invalidYearChoice == 1) {
+					plzEnterValidYearRep = true;
+					continue;
+				} else if (invalidYearChoice == 2) {
+					return false;
+				} else {
+					return true;
+				}
+			}
 
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
 				System.out.println("There is no data for " + year + ".");
 				System.out.println("What would you like to do?");
-				System.out.println("  1. View the reports of a different year");
-				System.out.println("  2. Return to Finance Menu");
-				System.out.println("  3. Return to Main Menu");
-				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " View the reports of a different year");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.print("Please enter the number associated with your desired option: ");
+
 				int userChoice = getUserChoice(3);
 
 				if (userChoice == 1) {
@@ -952,13 +1252,92 @@ final class MainMenu {
 	 * @author Shazadul Islam
 	 */ 
 	private boolean predictionMenu(String currentUser) {
+		boolean plzEnterYearInRangePred = false;
+		boolean plzEnterValidYearPred = false;
 		while(true) {
 			clearConsole();
 			moduleHub.callStorage("listyears", currentUser, 0);
 			System.out.println();
-			System.out.println("Please enter the year you would like predictions about below and then press enter. ");
+			System.out.println("Please enter the year you would like predictions about below and then press enter.");
+			if (plzEnterYearInRangePred) {
+				System.out.println("Please make sure that the year you enter is between 1900 and 2100.");
+				plzEnterYearInRangePred = false;
+			} else if (plzEnterValidYearPred) {
+				System.out.println("Please make sure that the year you enter is digits only(e.g., 1999 or 2024).");
+				plzEnterValidYearPred = false;
+			}
+			System.out.println(
+					"If you have changed your mind about viewing the predictions of a year, just press enter without any input.");
 			System.out.print("Year that you would like predictions about: ");
-			int year = getUserYear();
+			String predictionInput = scanner.nextLine();
+
+			if (predictionInput.trim().isEmpty()) {
+				clearConsole();
+				System.out.println("What would you like to do?");
+				System.out.println("  1. View the predictions of a different year");
+				System.out.println("  2. Return to Finance Menu");
+				System.out.println("  3. Return to Main Menu");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				int exitChoice = getUserChoice(3);
+
+				if (exitChoice == 1) {
+					continue;
+				} else if (exitChoice == 2) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+
+			int year;
+			try {
+				year = Integer.parseInt(predictionInput);
+				if ((year < 1900) || (year > 2100)) {
+					clearConsole();
+					if (year < 1900) {
+						System.out.println(
+								"The year you entered is too far into the past. The earliest allowed year is 1900.");
+					} else if (year > 2100) {
+						System.out.println(
+								"The year you entered is too far into the future. The latest allowed year is 2100.");
+					}
+					System.out.println("What would you like to do?");
+					System.out.println("  1. View the predictions of a different year");
+					System.out.println("  2. Return to Finance Menu");
+					System.out.println("  3. Return to Main Menu");
+					System.out.print(
+							"Please enter the number associated with your desired option and then press enter: ");
+					int rangeYearChoice = getUserChoice(3);
+
+					if (rangeYearChoice == 1) {
+						plzEnterYearInRangePred = true;
+						continue;
+					} else if (rangeYearChoice == 2) {
+						return false;
+					} else {
+						return true;
+					}
+				}
+
+			} catch (NumberFormatException e) {
+				clearConsole();
+				System.out.println("Your input, " + predictionInput + " , is not a valid year.");
+				System.out.println("What would you like to do?");
+				System.out.println("  1. View the predictions of a different year");
+				System.out.println("  2. Return to Finance Menu");
+				System.out.println("  3. Return to Main Menu");
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				int invalidYearChoice = getUserChoice(3);
+
+				if (invalidYearChoice == 1) {
+					plzEnterValidYearPred = true;
+					continue;
+				} else if (invalidYearChoice == 2) {
+					return false;
+				} else {
+					return true;
+				}
+			}
 
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
@@ -988,9 +1367,9 @@ final class MainMenu {
 				// Pretty predictions screen
 				BeautifulDisplay.printPredictionsMenu(year);
 
-				userChoice = getUserChoice(8);
+				int workingYearChoice = getUserChoice(8);
 
-				switch (userChoice) {
+				switch (workingYearChoice) {
 				case 1:
 					clearConsole();
 					moduleHub.runPrediction(currentUser, year, "summary");
@@ -1077,24 +1456,24 @@ final class MainMenu {
 		while(true) {
 			clearConsole();
 			BeautifulDisplay.printDataManagementMenu();
-			int userChoice = getUserChoice(3);
+			int dataManageChoice = getUserChoice(3);
 
-			switch (userChoice) {
+			switch (dataManageChoice) {
 			case 1:
-				boolean plzEnterYearInRange = false;
-				boolean plzEnterValidYear = false;
+				boolean plzEnterYearInRangeDel = false;
+				boolean plzEnterValidYearDel = false;
 				while (true) {
 					clearConsole();
 					moduleHub.callStorage("listyears", currentUser, 0);
 					System.out.println();
 					System.out.println("Please enter the year of the CSV file you would like to delete below and then press enter. ");
-					if (plzEnterYearInRange) {
+					if (plzEnterYearInRangeDel) {
 						System.out.println("Please make sure that the year you enter is between 1900 and 2100.");
-						plzEnterYearInRange = false;
+						plzEnterYearInRangeDel = false;
 					}
-					else if (plzEnterValidYear) {
+					else if (plzEnterValidYearDel) {
 						System.out.println("Please make sure that the year you enter is digits only(e.g., 1999 or 2024).");
-						plzEnterValidYear = false;
+						plzEnterValidYearDel = false;
 					}
 					System.out.println("If you have decided not to delete a CSV file anymore, just press enter without any input.");
 					System.out.print("Year of the CSV file you would like to delete or exit file deletion: ");
@@ -1107,12 +1486,12 @@ final class MainMenu {
 						System.out.println("  2. Return to Finance Menu");
 						System.out.println("  3. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						userChoice = getUserChoice(3);
+						int noDataChoice = getUserChoice(3);
 
-						if (userChoice == 1) {
+						if (noDataChoice == 1) {
 							continue;
 						}
-						else if (userChoice == 2) {
+						else if (noDataChoice == 2) {
 							return false;
 						}
 						else {
@@ -1136,13 +1515,14 @@ final class MainMenu {
 							System.out.println("  2. Return to Finance Menu");
 							System.out.println("  3. Return to Main Menu");
 							System.out.print("Please enter the number associated with your desired option and then press enter: ");
-							userChoice = getUserChoice(3);
+							
+							int rangeYearChoice = getUserChoice(3);
 
-							if (userChoice == 1) {
-								plzEnterYearInRange = true;
+							if (rangeYearChoice == 1) {
+								plzEnterYearInRangeDel = true;
 								continue;
 							}
-							else if (userChoice == 2) {
+							else if (rangeYearChoice == 2) {
 								return false;
 							}
 							else {
@@ -1158,13 +1538,13 @@ final class MainMenu {
 						System.out.println("  2. Return to Finance Menu");
 						System.out.println("  3. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						userChoice = getUserChoice(3);
+						int invalidYearChoice = getUserChoice(3);
 
-						if (userChoice == 1) {
-							plzEnterValidYear = true;
+						if (invalidYearChoice == 1) {
+							plzEnterValidYearDel = true;
 							continue;
 						}
-						else if (userChoice == 2) {
+						else if (invalidYearChoice == 2) {
 							return false;
 						}
 						else {
@@ -1180,12 +1560,12 @@ final class MainMenu {
 						System.out.println("  2. Return to Finance Menu");
 						System.out.println("  3. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						userChoice = getUserChoice(3);
+						int noDataChoice = getUserChoice(3);
 
-						if (userChoice == 1) {
+						if (noDataChoice == 1) {
 							continue;
 						}
-						else if (userChoice == 2) {
+						else if (noDataChoice == 2) {
 							return false;
 						}
 						else {
@@ -1200,9 +1580,9 @@ final class MainMenu {
 					System.out.println("  1. Yes");
 					System.out.println("  2. No");
 					System.out.print("Please enter the number associated with your desired option and then press enter: ");
-					userChoice = getUserChoice(2);
+					int deleteAnotherChoice = getUserChoice(2);
 
-					if (userChoice == 1) {
+					if (deleteAnotherChoice == 1) {
 						continue;
 					}
 					else {
@@ -1211,9 +1591,9 @@ final class MainMenu {
 						System.out.println("  1. Return to Finance Menu");
 						System.out.println("  2. Return to Main Menu");
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
-						userChoice = getUserChoice(2);
+						int returnChoice = getUserChoice(2);
 
-						if (userChoice == 1) {
+						if (returnChoice == 1) {
 							return false;
 						}
 						else {
@@ -1234,24 +1614,38 @@ final class MainMenu {
 		while (true) {
 			clearConsole();
 			//Let them enter a new password
-			System.out.println("Password Rules: ");
-			System.out.println("• Cannot be empty or only whitespace");
-			System.out.println("• Cannot begin or end with a space");
-			System.out.println("• Must be at least 5 characters and at most 30 characters");
+			BeautifulDisplay.printGradientHeader("CHANGE PASSWORD", 70);
 			System.out.println();
-			System.out.println("Enter a new password for the account, " + usernameChanging + ", below and then press enter.");
-			System.out.print("  New Password: ");
+			System.out.println(BeautifulDisplay.BOLD + "Password Rules: " + BeautifulDisplay.RESET);
+			System.out.println("   • Cannot be empty or only whitespace");
+			System.out.println("   • Cannot begin or end with a space");
+			System.out.println("   • Must be at least 5 characters and at most 30 characters");
+			System.out.println();
+			BeautifulDisplay.printGradientDivider(70);
+
+			System.out.println("Enter a new password for the account, " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN
+					+ usernameChanging + BeautifulDisplay.RESET + ", below and then press enter.");
+			System.out.print(BeautifulDisplay.BOLD + "  New Password:" + BeautifulDisplay.RESET + " ");
+			
 			String decideNewPassword = scanner.nextLine();
 
 			if (!(moduleHub.followsPasswordRules(decideNewPassword))) {
 				clearConsole();
-				System.out.println("Password does not follow the required format.");
+				BeautifulDisplay.printGradientHeader("CHANGE PASSWORD", 70);
+				System.out.println();
+				BeautifulDisplay.printError("Password does not follow the required format.");
 				System.out.println("What would you like to do?");
-				System.out.println("  1. Try creating a different password for your account, " + usernameChanging + ", again");
-				System.out.println("  2. Return to the account settings menu");
-				System.out.println("  3. Exit the application");
-				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+						+ " Try creating a different password for your account, " + BeautifulDisplay.BOLD
+						+ BeautifulDisplay.CYAN + usernameChanging + BeautifulDisplay.RESET + ", again");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+						+ " Return to the account settings menu");
+				System.out.println(
+						BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
 
+				BeautifulDisplay.printGradientDivider(70);
+				System.out.print("Please enter the number associated with your desired option and then press enter: ");
+				
 				int decideUserChoice = getUserChoice(3);
 				if (decideUserChoice == 1) {
 					continue;
@@ -1266,16 +1660,22 @@ final class MainMenu {
 
 			System.out.println();
 			System.out.println("Re-enter your password below to confirm it and then press enter. ");
-			System.out.print("  Confirm your password: ");
+			System.out.print(BeautifulDisplay.BOLD + "  Confirm your password:" + BeautifulDisplay.RESET + " ");
+			
 			String recoverConfirmPassword = scanner.nextLine();
 
 			if (!recoverConfirmPassword.equals(decideNewPassword)) {
 				clearConsole();
-				System.out.println("Passwords do not match.");
+				BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
+				System.out.println("\nPasswords do not match.");
 				System.out.println("What would you like to do?");
-				System.out.println("  1. Try creating a password for your account, " + usernameChanging + ",again");
-				System.out.println("  2. Return to the account settings menu");
-				System.out.println("  3. Exit the application");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+						+ " Try creating a password for your account, " + usernameChanging + ",again");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+						+ " Return to the account settings menu");
+				System.out.println(
+						BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+				BeautifulDisplay.printGradientDivider(70);
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 
 				int decideComparePassRetryChoice = getUserChoice(3);
@@ -1305,12 +1705,17 @@ final class MainMenu {
 
 			//If their new password is invalid..(just for safety)
 			clearConsole();
-			System.out.println("Your new password did not meet the requirements.");
+			BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
+			System.out.println("\nYour new password did not meet the requirements.");
 			System.out.println("What would you like to do?");
-			System.out.println("  1. Try creating a new password for your account, " + usernameChanging + ", again");
-			System.out.println("  2. Return to the account settings menu");
-			System.out.println("  3. Exit the application");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+					+ " Try creating a new password for your account, " + usernameChanging + ", again");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+					+ " Return to the account settings menu");
+			System.out.println(
+					BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
 			System.out.print("Please enter the number associated with your desired option and then press enter: ");
+			
 			int decideUserChoice = getUserChoice(3);
 
 			//Try creating a new password for your account again
@@ -1363,12 +1768,20 @@ final class MainMenu {
 			//If the password is invalid, then print invalid login menu
 			clearConsole();
 			//Print invalid login menu
-			System.out.println("The password you entered was incorrect.");
+			BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
+			System.out.println();
+			// Print invalid login menu
+			System.out.println(BeautifulDisplay.RED + "ERROR: " + BeautifulDisplay.RESET
+					+ "The password you entered was " + BeautifulDisplay.RED + "incorrect." + BeautifulDisplay.RESET);
 			System.out.println("What you like to do? ");
-			System.out.println("  1. Try verifying your password again");
-			System.out.println("  2. Forgot your password?");
-			System.out.println("  3. Return to the account settings menu");
-			System.out.println("  4. Exit application");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+					+ " Try verifying your password again");
+			System.out.println(
+					BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Forgot your password?");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET
+					+ " Return to the account settings menu");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  4." + BeautifulDisplay.RESET + " Exit application");
+			BeautifulDisplay.printGradientDivider(70);
 			System.out.print("Please enter the number associated with your desired option and then press enter: ");
 			int loginRetryChoice = getUserChoice(4);
 
@@ -1389,10 +1802,14 @@ final class MainMenu {
 					case INCORRECT_ANSWER:
 						if (retries < 3) {
 							System.out.println("What would you like to do?");
-							System.out.println("  1. Try answering your security question again");
-							System.out.println("  2. Return to the account settings menu");
-							System.out.println("  3. Exit the application");
-							System.out.print("Please enter the number associated with your desired option and then press enter: ");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+									+ " Try answering your security question again");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+									+ " Return to the account settings menu");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET
+									+ " Exit the application");
+							System.out.print(
+									"Please enter the number associated with your desired option and then press enter: ");
 							int incorrectChoice = getUserChoice(3);
 
 							if (incorrectChoice == 1) {
@@ -1410,11 +1827,15 @@ final class MainMenu {
 						else {
 							System.out.println();
 							System.out.println("Too many account recovery attempts.");
-							System.out.println("You can either return to the account settings menu or exit the application.");
+							System.out.println(
+									"You can either return to the account settings menu or exit the application.");
 							System.out.println("What would you like to do?");
-							System.out.println("  1. Return to the account settings menu");
-							System.out.println("  2. Exit the application");
-							System.out.print("Please enter the number associated with your desired option and then press enter: ");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+									+ " Return to the account settings menu");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+									+ " Exit the application");
+							System.out.print(
+									"Please enter the number associated with your desired option and then press enter: ");
 
 							int exitChoice = getUserChoice(2);
 							if (exitChoice == 1) {
@@ -1457,8 +1878,10 @@ final class MainMenu {
 	private void handleResetSecurity(String currentUsername) {
 		while (true) {
 			clearConsole();
-			System.out.println("Please enter your current password below and then press enter.");
+			BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
+			System.out.println("\nPlease enter your current password below and then press enter.");
 			System.out.print("  Current Password: ");
+			
 			String currentPassword = scanner.nextLine();
 
 			//Check if the password we just received is valid
@@ -1468,16 +1891,26 @@ final class MainMenu {
 			if (validPass) {
 				while(true) {
 					clearConsole();
-					System.out.println("Pick one of the security questions below and then press enter. ");
-					System.out.println("  1. What was your childhood nickname?");
-					System.out.println("  2. What is the name of your favorite childhood friend?");
-					System.out.println("  3. What was the name of your first stuffed animal?");
-					System.out.println("  4. What was the name of the first school you remember attending?");
-					System.out.println("  5. What was the destination of your most memorable school field trip?");
-					System.out.println("  6. What was your driving instructor’s first name?");
+					BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
 					System.out.println();
-					System.out.println("Please enter the number associated with the question that you want to be your security question and then press enter: ");
-					System.out.print("What would you like your security question to be? ");
+
+					System.out.println("Pick one of the security questions below and then press enter. ");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET
+							+ " What was your childhood nickname?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET
+							+ " What is the name of your favorite childhood friend?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET
+							+ " What was the name of your first stuffed animal?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  4." + BeautifulDisplay.RESET
+							+ " What was the name of the first school you remember attending?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  5." + BeautifulDisplay.RESET
+							+ " What was the destination of your most memorable school field trip?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  6." + BeautifulDisplay.RESET
+							+ " What was your driving instructor’s first name?");
+					System.out.println();
+					System.out.print(
+							"Please enter the number associated with the question that you want to \nbe your security question and then press enter: ");
+					
 					int newSecretQuestionChoice = getUserChoice(6);
 
 					String newSecretQuestion = null;
@@ -1503,15 +1936,23 @@ final class MainMenu {
 					}
 
 					clearConsole();
-					System.out.println("The security question you chose was: " + newSecretQuestion);
-					System.out.print("What would you like your answer to your chosen security question to be? ");
-					String newSecretAnswer = scanner.nextLine();
+					BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
+					System.out.println();
 
+					System.out.println("The security question you chose was: \n\n" + BeautifulDisplay.BOLD
+							+ newSecretQuestion + BeautifulDisplay.RESET);
+					System.out.println("\nWhat would you like your answer to your chosen security question to be? ");
+					System.out.print(BeautifulDisplay.BOLD + "\n   ▶" + BeautifulDisplay.RESET + " ");
+					
+					String newSecretAnswer = scanner.nextLine();
 					boolean updatedSecurity = moduleHub.updateUserSecretQuestionAndAnswer(currentUsername, newSecretQuestion, newSecretAnswer);
 
 					if (updatedSecurity) {
-						clearConsole();
-						System.out.println("Your security question and security question answer have been changed successfully");
+						clearConsole();BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
+						System.out.println();
+
+						BeautifulDisplay.printSuccess(
+								"Your security question and security question answer have been\n changed successfully!");
 						System.out.print("Press enter when you are ready to return to the account settings menu...");
 						scanner.nextLine();
 						return;
