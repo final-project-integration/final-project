@@ -16,7 +16,12 @@ import java.util.Map;
 public class ScenarioSimulator {
 
     private final DataReader dataReader; // source of all financial data
-
+    /**
+     * Makes new senarios from the provided data reader.
+     * Generates predictions and deficit/surplus summaries.
+     * 
+     * @param reader reads the income and data
+     */
     public ScenarioSimulator(DataReader reader) { 
         this.dataReader = reader; // initialize with DataReader
     }
@@ -32,12 +37,12 @@ public class ScenarioSimulator {
      *     net = income + expenses   (expenses are negative)
      *
      * All numbers come from DataReader, DeficitSolver, and SurplusOptimizer.
-     * @bug 68237214 Fixed incorrect deficit detection. Previously, Prediction Summary and DeficitSolver reported 
+     * Problem bug 68237214 Fixed incorrect deficit detection. Previously, Prediction Summary and DeficitSolver reported 
      * "You do not currently have a deficit" even when total expenses exceeded total income (e.g., overspending by $7000 in test CSV).
      * Cause: net balance comparison used incorrect sign logic.
      * Fix: netBalance &lt; 0 now correctly identifies deficit and reports deficit = -netBalance.
      * @since December 2 2025, 12:30 AM
-     * @bug 68237256 Fixed: Removed negative sign from printed expenses. Expenses are already understood as money spent, so showing a '-' is unnecessary 
+     * Problem bug 68237256 Fixed: Removed negative sign from printed expenses. Expenses are already understood as money spent, so showing a '-' is unnecessary 
      * and can confuse the user. Values are still stored correctly internally.
      * @since December 2 2025, 2:40 AM
      * @return formatted summary text for the UI to display
