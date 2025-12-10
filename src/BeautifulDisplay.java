@@ -8,10 +8,7 @@
  * visually appealing terminal output. All methods and constants are static,
  * so they can be called from anywhere in the project without instantiation.
  *
- *
- *
  * COLOR CONSTANTS PURPOSE:
- * The color constants are intended to be used in the following ways:
  *  RESET: Always use after colored text to prevent color bleeding
  *  BOLD: Emphasize important text or headers
  *  DIM: De-emphasize secondary information
@@ -22,25 +19,21 @@
  *  BLUE: Headers, structural elements
  *  BRIGHT_* versions: More vibrant alternatives to basic colors
  *
- * DESIGN NOTES:
- *  This is a utility class with a private constructor to prevent instantiation
- *  All methods handle ANSI color codes properly to ensure correct visual alignment
- *
  * @author Denisa Cakoni
  */
 public class BeautifulDisplay {
 
-
     // ANSI COLOR CODES
 
-
     /**
-     * Resets all ANSI formatting (color, bold, dim) back to terminal default.
+     * Resets all ANSI formatting (color, bold, dim) back to the terminal default.
      * Important: Always use RESET after colored text to prevent color bleeding
      * into subsequent output.
      *
      * Example usage:
      * System.out.println(GREEN + "Success" + RESET + " - Operation complete");
+     *
+     * @author Denisa Cakoni
      */
     public static final String RESET = "\u001B[0m";
 
@@ -50,6 +43,8 @@ public class BeautifulDisplay {
      *
      * Example usage:
      * System.out.println(BOLD + "Total: " + RESET + "$1,500");
+     *
+     * @author Denisa Cakoni
      */
     public static final String BOLD = "\u001B[1m";
 
@@ -59,94 +54,129 @@ public class BeautifulDisplay {
      *
      * Example usage:
      * System.out.println(DIM + "Last updated: 2025-12-04" + RESET);
+     *
+     * @author Denisa Cakoni
      */
     public static final String DIM = "\u001B[2m";
 
     /**
      * Standard red color.
      * Commonly used for error messages, negative values, or expenses.
+     *
+     * @author Denisa Cakoni
      */
     public static final String RED = "\u001B[31m";
 
     /**
      * Standard green color.
      * Commonly used for success messages, positive values, or income.
+     *
+     * @author Denisa Cakoni
      */
     public static final String GREEN = "\u001B[32m";
 
     /**
      * Standard yellow color.
      * Commonly used for warning messages or neutral values.
+     *
+     * @author Denisa Cakoni
      */
     public static final String YELLOW = "\u001B[33m";
 
     /**
      * Standard blue color.
      * Commonly used for headers, borders, or structural elements.
+     *
+     * @author Denisa Cakoni
      */
     public static final String BLUE = "\u001B[34m";
 
     /**
      * Standard magenta color.
      * Commonly used for highlighting special categories or sections.
+     *
+     * @author Denisa Cakoni
      */
     public static final String MAGENTA = "\u001B[35m";
 
     /**
      * Standard cyan color.
      * Commonly used for informational messages or balance amounts.
+     *
+     * @author Denisa Cakoni
      */
     public static final String CYAN = "\u001B[36m";
 
     /**
      * Standard white color.
      * Commonly used for general text or backgrounds.
+     *
+     * @author Denisa Cakoni
      */
     public static final String WHITE = "\u001B[37m";
 
     /**
      * Bright/vivid red color.
      * More vibrant than RED. Use for critical errors or important negative values.
+     *
+     * @author Denisa Cakoni
      */
     public static final String BRIGHT_RED = "\u001B[91m";
 
     /**
      * Bright/vivid green color.
      * More vibrant than GREEN. Use for prominent success messages or important income.
+     *
+     * @author Denisa Cakoni
      */
     public static final String BRIGHT_GREEN = "\u001B[92m";
 
     /**
      * Bright/vivid yellow color.
      * More vibrant than YELLOW. Use for important warnings.
+     *
+     * @author Denisa Cakoni
      */
     public static final String BRIGHT_YELLOW = "\u001B[93m";
 
     /**
      * Bright/vivid blue color.
      * More vibrant than BLUE. Use for prominent headers or borders.
+     *
+     * @author Denisa Cakoni
      */
     public static final String BRIGHT_BLUE = "\u001B[94m";
 
     /**
      * Bright/vivid magenta color.
      * More vibrant than MAGENTA. Use for special highlights.
+     *
+     * @author Denisa Cakoni
      */
     public static final String BRIGHT_MAGENTA = "\u001B[95m";
 
     /**
      * Bright/vivid cyan color.
      * More vibrant than CYAN. Use for important information or titles.
+     *
+     * @author Denisa Cakoni
      */
     public static final String BRIGHT_CYAN = "\u001B[96m";
 
     /**
      * Bright/vivid white color.
      * More vibrant than WHITE. Use for high-contrast text.
+     *
+     * @author Denisa Cakoni
      */
     public static final String BRIGHT_WHITE = "\u001B[97m";
 
-    // Global UI width so all boxes/headers line up nicely
+    /**
+     * Global UI width so all boxes and headers line up consistently
+     * across different screens in the application.
+     *
+     * @author Denisa Cakoni
+     */
     public static final int MAIN_WIDTH = 60;
 
     /**
@@ -158,18 +188,14 @@ public class BeautifulDisplay {
      */
     private BeautifulDisplay() { }
 
-
-
     // BASIC UTILITIES
 
-
-
     /**
-     * Repeats a string a certain number of times.
+     * Repeats a string a specified number of times.
      *
      * @param s     the string to repeat
      * @param count how many times to repeat it
-     * @return the repeated string
+     * @return the concatenated string containing the original string repeated count times
      *
      * @author Denisa Cakoni
      */
@@ -184,7 +210,7 @@ public class BeautifulDisplay {
     /**
      * Removes ANSI color codes so the visible length can be measured correctly.
      * This is essential for proper text alignment when using colored strings,
-     * as ANSI escape sequences don't consume visual space.
+     * since ANSI escape sequences do not consume visible space.
      *
      * @param text text that may contain color codes
      * @return the text with ANSI escape codes removed
@@ -198,7 +224,7 @@ public class BeautifulDisplay {
 
     /**
      * Returns the number of visible characters in a string.
-     * Ignores ANSI color codes when calculating length.
+     * ANSI color codes are removed before the length is calculated.
      *
      * @param text the string to measure
      * @return number of visible characters (ignoring color codes)
@@ -215,7 +241,7 @@ public class BeautifulDisplay {
      *
      * @param text  the text to pad
      * @param width desired visible width
-     * @return padded text
+     * @return padded text with spaces added on the right if necessary
      *
      * @author Denisa Cakoni
      */
@@ -237,7 +263,7 @@ public class BeautifulDisplay {
      *
      * @param text  the text to pad
      * @param width desired visible width
-     * @return left-padded text
+     * @return left-padded text with spaces added before the content
      *
      * @author Denisa Cakoni
      */
@@ -260,7 +286,7 @@ public class BeautifulDisplay {
      *
      * @param text  the text to center
      * @param width total space to center within
-     * @return centered text
+     * @return centered text padded with spaces on both sides
      *
      * @author Denisa Cakoni
      */
@@ -274,11 +300,7 @@ public class BeautifulDisplay {
         return repeat(" ", left) + text + repeat(" ", right);
     }
 
-
-
     // HEADERS & DIVIDERS
-
-
 
     /**
      * Prints a large decorative header box.
@@ -286,7 +308,7 @@ public class BeautifulDisplay {
      * for borders and bright cyan for the title text.
      *
      * @param title text to show inside the header
-     * @param width width of the inner box (minimum will be adjusted to fit title)
+     * @param width width of the inner box (minimum will be adjusted to fit the title)
      *
      * @author Denisa Cakoni
      */
@@ -306,7 +328,7 @@ public class BeautifulDisplay {
     /**
      * Prints a smaller colored section header.
      * Creates a simple header with horizontal lines above and below,
-     * with a triangular bullet point.
+     * with a triangular bullet point before the title.
      *
      * @param title text to show
      * @param color ANSI color to use for the header elements
@@ -337,13 +359,12 @@ public class BeautifulDisplay {
      * Prints a full-width section header with centered text so it lines up
      * with the main gradient header.
      *
-     * Example:
-     *  ────────────────────────────────────────────────
-     *                 ▶ START
-     *  ────────────────────────────────────────────────
      *
      * @param title the section title text
      * @param color ANSI color to use for the bar and label
+     * @param width total width of the header bar
+     *
+     * @author Denisa Cakoni
      */
     public static void printFullWidthSectionHeader(String title, String color, int width) {
         if (width < visibleLength(title) + 4) {
@@ -363,8 +384,6 @@ public class BeautifulDisplay {
 
     // BOXES & LISTS
 
-
-
     /**
      * Prints a colored key/value table inside a box.
      * Creates a bordered table with a title and key-value pairs.
@@ -372,7 +391,8 @@ public class BeautifulDisplay {
      * accounting for ANSI color codes in the values.
      *
      * @param title       the box title (displayed centered at top)
-     * @param rows        each row contains [key, value] can include ANSI colors
+     * @param rows        each row contains a two-element array [key, value];
+     *                    elements may include ANSI colors
      * @param borderColor ANSI color constant to use for the box border
      *
      * @author Denisa Cakoni
@@ -423,10 +443,7 @@ public class BeautifulDisplay {
         }
     }
 
-
-
     // STATUS & MESSAGES
-
 
     /**
      * Prints a green success message with a checkmark icon.
@@ -482,7 +499,7 @@ public class BeautifulDisplay {
      * that a long-running operation is in progress.
      *
      * @param message message to display before the dots
-     * @param delayMs how long the animation lasts in milliseconds (divided into 3 steps)
+     * @param delayMs how long the animation lasts in milliseconds (divided into three steps)
      *
      * @author Denisa Cakoni
      */
@@ -508,7 +525,7 @@ public class BeautifulDisplay {
      *  YELLOW for zero values
      *
      * @param value the number to format
-     * @return a colored dollar string with ANSI codes (e.g., "[GREEN]$1500[RESET]")
+     * @return a colored dollar string with ANSI codes (for example "$1500" in green)
      *
      * @author Denisa Cakoni
      */
@@ -520,12 +537,13 @@ public class BeautifulDisplay {
         return YELLOW + formatted + RESET;
     }
 
-
     // HIGH-LEVEL SCREENS FOR MAIN MENU FLOW
 
     /**
      * Prints the START screen the user sees after the title,
-     * with options to sign in or create an account.
+     * with options to sign in, create an account, or exit.
+     *
+     * @author Denisa Cakoni
      */
     public static void printStartMenu() {
         int width = MAIN_WIDTH;
@@ -549,8 +567,14 @@ public class BeautifulDisplay {
         // Prompt in default color (no bright white)
         System.out.print("Please enter the number associated with your desired option: ");
     }
+
     /**
-     * Prints the MAIN MENU the user sees after logging in.
+     * Prints the MAIN MENU screen the user sees after logging in.
+     * Displays options for finances, settings, signing out, and exiting.
+     *
+     * @param currentUser the username of the account currently signed in
+     *
+     * @author Denisa Cakoni
      */
     public static void printMainMenuScreen(String currentUser) {
         int width = MAIN_WIDTH;
@@ -559,7 +583,7 @@ public class BeautifulDisplay {
         printGradientHeader("MAIN MENU", width);
         System.out.println();
 
-        // "Signed in as" line (small & dim)
+        // "Signed in as" line (small and dim)
         System.out.println(
                 DIM + "Signed in as: " + RESET +
                         BRIGHT_CYAN + currentUser + RESET
@@ -587,7 +611,10 @@ public class BeautifulDisplay {
     }
 
     /**
-     * Prints the FINANCES menu (Upload CSV, Reports, etc.).
+     * Prints the FINANCES menu with options for uploading CSV files,
+     * viewing reports, running predictions, and managing data.
+     *
+     * @author Denisa Cakoni
      */
     public static void printFinancesMenu() {
         int width = MAIN_WIDTH;
@@ -612,11 +639,18 @@ public class BeautifulDisplay {
         System.out.print("Please enter the number associated with your desired option: ");
     }
 
-
+    /**
+     * Prints the REPORTS menu for a specific year.
+     * Shows the types of reports available and navigation controls.
+     *
+     * @param year the year for which report options are being displayed
+     *
+     * @author Denisa Cakoni
+     */
     public static void printReportsMenu(int year) {
         int width = MAIN_WIDTH;
 
-        // Big header box: REPORTS FOR 2023
+        // Big header box: REPORTS FOR <year>
         printGradientHeader("REPORTS FOR " + year, width);
         System.out.println();
 
@@ -649,11 +683,18 @@ public class BeautifulDisplay {
         System.out.print("Please enter the number associated with your desired option: ");
     }
 
-
+    /**
+     * Prints the PREDICTIONS menu for a specific year.
+     * Shows available prediction types and navigation controls.
+     *
+     * @param year the year for which prediction options are being displayed
+     *
+     * @author Denisa Cakoni
+     */
     public static void printPredictionsMenu(int year) {
         int width = MAIN_WIDTH;
 
-        // Big header box: PREDICTIONS FOR 2023
+        // Big header box: PREDICTIONS FOR <year>
         printGradientHeader("PREDICTIONS FOR " + year, width);
         System.out.println();
 
@@ -664,13 +705,12 @@ public class BeautifulDisplay {
         System.out.println("What kind of predictions would you like about the data from " + year + "?");
         System.out.println();
 
-        // Options 1–3
+        // Options 1–5
         System.out.println(BRIGHT_YELLOW + "  1. " + RESET + "Summary Report");
         System.out.println(BRIGHT_YELLOW + "  2. " + RESET + "Deficit Analysis");
         System.out.println(BRIGHT_YELLOW + "  3. " + RESET + "Surplus Analysis");
         System.out.println(BRIGHT_YELLOW + "  4. " + RESET + "Deficit What-if for a category");
         System.out.println(BRIGHT_YELLOW + "  5. " + RESET + "Surplus What-if for a category");
-
 
         System.out.println();
 
@@ -688,6 +728,12 @@ public class BeautifulDisplay {
         System.out.print("Please enter the number associated with your desired option: ");
     }
 
+    /**
+     * Prints the DATA MANAGEMENT menu.
+     * Shows options for deleting CSV files and navigating back.
+     *
+     * @author Denisa Cakoni
+     */
     public static void printDataManagementMenu() {
         int width = MAIN_WIDTH;
 
@@ -709,6 +755,15 @@ public class BeautifulDisplay {
         System.out.print("Please enter the number associated with your desired option: ");
     }
 
+    /**
+     * Prints the ACCOUNT SETTINGS menu for the current user.
+     * Provides options to change password, update security question, delete
+     * the account, or return to the main menu.
+     *
+     * @param currentUser the username whose account settings are being shown
+     *
+     * @author Denisa Cakoni
+     */
     public static void printAccountSettingsMenu(String currentUser) {
         int width = MAIN_WIDTH;
 
@@ -733,6 +788,10 @@ public class BeautifulDisplay {
 
     /**
      * Prints a generic "press enter to continue" prompt using dim text.
+     * Intended for use after showing a screen where the user must acknowledge
+     * information before continuing.
+     *
+     * @author Denisa Cakoni
      */
     public static void printContinuePrompt() {
         System.out.print(DIM + "Press enter when you are ready to move on..." + RESET);
