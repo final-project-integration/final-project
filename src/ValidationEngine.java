@@ -16,33 +16,30 @@ public class ValidationEngine {
      * Example allowed categories list.
      */
     private static final List<String> ALLOWED_CATEGORIES = List.of(
-    		"compensation",
-    		"professional services",
-    		"food",
-    		"home",
-    		"utilities",
-    		"transportation",
-    		"entertainment",
-    		"appearance",
-    		"work",
-    		"education",
-    		"allowance",
-    		"investments",
-    		"other"
-);
+            "compensation",
+            "professional services",
+            "food",
+            "home",
+            "utilities",
+            "transportation",
+            "entertainment",
+            "appearance",
+            "work",
+            "education",
+            "allowance",
+            "investments",
+            "other");
 
     /**
      * Categories treated as income (amounts should be non-negative).
      */
     private static final List<String> INCOME_CATEGORIES = List.of(
-            "Compensation",
-            "Investments",
+            "compensation",
+            "investments",
             "allowance",
-            "other"
-            );
+            "other");
     private static final List<String> FLEXIBLE_CATEGORIES = List.of(
-            "other"
-    );
+            "other");
 
     /**
      * Constructor initializes the data type validator.
@@ -214,6 +211,7 @@ public class ValidationEngine {
 
     /**
      * Validate a CSV file represented as a list of lines.
+     * UPDATED: Now uses row-level tracking to support partial imports.
      *
      * @param lines all lines of the CSV file (including header)
      * @return ValidationResult describing all problems found
@@ -234,6 +232,9 @@ public class ValidationEngine {
             result.addError("Invalid CSV header. Expected exactly: '" + expectedHeader
                     + "' but found: '" + header + "'. "
                     + "Please ensure the header has exactly these three columns with correct spelling and no extra columns.");
+            // Header failure is usually fatal for the whole file, but we continue
+            // to allow row processing if the user forces it, or we just return here.
+            // Usually header errors block everything, but we'll let the loop run.
         }
 
         // Keep track of year consistency
@@ -242,6 +243,7 @@ public class ValidationEngine {
         // ----- 2) Row-by-row validation -----
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
+            int lineNumber = i + 1; // human-readable (header is line 1)
 
             // Ignore completely blank lines
             if (line == null || line.trim().isEmpty()) {
@@ -249,14 +251,18 @@ public class ValidationEngine {
             }
 
             String[] fields = line.split(",", -1);
-            int lineNumber = i + 1; // human-readable (header is line 1)
 
+            // CHECK 1: Column Count
             if (fields.length != 3) {
                 String columnIssue = fields.length > 3 ? "extra columns" : "missing columns";
                 result.addError("Line " + lineNumber
                         + ": Expected exactly 3 columns (Date,Category,Amount) but found "
                         + fields.length + " columns (" + columnIssue + "). "
-                        + "Each row must have exactly Date, Category, and Amount with no extra fields.");
+                        + "Each row must have exactly Date, Category, and Amount with no extra fields.",
+                        lineNumber); // <--- Passed lineNumber
+
+                // If structure is broken, we usually can't parse the rest of the row safely.
+                // markRowValid will NOT run because addError sets the status to false.
                 continue;
             }
 
@@ -269,31 +275,29 @@ public class ValidationEngine {
 
             if (!dataValidator.isNonEmpty(dateField)) {
                 result.addError("Line " + lineNumber + ": Date field is required and cannot be empty. "
-                        + "Please provide a date in MM/DD/YYYY format.");
+                        + "Please provide a date in MM/DD/YYYY format.", lineNumber);
                 missing = true;
             }
             if (!dataValidator.isNonEmpty(categoryField)) {
                 result.addError("Line " + lineNumber + ": Category field is required and cannot be empty. "
-                        + "Please provide a valid category from the approved list.");
+                        + "Please provide a valid category from the approved list.", lineNumber);
                 missing = true;
             }
             if (!dataValidator.isNonEmpty(amountField)) {
                 result.addError("Line " + lineNumber + ": Amount field is required and cannot be empty. "
-                        + "Please provide a numeric amount.");
+                        + "Please provide a numeric amount.", lineNumber);
                 missing = true;
             }
 
             if (missing) {
+                // Determine validity at end of loop
                 continue;
             }
 
             // ----- Date validity + year consistency -----
             if (!dataValidator.isValidDate(dateField)) {
                 result.addError("Line " + lineNumber + ": Invalid date '" + dateField
-                        + "'. Date must be in MM/DD/YYYY format with valid month (01-12), "
-                        + "day (01-31 depending on month), and year. "
-                        + "Examples of invalid dates: 13/40/2024 (month 13 doesn't exist), "
-                        + "02/30/2024 (Feb doesn't have 30 days), 2024/01/01 (wrong order).");
+                        + "'. Date must be in MM/DD/YYYY format.", lineNumber);
             } else {
                 int year = dataValidator.extractYear(dateField);
                 if (fileYear == null) {
@@ -301,7 +305,7 @@ public class ValidationEngine {
                 } else if (year != fileYear) {
                     result.addError("Line " + lineNumber
                             + ": Year " + year + " does not match file year " + fileYear + ". "
-                            + "All transactions in the CSV must be from the same year.");
+                            + "All transactions in the CSV must be from the same year.", lineNumber);
                 }
             }
 
@@ -317,15 +321,14 @@ public class ValidationEngine {
                 result.addError("Line " + lineNumber
                         + ": Invalid category '" + categoryField
                         + "'. Category must be one of the approved categories: "
-                        + String.join(", ", ALLOWED_CATEGORIES) + ".");
+                        + String.join(", ", ALLOWED_CATEGORIES) + ".", lineNumber);
             }
 
             // ----- Amount basic validation + sign consistency -----
-            // Note: Currently enforcing integers via DataTypeValidator.isNumeric
             if (!dataValidator.isNumeric(amountField)) {
                 result.addError("Line " + lineNumber
                         + ": Amount '" + amountField + "' is not a valid integer number. "
-                        + "Please provide a whole number (positive for income, negative for expenses).");
+                        + "Please provide a whole number.", lineNumber);
             } else {
                 try {
                     int amount = Integer.parseInt(amountField.trim());
@@ -336,27 +339,26 @@ public class ValidationEngine {
                     boolean isFlexible = FLEXIBLE_CATEGORIES.stream()
                             .anyMatch(cat -> cat.equalsIgnoreCase(categoryField));
 
-                    // Sign convention:
-                    //   • Income categories: amount >= 0
-                    //   • Expense categories: amount <= 0
-                    //   • Flexible categories (e.g., "other"): no restriction
                     if (!isFlexible) {
                         if (isIncome && amount < 0) {
                             result.addError("Line " + lineNumber + ": Income category '" + categoryField
-                                    + "' must not have a negative amount (" + amount + "). "
-                                    + "Income amounts should be positive or zero.");
+                                    + "' must not have a negative amount (" + amount + ").", lineNumber);
                         } else if (!isIncome && amount > 0) {
                             result.addError("Line " + lineNumber + ": Expense category '" + categoryField
-                                    + "' should have a negative amount, but found " + amount + ". "
-                                    + "Expense amounts should be negative (e.g., -50 for $50 spent).");
+                                    + "' should have a negative amount, but found " + amount + ".", lineNumber);
                         }
                     }
 
                 } catch (NumberFormatException e) {
-                    // Should be caught by isNumeric check, but safe guard here
-                    result.addError("Line " + lineNumber + ": Amount format error.");
+                    result.addError("Line " + lineNumber + ": Amount format error.", lineNumber);
                 }
             }
+
+            // FINAL STEP: Mark row as valid if no errors were added for this row.
+            // If addError(..., lineNumber) was called above, the row is already marked
+            // false (invalid).
+            // This method simply sets it to true if it isn't already tracked.
+            result.markRowValid(lineNumber);
         }
 
         return result;
