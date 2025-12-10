@@ -53,12 +53,12 @@ public class ReportDisplay {
         System.out.println(color + line.toString() + BeautifulDisplay.RESET);
     }
 
-
     /**
-     * Drops a trailing ".00" from a currency string.
+     * Drops a trailing ".00" from a currency string if present.
      *
-     * @param amount the original currency string
-     * @return the same string without trailing .00
+     * @param amount the original currency string, for example "$1200.00"
+     * @return the same string without a trailing ".00", or an empty string if the
+     *         input is null
      *
      * @author Denisa Cakoni
      */
@@ -73,9 +73,11 @@ public class ReportDisplay {
 
     /**
      * Prints the yearly summary section of a financial report.
+     * Shows total income, total expenses, and net balance in a formatted box.
      *
      * @param year   the year being reported
-     * @param yearly the YearlySummary object containing totals
+     * @param yearly the YearlySummary object containing total income, expenses,
+     *               and net balance for the year
      *
      * @author Denisa Cakoni
      */
@@ -109,9 +111,11 @@ public class ReportDisplay {
 
     /**
      * Prints the monthly breakdown section of a financial report.
+     * Renders a table with income, expenses, and balance for each month.
      *
      * @param year    the year being reported
-     * @param monthly the list of monthly summary lines
+     * @param monthly the list of monthly summary lines, one entry per month,
+     *                in the format produced by ReportManager
      *
      * @author Denisa Cakoni
      * @author Kapil Tamang
@@ -144,11 +148,14 @@ public class ReportDisplay {
 
     /**
      * Prints a single row of the monthly table.
+     * Extracts month name, income, expenses, and balance from the input line
+     * and prints them in aligned, colored columns.
      *
-     * @param line             Example from 'monthly':
-     *                         "January: Income=$3700.00, Expenses=$-1740.00, Balance=$1960.00"
-     *                         or null if no data for that month.
-     * @param fallbackMonth    month name to use if the line is null or badly formatted.
+     * @param line          a monthly summary line such as
+     *                      "January: Income=$3700.00, Expenses=$-1740.00, Balance=$1960.00",
+     *                      or null if no data is available
+     * @param fallbackMonth the month name to use if the line is null or not in
+     *                      the expected format
      *
      * @author Kapil Tamang
      */
@@ -183,11 +190,11 @@ public class ReportDisplay {
 
         // strip .00
         incomeMonthly  = stripCents(incomeMonthly);
-        // remove minus sign for display, but still conceptually “expense”
+        // remove minus sign for display, but still conceptually an expense
         expenseMonthly = stripCents(expenseMonthly).replace("-", "");
         balanceMonthly = stripCents(balanceMonthly);
 
-        // align inside the column *then* wrap with color
+        // align inside the column then wrap with color
         String incomeField = BeautifulDisplay.GREEN +
                 String.format("%12s", incomeMonthly) + BeautifulDisplay.RESET;
         String expenseField = BeautifulDisplay.RED +
@@ -201,9 +208,12 @@ public class ReportDisplay {
 
     /**
      * Prints the category summary section of a financial report.
+     * Displays each category and its total amount, colored based on whether
+     * the value represents income or expenses.
      *
      * @param year              the year being reported
-     * @param categorySummaries the list of category summary lines
+     * @param categorySummaries the list of category summary lines, each including
+     *                          a category name and amount
      *
      * @author Denisa Cakoni
      */
@@ -235,7 +245,7 @@ public class ReportDisplay {
                 amount = text.substring(colonIndex + 1).trim();
             }
 
-            amount = stripCents(amount); // e.g. "$-500.00" -> "$-500"
+            amount = stripCents(amount); // example: "$-500.00" becomes "$-500"
 
             names.add(name);
             amounts.add(amount);
@@ -249,7 +259,7 @@ public class ReportDisplay {
                 nameWidth = n.length();
             }
         }
-        // measure width WITHOUT the minus sign so the column fits cleaned amounts
+        // measure width without the minus sign so the column fits cleaned amounts
         for (String a : amounts) {
             String display = a.replace("-", "");
             if (display.length() > amountWidth) {
@@ -269,23 +279,23 @@ public class ReportDisplay {
 
         for (int i = 0; i < names.size(); i++) {
             String name   = names.get(i);
-            String amount = amounts.get(i);          // e.g. "$1200" or "$-500"
+            String amount = amounts.get(i);          // example values: "$1200" or "$-500"
 
-            double val = parseAmount(amount);        // <- uses your helper
+            double val = parseAmount(amount);
 
-            // display with NO minus sign
+            // display with no minus sign
             String displayAmount = amount.replace("-", "");
             String paddedAmount  = String.format("%" + amountWidth + "s", displayAmount);
 
             String coloredAmount;
             if (val < 0) {
-                // expenses -> red (no minus)
+                // expenses in red, minus removed
                 coloredAmount = BeautifulDisplay.RED + paddedAmount + BeautifulDisplay.RESET;
             } else if (val > 0) {
-                // income -> green
+                // income in green
                 coloredAmount = BeautifulDisplay.GREEN + paddedAmount + BeautifulDisplay.RESET;
             } else {
-                // zero -> plain
+                // zero in plain color
                 coloredAmount = paddedAmount;
             }
 
@@ -297,13 +307,15 @@ public class ReportDisplay {
         System.out.println(borderColor + "└" + border + "┘" + BeautifulDisplay.RESET);
         BeautifulDisplay.printGradientDivider(70);
     }
+
     /**
-     * Prints the full financial report.
+     * Prints the full financial report including yearly summary,
+     * monthly breakdown, and category summary.
      *
      * @param year              the year being reported
      * @param yearly            the yearly summary object
-     * @param monthly           the monthly summary lines
-     * @param categorySummaries the category summary lines
+     * @param monthly           the list of monthly summary lines
+     * @param categorySummaries the list of category summary lines
      *
      * @author Denisa Cakoni
      */
@@ -317,13 +329,15 @@ public class ReportDisplay {
     }
 
     /**
-     * Prints the financial insights section.
+     * Prints the financial insights section of the report.
+     * Includes the highest spending month, top spending category,
+     * overall net balance, and any months with a negative balance.
      *
-     * @param highestMonth          the month with the highest expenses
-     * @param topSpendingCategory   the category with the highest expenses
-     * @param netBalancePretty      the formatted net balance
-     * @param negativeBalanceMonths list of months with negative balance
-     * @param includeBanner         whether to print header/footer
+     * @param highestMonth          formatted text for the highest spending month
+     * @param topSpendingCategory   formatted text for the top spending category
+     * @param netBalancePretty      formatted net balance string
+     * @param negativeBalanceMonths list of month descriptions that had a negative balance
+     * @param includeBanner         true to print a header and divider, false to omit them
      *
      * @author Denisa Cakoni
      */
@@ -338,15 +352,17 @@ public class ReportDisplay {
                     BeautifulDisplay.BRIGHT_GREEN, 70);
         }
 
-        // Month label (e.g. "May $-2513.00") -> "May" in magenta, amount red, no minus
+        // Month label (for example "May $-2513.00") is printed with month in magenta
+        // and the amount in red with no minus sign
         String line1 = "📈 Highest spending month: " +
                 colorLabelAndCurrency(highestMonth, BeautifulDisplay.BRIGHT_MAGENTA);
 
-        // Category label (e.g. "Home $-6000.00") -> "Home" in blue, amount red, no minus
+        // Category label (for example "Home $-6000.00") is printed with category in blue
+        // and the amount in red with no minus sign
         String line2 = "🏆 Top spending category: " +
                 colorLabelAndCurrency(topSpendingCategory, BeautifulDisplay.BRIGHT_BLUE);
 
-        // Net balance string is already colored by ReportFormatter/formatCurrency
+        // Net balance string is already formatted and colored by the formatter
         String line3 = "💰 Overall net balance: " + netBalancePretty;
 
         String[] insights = { line1, line2, line3 };
@@ -368,12 +384,15 @@ public class ReportDisplay {
 
         BeautifulDisplay.printGradientDivider(70);
     }
+
     /**
-     * Finds the first $-style amount in the text (e.g. "-$2153.00" or "$-2153.00"),
-     * removes the minus sign for display, and colors the number:
-     *  - RED for negative
-     *  - GREEN for positive
-     *  - YELLOW for zero
+     * Finds the first money-like substring in the text that includes a dollar sign,
+     * removes any minus sign for display, and colors the value based on the sign.
+     * Positive values are printed in green, negative values in red, and zero in yellow.
+     *
+     * @param text the original text that may contain a dollar amount
+     * @return the text with the first money value replaced by a colored version,
+     *         or the original text if no money value is found or parsing fails
      *
      * @author Denisa Cakoni
      */
@@ -386,7 +405,7 @@ public class ReportDisplay {
         }
 
         int start = dollar;
-        // include leading '-' if present BEFORE the '$'
+        // include leading '-' if present before the dollar sign
         if (dollar > 0 && text.charAt(dollar - 1) == '-') {
             start = dollar - 1;
         }
@@ -402,14 +421,14 @@ public class ReportDisplay {
             }
         }
 
-        String money = text.substring(start, end); // e.g. "-$2153.00" or "$-2153.00"
+        String money = text.substring(start, end);
         String cleaned = money.replace("$", "").replace(",", "").trim();
 
         double value;
         try {
             value = Double.parseDouble(cleaned);
         } catch (NumberFormatException e) {
-            return text; // fallback if weird format
+            return text; // fallback if format is unexpected
         }
 
         double absVal = Math.abs(value);
@@ -429,27 +448,42 @@ public class ReportDisplay {
     }
 
     /**
-     * Colors the first word in a label (e.g., "May $-2513.00") with the given color,
-     * then colors any currency part inline (using red/green/yellow, no minus sign).
+     * Colors the first word in a label using the given color and then applies
+     * currency coloring to any money portion that follows.
+     * Parentheses around the amount are removed before formatting.
+     *
+     * @param label      the original label text, such as "May $-2153.00"
+     * @param labelColor the color to apply to the label part (for example a month or category name)
+     * @return a string where the label is colored using labelColor and the currency
+     *         portion is colored based on its numeric value
      *
      * @author Denisa Cakoni
      */
     private String colorLabelAndCurrency(String label, String labelColor) {
         if (label == null) return "";
 
-        // Remove parentheses like "May (-$2153.00)" -> "May -$2153.00"
+        // Remove parentheses like "May (-$2153.00)" to "May -$2153.00"
         label = label.replace("(", "").replace(")", "").trim();
 
         String[] parts = label.split("\\s+", 2);
-        String name = parts[0];                         // "May" or "Home"
+        String name = parts[0];                         // for example "May" or "Home"
         String rest = (parts.length > 1) ? " " + parts[1] : "";
 
         String coloredName = labelColor + name + BeautifulDisplay.RESET;
 
-        // Now color the currency inside the whole string (no minus, red/green)
+        // Now color the currency portion of the combined string
         return colorCurrencyInline(coloredName + rest);
     }
-    /** Parses a currency-like string such as "$-1740" into a double. */
+
+    /**
+     * Parses a currency-like string into a double.
+     * Dollar signs and commas are ignored during parsing.
+     *
+     * @param amount text containing a money value, such as "$-1740" or "1200"
+     * @return the numeric value of the amount, or zero if parsing fails
+     *
+     * @author Denisa Cakoni
+     */
     private double parseAmount(String amount) {
         if (amount == null) return 0.0;
         String cleaned = amount.replace("$", "").replace(",", "").trim();
