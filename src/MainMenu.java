@@ -992,20 +992,44 @@ final class MainMenu {
                         }
 
                         //  NO HARD ERRORS handle warnings, especially duplicates
+                        //  NO HARD ERRORS handle warnings, especially duplicates
                         boolean hasDuplicateWarning = false;
 
-                        if (!result.getWarningMessages().isEmpty()) {
-                            BeautifulDisplay.printWarning("Upload validation completed with warnings:");
+                        List<String> warnings = result.getWarningMessages();
+
+                        if (warnings != null && !warnings.isEmpty()) {
+                            // Short summary instead of 5 miles of text
+                            BeautifulDisplay.printWarning("Upload validation completed with "
+                                    + warnings.size() + " warning(s).");
+                            System.out.println("Some bad rows were automatically skipped, but your valid data was saved.");
                             System.out.println();
-                            for (String msg : result.getWarningMessages()) {
-                                System.out.println("  • " + msg);
-                                if (msg.toLowerCase().contains("duplicate transactions detected")) {
+
+                            // Quietly check if duplicates are mentioned anywhere
+                            for (String raw : warnings) {
+                                if (raw != null && raw.toLowerCase().contains("duplicate transactions detected")) {
                                     hasDuplicateWarning = true;
+                                    break;
                                 }
                             }
-                            System.out.println();
-                        }
 
+                            // Let the user opt-in to details
+                            System.out.print("Type 'details' to see a few example issues, or press Enter to continue: ");
+                            String choice = scanner.nextLine().trim();
+
+                            if (choice.equalsIgnoreCase("details")) {
+                                System.out.println();
+                                int limit = Math.min(warnings.size(), 5);
+                                for (int i = 0; i < limit; i++) {
+                                    String cleaned = simplifyValidationMessage(warnings.get(i));
+                                    System.out.println("  • " + cleaned);
+                                }
+                                if (warnings.size() > limit) {
+                                    System.out.println("  (+ " + (warnings.size() - limit) + " more warning(s) not shown)");
+                                }
+                                System.out.println();
+                                moveOn();  // your usual "press Enter to continue"
+                            }
+                        }
                         //  If duplicates exist, give the user the required choice:
                         // "Continue import with duplicates" vs "Cancel and clean CSV."
                         if (hasDuplicateWarning) {
@@ -1036,11 +1060,9 @@ final class MainMenu {
                         clearConsole();
                         if (importOk) {
                             if (!result.getWarningMessages().isEmpty()) {
-                                BeautifulDisplay.printWarning("CSV imported for " + year + " with warnings:");
-                                System.out.println();
-                                for (String msg : result.getWarningMessages()) {
-                                    System.out.println("  • " + msg);
-                                }
+                                BeautifulDisplay.printWarning("CSV data for " + year + " imported with "
+                                        + result.getWarningMessages().size() + " warning(s).");
+                                System.out.println("See validation details above for specific rows that were skipped.");
                             } else {
                                 BeautifulDisplay.printSuccess("CSV data for " + year + " imported successfully.");
                             }
@@ -1073,6 +1095,104 @@ final class MainMenu {
 			}
 		}
 	}
+
+    /**
+     * Strips internal timestamp/severity prefixes from validation messages so
+     * the user only sees the human-readable part (e.g., "Line 3: Year 2010 ...").
+     */
+    private String simplifyValidationMessage(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim();
+
+        // Many messages look like: [time][WARNING] [time] Line X: ...
+        // Peel off up to two leading "[...]" blocks.
+        for (int i = 0; i < 2; i++) {
+            if (s.startsWith("[")) {
+                int idx = s.indexOf("] ");
+                if (idx > 0 && idx + 2 < s.length()) {
+                    s = s.substring(idx + 2).trim();
+                }
+            }
+        }
+
+        return s;
+    }
+    /**
+     *@author Denisa Cakoni
+     */
+
+    private void handleCsvUpload(String username) {
+        clearConsole();  // you already have this
+
+        System.out.println("Please enter the name of the CSV file you want to upload below and");
+        System.out.println("then press enter.");
+        System.out.println("  • If the CSV is in the same folder as the JAR, just type the");
+        System.out.println("    file name (Ex: 2024_data.csv)");
+        System.out.println("  • Otherwise, paste the full file path.");
+        System.out.println();
+        System.out.print("   File name: ");
+
+        String csvFilePath = scanner.nextLine().trim();
+
+        System.out.print("Enter the year for this CSV (e.g., 2024) and press enter: ");
+        int year = getUserYear();   // you already have this helper
+
+        ValidationResult result = moduleHub.uploadCSVData(username, csvFilePath, year);
+
+        if (result == null) {
+            System.out.println();
+            System.out.println(" Unexpected error while uploading CSV.");
+            moveOn();               // same behavior as rest of MainMenu
+            return;
+        }
+
+        if (result.hasErrors()) {
+            System.out.println();
+            System.out.println(" Your CSV could not be imported.");
+            System.out.println("Please fix the issues below and try again:");
+            System.out.println();
+
+            java.util.List<String> errors = result.getErrorMessages();
+            int limit = Math.min(errors.size(), 5);
+            for (int i = 0; i < limit; i++) {
+                String msg = errors.get(i);
+                System.out.println("  • " + msg);
+            }
+            if (errors.size() > limit) {
+                System.out.println("  (+ " + (errors.size() - limit) + " more error(s) not shown)");
+            }
+
+            moveOn();
+            return;
+        }
+
+        System.out.println();
+        System.out.println(" CSV data for " + year + " imported successfully for " + username + ".");
+
+        java.util.List<String> warnings = result.getWarningMessages();
+        if (warnings != null && !warnings.isEmpty()) {
+            System.out.println();
+            System.out.println("⚠ " + warnings.size() + " issue(s) were detected.");
+            System.out.println("   Bad rows were automatically skipped, but your valid data was saved.");
+            System.out.println();
+            System.out.print("Type 'details' to see the full list, or just press Enter to continue: ");
+
+            String choice = scanner.nextLine().trim();
+            if (choice.equalsIgnoreCase("details")) {
+                System.out.println();
+                for (String w : warnings) {
+                    System.out.println("  • " + w);
+                }
+                System.out.println();
+                System.out.println("End of validation details.");
+                moveOn();
+            }
+        } else {
+            moveOn();
+        }
+    }
 
 	/**
 	 * Reports Menu
