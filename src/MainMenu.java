@@ -821,9 +821,26 @@ final class MainMenu {
 			}
 		}
 	}
-	/**
-	 * Finances Menu
-	 * 
+    
+    
+    /**
+     * Displays and manages the Finances Menu for the currently signed-in user.
+     *
+     * This method acts as the main navigation hub for all financial features,
+     * including:
+     *  Uploading CSV files with full validation handling
+     *  Viewing financial reports
+     *  Running financial predictions
+     *  Managing stored financial data
+     *
+     * During CSV uploads, this method:
+     *  Extracts the year from the CSV filename
+     *  Prevents invalid or duplicate-year uploads
+     *  Displays validation errors and warnings in a user-friendly way
+     *  Allows users to skip bad rows while still importing valid data
+     *  Detects duplicate transactions and prompts the user to continue or cancel
+     *  Finalizes the CSV import only after user confirmation
+     *
 	 * @param currentUser - username of the currently signed-in user
 	 * 
 	 * @author Aaron Madou
@@ -1097,9 +1114,21 @@ final class MainMenu {
 	}
 
     /**
-     * Strips internal timestamp/severity prefixes from validation messages so
-     * the user only sees the human-readable part (e.g., "Line 3: Year 2010 ...").
+     * Cleans up raw validation messages by removing internal system prefixes
+     * such as timestamps and severity labels.
+     *
+     * This method ensures that the user only sees the meaningful, human-readable
+     * portion of the message (for example: "Line 3: Invalid date format").
+     *
+     * It safely handles null values and trims unnecessary formatting so
+     * validation output remains clean and consistent in the UI.
+     *
+     * @param raw the original validation message produced by the validation system
+     * @return a simplified, user-friendly version of the validation message
+     *
+     * @author Denisa Cakoni
      */
+
     private String simplifyValidationMessage(String raw) {
         if (raw == null) {
             return "";
@@ -1119,12 +1148,31 @@ final class MainMenu {
 
         return s;
     }
+
     /**
-     *@author Denisa Cakoni
+     * Handles the complete CSV upload workflow for the currently logged-in user.
+     *
+     * This method:
+     *  Prompts the user for a CSV file name or full file path
+     *  Prompts for the year associated with the CSV data
+     *  Sends the file to ModuleHub for validation
+     *  Displays summarized error messages if validation fails
+     *  Displays a success message if the upload succeeds
+     *  Allows the user to optionally view detailed warnings
+     *
+     * Invalid rows are automatically skipped while valid rows are still imported.
+     * This prevents a few bad entries from blocking the entire CSV upload.
+     *
+     * All user messaging and display logic is handled here, while actual
+     * processing and validation are delegated to ModuleHub.
+     *
+     * @param username the currently logged-in user uploading the CSV file
+     *
+     * @author Denisa Cakoni
      */
 
     private void handleCsvUpload(String username) {
-        clearConsole();  // you already have this
+        clearConsole();
 
         System.out.println("Please enter the name of the CSV file you want to upload below and");
         System.out.println("then press enter.");
@@ -1137,14 +1185,14 @@ final class MainMenu {
         String csvFilePath = scanner.nextLine().trim();
 
         System.out.print("Enter the year for this CSV (e.g., 2024) and press enter: ");
-        int year = getUserYear();   // you already have this helper
+        int year = getUserYear();
 
         ValidationResult result = moduleHub.uploadCSVData(username, csvFilePath, year);
 
         if (result == null) {
             System.out.println();
             System.out.println(" Unexpected error while uploading CSV.");
-            moveOn();               // same behavior as rest of MainMenu
+            moveOn();
             return;
         }
 
