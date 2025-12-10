@@ -85,6 +85,38 @@ public class DataReader {
 			"appearance", "work", "education", "transportation", "entertainment", "professional services"); // List that stores the valid expense categories
 
 	/**
+	 * Tracks totals for the "other" category separately
+	 * @bug 68362783: The "other" category is not correctly classified as income or expense. 
+	 * Fix by classifying "other" as income or expense based on the amount sign.
+	 * @author Jessica Barrera Saguay
+	 */
+	 
+	private int otherIncome = 0;
+	private int otherExpense = 0;
+	
+	/**
+	 * Returns the total income from the "other" category.
+	 *
+	 * @return the sum of all "other" income amounts
+	 * @author Jessica Barrera Saguay
+	 */
+
+
+	public int getOtherIncome() {
+		return otherIncome;
+	}
+
+	/**
+	 * Returns the total expense from the "other" category.
+	 *
+	 * @return the sum of all "other" expense amounts
+	 * @author Jessica Barrera Saguay
+	 */
+	public int getOtherExpense() {
+		return otherExpense;
+	}
+
+	/**
 	 * Returns a defensive copy of all category names recorded from the user's data.
 	 *
 	 * @return a new list containing all stored categories
@@ -128,6 +160,8 @@ public class DataReader {
 		return expenseCategories.contains(category);
 	}
 
+
+
 	/**
 	 * Reads and processes stored budget data from the CSV file provided.
 	 * 
@@ -142,7 +176,9 @@ public class DataReader {
 	 */
 	public void readData(String fileName) {
 
+
 		File file = new File(fileName);
+		// Tracks totals for the "other" category separately
 
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			String headerLine = br.readLine(); // Read the first line
@@ -187,43 +223,55 @@ public class DataReader {
 					System.err.println("Error validating the row: " + line);
 					continue;
 				}
-				categoriesList.add(category);
-				amountsList.add(Integer.valueOf(amount)); // amountsList.add(Integer.parseInt(amount)); --> I think both
-															// work but just to be safe added valueOf so the complier
-															// doesn't complain -- Tanzina
+				int amountInt = Integer.parseInt(amount);
 
+				// NEW CODE Dec 9 classify "other" as income or expense
+				if (category.equals("other")) { // if the category is "other"
+					if (amountInt > 0) { // if amount is positive
+						otherIncome += amountInt; // makes it positive
+					} else { // if amount is negative
+						otherExpense += amountInt; // stays negative
+					}
+				}
+				// Store the data normally
+				categoriesList.add(category);
+				amountsList.add(amountInt);
 			}
 		} catch (FileNotFoundException e) { // If there is no file
 			System.err.println("Error: File not found.");
 		} catch (IOException e) { // If something went wrong
 			System.err.println("Error reading the file: " + e.getMessage());
 		}
+
 	}
 
-//	/**
-//	 * Loads categories and amounts from a Budget object into the internal lists.
-//	 * Existing data is cleared before loading. Income amounts are stored as
-//	 * positive values and expense amounts are stored as negative values.
-//	 * 
-//	 * @param budget the budget object containing transactions to read
-//	 * @author Jessica Barrera Saguay
-//	 */
+	/**
+	 * Loads categories and amounts from a Budget object into the internal lists.
+	 * Existing data is cleared before loading. Income amounts are stored as
+	 * positive values and expense amounts are stored as negative values.
+	 * @bug 68362783: The "other" category is not correctly classified as income or expense. 
+	 * Fix by classifying "other" as income or expense based on the amount sign.
+	 * 
+	 * @param budget the budget object containing transactions to read
+	 * @author Jessica Barrera Saguay
+	 */
 	public void readFromBudget(Budget budget) {
 		// Clear lists
 		categoriesList.clear();
 		amountsList.clear();
 
+		// Check if budget is null or empty
 		if (budget == null) {
 			System.err.println("Error: Budget is null.");
 			return;
 		}
-
+		// Check if budget has no transactions
 		if (budget.getAllTransactions() == null || budget.getAllTransactions().isEmpty()) {
 			System.err.println("Error: Budget contains no transactions.");
 			return;
 		}
 
-//    		Loop through Transaction objects
+    	// Loop through Transaction objects
 		for (Transaction t : budget.getAllTransactions()) {
 			// Extract category and amount
 			String category = t.getCategory();
@@ -234,23 +282,30 @@ public class DataReader {
 			category = category.trim().toLowerCase(); //ensures that category matches the valid categories from lists by turning it to lower case
 			int amount = (int) t.getAmount();
 
-			// "other" cannot be used for expenses
-			if (category.equals("other") && amount < 0) {
-				System.err.println("Error: Category 'other' is income-only and cannot be used for expenses. Skipping entry: " + amount);
-				continue; // skip this transaction
-}
-
-
-			if (incomeCategories.contains(category)) {
-				categoriesList.add(category);
-				amountsList.add(Math.abs(amount)); // adds the absolute value of amount to the amountsList if it is an
-													// income category
-			} else if (expenseCategories.contains(category)) {
-				categoriesList.add(category);
-				amountsList.add(-Math.abs(amount));// adds the negative absolute value of amount to the amountsList if
-													// it is an expense category
-			} else {
-				System.err.println("Error: Unrecoginized category " + category);
+			// NEW CODE Dec 9 classify "other" as income or expense
+			// classify "other"
+			if (category.equals("other")) { // if the category is "other"
+				if (amount > 0) { // if amount is positive
+					otherIncome += amount; // makes it positive
+					categoriesList.add(category); // add category to list
+					amountsList.add(amount); // positive
+				} else {
+					otherExpense += amount; // negative
+					categoriesList.add(category); // add category to list
+					amountsList.add(amount); // already negative
+				}
+			}
+			// for all other categories
+			else if (incomeCategories.contains(category)) { // if the category is in incomeCategories list
+				categoriesList.add(category); // add category to list
+				amountsList.add(Math.abs(amount)); // positive
+			} 
+			else if (expenseCategories.contains(category)) { // if the category is in expenseCategories list
+				categoriesList.add(category); // add category to list
+				amountsList.add(-Math.abs(amount)); // negative
+			}
+			else {
+				System.err.println("Error: Unrecognized category " + category);
 			}
 		}
 	}
@@ -347,13 +402,6 @@ public class DataReader {
                 isValid = false; // expense must be negative
                 System.err.println(
                         "Error: Expense category " + category + " should have a negative amount " + amountInt); // debug line
-            }
-
-            // "other" cannot be an expense ***
-            if (category.equals("other") && amountInt < 0) { // other used as expense
-                isValid = false; // other is income-only
-                System.err.println(
-                        "Error: Category 'other' is income-only and cannot be used for expenses."); 
             }
         }
     }
