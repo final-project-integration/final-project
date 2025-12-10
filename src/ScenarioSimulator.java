@@ -306,7 +306,7 @@ public class ScenarioSimulator {
                                 annualSurplus, monthlySurplus));
         sb.append("This plan allocates your surplus in proportion to how much you\n");
         sb.append("currently spend in each category.\n\n");
-        sb.append(String.format("%-15s  %-15s  %-15s%n",
+        sb.append(String.format("%-30s  %15s  %15s%n",
                                 "Category", "Annual Increase", "≈ Monthly"));
         sb.append("--------------------------------------------------------\n");
 
@@ -316,7 +316,7 @@ public class ScenarioSimulator {
             int monthly = (int) Math.round(annual / 12.0); // monthly approx
 
 
-            sb.append(String.format("%-15s  $%-14d  $%-14d%n",
+            sb.append(String.format("%-30s  $%14d  $%14d%n",
                                     cat, annual, monthly)); // formatted line
         }
 
