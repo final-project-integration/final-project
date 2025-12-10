@@ -41,6 +41,18 @@ public class Authentication {
     public Authentication(Storage storage) {
         this.storage = storage;
     }
+    
+
+    /** Converts username to lowercase for case-insensitivity. 
+     * 
+     * @param username the username of the account
+     * @return the lowercase form of the username, or null if the input was null
+     * @author Jessica Ramirez
+     */
+    
+    private String normalize(String username) {
+        return (username == null) ? null : username.toLowerCase();
+    }
 
     /**
      * Validates login attempts by hashing the provided plain text password and 
@@ -53,7 +65,8 @@ public class Authentication {
      */
 
     public boolean validateCredentials(String username, String password) {
-        AuthRecord rec = storage.getAuthInfo(username);
+    	username = normalize(username);
+    	AuthRecord rec = storage.getAuthInfo(username);
         if (rec == null) return false;
 
         String hashedInput = hashPassword(password);
@@ -81,7 +94,9 @@ public class Authentication {
      */
 
     public boolean checkPassword(String username, String password) {
-        AuthRecord rec = storage.getAuthInfo(username);
+    	username = normalize(username);
+    	
+    	AuthRecord rec = storage.getAuthInfo(username);
         if (rec == null) return false;
 
         return rec.getHashedPassword().equals(hashPassword(password));
@@ -104,7 +119,9 @@ public class Authentication {
 
     
     public boolean checkUsername(String username) {
-        return storage.getAuthInfo(username) != null;
+    	username = normalize(username);
+    	
+    	return storage.getAuthInfo(username) != null;
     }
 
     /**
@@ -125,7 +142,9 @@ public class Authentication {
      */
 
     public boolean checkSecretAnswer(String username, String answer) {
-        AuthRecord rec = storage.getAuthInfo(username);
+    	username = normalize(username);
+    	
+    	AuthRecord rec = storage.getAuthInfo(username);
         if (rec == null) return false;
 
         return rec.getHashedSecretAnswer().equals(hashPassword(answer));
@@ -145,8 +164,11 @@ public class Authentication {
 
     
     public String getSecretQuestion(String username) {
-        AuthRecord rec = storage.getAuthInfo(username);
+    	username = normalize(username);
+    	
+    	AuthRecord rec = storage.getAuthInfo(username);
         if (rec == null) return null;
+        
         return rec.getSecretQuestion();
 
     }
@@ -312,6 +334,8 @@ public class Authentication {
 
 
     public boolean isDuplicateUsername(String username) {
+    	username = normalize(username);
+    	
         return checkUsername(username);
     }
     
@@ -374,6 +398,8 @@ public class Authentication {
 
         return false;
     }
+
+
     
     /**
      * Checks whether required login or registration fields are empty.
