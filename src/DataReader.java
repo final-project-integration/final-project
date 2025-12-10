@@ -419,13 +419,22 @@ public class DataReader {
 	 * @author Jessica Barrera Saguay
 	 */
 	public int calculateTotalIncome() {
-		int totalIncome = 0;
-		for (int i = 0; i < categoriesList.size(); i++) {
-			if (incomeCategories.contains(categoriesList.get(i))) { // if category is in incomeCategories list
-				totalIncome += amountsList.get(i); // add amount to the total income
-			}
-		}
-		return totalIncome;
+	    int totalIncome = 0; 
+	    for (int i = 0; i < categoriesList.size(); i++) {
+	        String category = categoriesList.get(i);
+	        int amount = amountsList.get(i);
+	
+	        if ("other".equals(category)) {
+	            // "other" → only count positive amounts as income
+	            if (amount > 0) {
+	                totalIncome += amount;
+	            }
+	        } else if (incomeCategories.contains(category)) {
+	            totalIncome += amount;
+	        }
+	    }
+	    return totalIncome;
+
 	}
 
 	/**
@@ -449,14 +458,23 @@ public class DataReader {
 	 * @author Jessica Barrera Saguay
 	 */
 	public int calculateTotalExpenses() {
-		int totalExpenses = 0;
-		for (int i = 0; i < categoriesList.size(); i++) {
-			if (expenseCategories.contains(categoriesList.get(i))) { // if category is in expenseCategories list
-				totalExpenses += amountsList.get(i); // add the amount to the total expenses
-			}
-		}
-		return totalExpenses;
+	    int totalExpenses = 0;
+	    for (int i = 0; i < categoriesList.size(); i++) {
+	        String category = categoriesList.get(i);
+	        int amount = amountsList.get(i);
+	
+	        if ("other".equals(category)) {
+	            // "other" → only count negative amounts as expenses
+	            if (amount < 0) {
+	                totalExpenses += amount; // stays negative
+	            }
+	        } else if (expenseCategories.contains(category)) {
+	            totalExpenses += amount;
+	        }
+	    }
+	    return totalExpenses;
 	}
+
 
 	/**
 	 * Returns the total expenses computed from all the expense category entries.
