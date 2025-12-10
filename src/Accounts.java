@@ -82,6 +82,10 @@ public class Accounts {
    
    public boolean registerAccount(String username, String password, String secretQuestion, String secretAnswer) {
 
+	   // Handles case-insensitivity 
+	   if (username != null) 
+		   username = username.toLowerCase();
+	   
        // Username formatting must be valid (must: be non-null, 
        // contain only alphanumeric characters, no blank spaces, and 3 to 20 chars long). 
 	  
@@ -141,11 +145,10 @@ public class Accounts {
    
    public boolean signIn(String username, String password) {
 	   
-	   // Trim username only for login (prevents accidental trailing spaces).
-	   if (username != null) {
-	        username = username.trim();
-	    }
-	   
+	   // Handles case-insensitivity 
+	   if (username != null)
+		   username = username.trim().toLowerCase();
+	 
 	   // Username and password must not be blank.
 	   if (authenticator.isBlankField(username) || authenticator.isBlankField(password)) {
 	        return false;
@@ -207,7 +210,13 @@ public class Accounts {
      */
    
    public boolean changePassword(String username, String oldPassword, String secretAnswer, String newPassword) {
+	  
+	   // Handles case-insensitivity 
+	   if (username != null)
+		   username = username.toLowerCase();
+	   
 	   Authentication.AuthRecord rec = storage.getAuthInfo(username);
+	   
 	   if (rec == null) {
 		   return false;
 	   }
@@ -267,9 +276,13 @@ public class Accounts {
    
    public boolean setSecretQuestionAndAnswer(String username, String question, String answer) {
 
-       if (!signedIn || !this.username.equals(username))
+	   // Handles case-insensitivity 
+       if (username != null) 
+    	   username = username.toLowerCase();
+	   
+	   if (!signedIn || !this.username.equals(username))
            return false;
-       
+
         // Validate non-blank question/answer
        if (authenticator.isBlankField(question)) {
            return false;
@@ -299,7 +312,13 @@ public class Accounts {
      * @author Jessica Ramirez
      */
    public String getSecretQuestion(String username) {
+       
+	   // Handles case-insensitivity 
+       if (username != null) 
+    	   username = username.toLowerCase();
+       
        Authentication.AuthRecord rec = storage.getAuthInfo(username);
+
        if (rec == null) {
            return null;
        }
@@ -315,6 +334,13 @@ public class Accounts {
      * @author Zhengjun Xie
      */
    public boolean verifySecretAnswer(String username, String answer) {
+	   if (username != null) 
+		   username = username.toLowerCase();
+	   
+	   // Secret answer must not be null/blank
+	    if (authenticator.isBlankField(answer))
+	        return false;
+
        return authenticator.checkSecretAnswer(username, answer);
    }
    
@@ -338,12 +364,15 @@ public class Accounts {
     */
    
    public boolean deleteUser(String username) {
+	   
+	    if (username != null) 
+	    	username = username.toLowerCase();
 
 	    // Must be signed in AND deleting own account
 	    if (!signedIn || !username.equals(this.username)) {
 	        return false;
 	    }
-
+	  
 	    if (storage.getAuthInfo(username) == null) {
 	        return false;
 	    }
