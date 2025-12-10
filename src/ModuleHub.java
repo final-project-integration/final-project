@@ -65,7 +65,7 @@ public class ModuleHub {
     private final ErrorHandler errorHandler;
 
     /**
-     * Reads all lines from the given file into a List&lt;String&gt;.
+     * Reads all lines from the given file into a list of strings.
      *
      * @param file the file to read
      * @return list of lines read from the file
@@ -118,7 +118,6 @@ public class ModuleHub {
     }
 
     // -----------------------Storage Integration----------------------------
-
 
     /**
      * Routes a storage-related request to the StorageManager module.
@@ -245,10 +244,10 @@ public class ModuleHub {
     /**
      * Uploads a CSV file for a specific user and year and stores it as a Budget.
      * This method:
-     * resolves the CSV file path
-     * validates the CSV content using ValidationEngine
-     * optionally checks for duplicate transactions and adds a warning
-     * if valid, imports it via StorageManager
+     *  - resolves the CSV file path
+     *  - validates the CSV content using ValidationEngine
+     *  - optionally checks for duplicate transactions and adds a warning
+     *  - if valid, prepares the data to be imported via StorageManager
      *
      * It does not print to the console; instead it returns a ValidationResult
      * so the caller (MainMenu) can decide how to display messages.
@@ -282,12 +281,45 @@ public class ModuleHub {
             ValidationResult csvValidation =
                     validationModule.validateCsvLines(csvFile.getName(), lines);
 
-            // If there are hard errors, stop here and return them.
+            // skip bad rows but still import good ones.
+            // So we keep only real file/header problems as hard errors,
+            // and convert row-level errors into warnings.
             if (csvValidation.hasErrors()) {
-                return csvValidation;
+                ValidationResult filtered = new ValidationResult();
+
+                for (String msg : csvValidation.getErrorMessages()) {
+                    String lower = msg.toLowerCase();
+
+                    boolean headerOrFileProblem =
+                            lower.contains("header")
+                                    || (lower.contains("column") && lower.contains("count"))
+                                    || lower.contains("too many columns")
+                                    || lower.contains("too few columns")
+                                    || lower.contains("empty file")
+                                    || lower.contains("no data rows");
+
+                    if (headerOrFileProblem) {
+                        filtered.addError(msg);   // still fatal
+                    } else {
+                        // clean out the [ERROR] tag when downgrading
+                        String cleaned = msg.replace("][ERROR]", "]").replace("[ERROR]", "");
+                        filtered.addWarning(cleaned);
+                    }
+                }
+
+                // keep original warnings
+                for (String w : csvValidation.getWarningMessages()) {
+                    filtered.addWarning(w);
+                }
+
+                csvValidation = filtered;
+
+                if (csvValidation.hasErrors()) {
+                    return csvValidation;
+                }
             }
 
-            //  Duplicate Transaction WARNING non-blocking
+            // Duplicate Transaction WARNING non-blocking
             try {
                 List<Object> txs = new ArrayList<>();
 
@@ -328,7 +360,7 @@ public class ModuleHub {
                     txs.add(new Object() {
                         public String getDate()     { return date; }
                         public Double getAmount()   { return amount; }
-                        public String getMerchant() { return ""; } // CSV has no merchant column
+                        public String getMerchant() { return ""; }
                         public String getCategory() { return category; }
                     });
                 }
@@ -348,7 +380,6 @@ public class ModuleHub {
                 // Never block upload on duplicate check – best-effort only
             }
 
-
             // Return the full validation result (may contain warnings about duplicates)
             return csvValidation;
 
@@ -363,7 +394,7 @@ public class ModuleHub {
 
     /**
      * Finalizes a CSV upload by actually importing the file into StorageManager.
-     * This is called AFTER uploadCSVData has validated the file and after
+     * This is called after uploadCSVData has validated the file and after
      * the user confirms they want to proceed (even if duplicates exist).
      *
      * @param username    the user who owns the data
@@ -392,8 +423,8 @@ public class ModuleHub {
 
     /**
      * Tries to resolve the CSV file path in a few common locations:
-     *  As given (relative or absolute), after trimming whitespace
-     *  Inside a data subfolder (data/filename.csv)
+     *  - as given (relative or absolute), after trimming whitespace
+     *  - inside a data subfolder (data/filename.csv)
      *
      * @param csvFilePath the path or filename the user typed
      * @return a File that exists on disk, or null if not found
@@ -424,7 +455,6 @@ public class ModuleHub {
     }
 
     // Reports view from stored data (no CSV prompting)
-
 
     /**
      * Generates and prints a report for a given user and year from previously stored data.
@@ -559,7 +589,8 @@ public class ModuleHub {
             String[] parts = date.split("/");
 
             if (parts.length != 3) {
-                System.err.println("[ModuleHub] Invalid date in transaction: " + date);
+                // Bad date format, skip this transaction silently
+                // System.err.println("[ModuleHub] Invalid date in transaction: " + date);
                 continue;
             }
 
@@ -568,7 +599,8 @@ public class ModuleHub {
             try {
                 month = Integer.parseInt(monthPart) - 1;  // 0-based month index
             } catch (NumberFormatException e) {
-                System.err.println("[ModuleHub] Invalid month in date: " + date);
+                // Bad month – skip silently
+                // System.err.println("[ModuleHub] Invalid month in date: " + date);
                 continue;
             }
 
@@ -588,13 +620,10 @@ public class ModuleHub {
 
     //------------------------------- Predictions-------------------------------------
 
-
-
-
     /**
      * Runs a prediction scenario on previously uploaded and stored data:
      *  - loads the Budget for a user and year from StorageManager
-     *  - passes the Budget directly into the Prediction DataReader
+     *  - passes the Budget directly into the prediction DataReader
      *  - delegates the selected scenario to ScenarioSimulator
      *
      * Supported scenario types:
@@ -689,19 +718,29 @@ public class ModuleHub {
         }
     }
 
+    /**
+     * Loads prediction data for a user and year into the predictionData reader.
+     * If no budget data is found, a helpful message is printed and false is returned.
+     *
+     * @param username the username whose prediction data should be loaded
+     * @param year     the year of data to load
+     * @return true if budget data is found and loaded successfully, false otherwise
+     *
+     * @author Denisa Cakoni
+     */
     private boolean loadPredictionData(String username, int year) {
         try {
-                Budget budget = storageModule.getUserBudget(username, year);
-                if (budget == null) {
-                    BeautifulDisplay.printError("No data found for year " + year);
-                    System.out.println();
-                    System.out.println("  " + BeautifulDisplay.BRIGHT_CYAN + "📤 To upload data:" +BeautifulDisplay.RESET);
-                    System.out.println("   " + BeautifulDisplay.DIM + "Main Menu -> Financial Data->Upload CSV" + BeautifulDisplay.RESET);
-                    System.out.println();
-                    return false;
-                }
-                predictionData.readFromBudget(budget);
-                return true;
+            Budget budget = storageModule.getUserBudget(username, year);
+            if (budget == null) {
+                BeautifulDisplay.printError("No data found for year " + year);
+                System.out.println();
+                System.out.println("  " + BeautifulDisplay.BRIGHT_CYAN + "📤 To upload data:" + BeautifulDisplay.RESET);
+                System.out.println("   " + BeautifulDisplay.DIM + "Main Menu -> Financial Data->Upload CSV" + BeautifulDisplay.RESET);
+                System.out.println();
+                return false;
+            }
+            predictionData.readFromBudget(budget);
+            return true;
         }
         catch (Exception e) {
             errorHandler.handleModuleError("Prediction", e);
@@ -709,6 +748,16 @@ public class ModuleHub {
         }
     }
 
+    /**
+     * Returns the list of categories that can be adjusted in a deficit scenario
+     * for the specified user and year.
+     *
+     * @param username the username whose data should be analyzed
+     * @param year     the year of data to load
+     * @return a list of adjustable category names; empty list if data cannot be loaded
+     *
+     * @author Denisa Cakoni
+     */
     public List<String> getDeficitAdjustableCategories(String username, int year) {
         List<String> result = new ArrayList<>();
         if (!loadPredictionData(username, year)) {
@@ -719,6 +768,17 @@ public class ModuleHub {
         return result;
     }
 
+    /**
+     * Builds a summary of a deficit what-if scenario for a specific category.
+     * Uses stored prediction data for the given user and year.
+     *
+     * @param username the username whose data should be analyzed
+     * @param year     the year of data to analyze
+     * @param category the category to run the what-if scenario on
+     * @return a formatted summary string, or a status message if data is unavailable
+     *
+     * @author Denisa Cakoni
+     */
     public String buildDeficitWhatifSummary(String username, int year, String category) {
         if (!loadPredictionData(username,year)) {
             return "[ModuleHub] No data available for year " + year;
@@ -726,17 +786,25 @@ public class ModuleHub {
         return predictionModule.buildDeficitWhatIfSummary(category);
     }
 
-
-
+    /**
+     * Builds a summary of a surplus what-if scenario for a specific category.
+     * Uses stored prediction data for the given user and year.
+     *
+     * @param username the username whose data should be analyzed
+     * @param year     the year of data to analyze
+     * @param category the category to run the what-if scenario on
+     * @return a formatted summary string, or a status message if data is unavailable
+     *
+     * @author Denisa Cakoni
+     */
     public String buildSurplusWhatifSummary(String username, int year, String category) {
         if (!loadPredictionData(username,year)) {
             return "[ModuleHub] No data available for year " + year;
         }
         return predictionModule.buildSurplusWhatIfSummary(category);
-        }
+    }
 
-            // --------------------------Validation---------------------------------------
-
+    // --------------------------Validation---------------------------------------
 
     /**
      * Validates a single value using the ValidationEngine based on a given type.
@@ -965,7 +1033,6 @@ public class ModuleHub {
         }
     }
 
-
     // -----------------Accounts / Authentication--------------------------------
 
     /**
@@ -1074,9 +1141,9 @@ public class ModuleHub {
     /**
      * Registers a new user account by delegating to the Accounts module.
      * This wrapper:
-     *  forwards all user-centered fields,
-     *  passes along the caller's confirmation flag,
-     *  reports any failure back to the console.
+     *  - forwards all user-centered fields
+     *  - passes along the caller's confirmation flag
+     *  - reports any failure back to the console
      *
      * @param username       the desired username
      * @param password       the chosen password
@@ -1230,7 +1297,7 @@ public class ModuleHub {
     /**
      * Changes a user's password using their existing (old) password for verification.
      *
-     * Internally, this delegates to Accounts.changePassword(...) and passes
+     * Internally, this delegates to Accounts.changePassword and passes
      * null for the secret answer, since verification is done via oldPassword.
      *
      * @param username    the username of the account whose password is being changed
@@ -1308,7 +1375,7 @@ class ErrorHandler {
     /**
      * Handles an exception that was thrown by a module.
      *
-     * This method does *not* catch exceptions itself.
+     * This method does not catch exceptions itself.
      * Instead, exceptions are passed into this method after being caught
      * in ModuleHub or other components.
      *
