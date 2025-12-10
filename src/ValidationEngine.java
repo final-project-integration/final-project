@@ -16,22 +16,33 @@ public class ValidationEngine {
      * Example allowed categories list.
      */
     private static final List<String> ALLOWED_CATEGORIES = List.of(
-            "Compensation",
-            "Professional Services",
-            "Food",
-            "Home",
-            "Transportation",
-            "Entertainment",
-            "Health",
-            "Savings",
-            "Other");
+    		"compensation",
+    		"professional services",
+    		"food",
+    		"home",
+    		"utilities",
+    		"transportation",
+    		"entertainment",
+    		"appearance",
+    		"work",
+    		"education",
+    		"allowance",
+    		"investments",
+    		"other"
+);
 
     /**
      * Categories treated as income (amounts should be non-negative).
      */
     private static final List<String> INCOME_CATEGORIES = List.of(
             "Compensation",
-            "Savings");
+            "Investments",
+            "allowance",
+            "other"
+            );
+    private static final List<String> FLEXIBLE_CATEGORIES = List.of(
+            "other"
+    );
 
     /**
      * Constructor initializes the data type validator.
@@ -322,16 +333,25 @@ public class ValidationEngine {
                     boolean isIncome = INCOME_CATEGORIES.stream()
                             .anyMatch(cat -> cat.equalsIgnoreCase(categoryField));
 
-                    // Sign convention: income >= 0, expenses <= 0
-                    if (isIncome && amount < 0) {
-                        result.addError("Line " + lineNumber + ": Income category '" + categoryField
-                                + "' must not have a negative amount (" + amount + "). "
-                                + "Income amounts should be positive or zero.");
-                    } else if (!isIncome && amount > 0) {
-                        result.addError("Line " + lineNumber + ": Expense category '" + categoryField
-                                + "' should have a negative amount, but found " + amount + ". "
-                                + "Expense amounts should be negative (e.g., -50 for $50 spent).");
+                    boolean isFlexible = FLEXIBLE_CATEGORIES.stream()
+                            .anyMatch(cat -> cat.equalsIgnoreCase(categoryField));
+
+                    // Sign convention:
+                    //   • Income categories: amount >= 0
+                    //   • Expense categories: amount <= 0
+                    //   • Flexible categories (e.g., "other"): no restriction
+                    if (!isFlexible) {
+                        if (isIncome && amount < 0) {
+                            result.addError("Line " + lineNumber + ": Income category '" + categoryField
+                                    + "' must not have a negative amount (" + amount + "). "
+                                    + "Income amounts should be positive or zero.");
+                        } else if (!isIncome && amount > 0) {
+                            result.addError("Line " + lineNumber + ": Expense category '" + categoryField
+                                    + "' should have a negative amount, but found " + amount + ". "
+                                    + "Expense amounts should be negative (e.g., -50 for $50 spent).");
+                        }
                     }
+
                 } catch (NumberFormatException e) {
                     // Should be caught by isNumeric check, but safe guard here
                     result.addError("Line " + lineNumber + ": Amount format error.");
