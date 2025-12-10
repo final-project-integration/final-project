@@ -651,7 +651,7 @@ final class MainMenu {
 					+ " What was your driving instructor’s first name?");
 			System.out.println();
 			BeautifulDisplay.printGradientDivider(70);
-			System.out.println(
+			System.out.print(
 					"Please enter the number associated with the question that you want to \nbe your security question and then press enter: ");
 			
 			int secretQuestionChoice = getUserChoice(6);
@@ -1088,6 +1088,8 @@ final class MainMenu {
 		boolean plzEnterValidYearRep = false;
 		while(true) {
 			clearConsole();
+			BeautifulDisplay.printGradientHeader("REPORTS MENU", 70);
+			System.out.println();
 			moduleHub.callStorage("listyears", currentUser, 0);
 			System.out.println();
 			System.out.println("Please enter the year you would like reports about below and then press enter. ");
@@ -1099,13 +1101,15 @@ final class MainMenu {
 				plzEnterValidYearRep = false;
 			}
 			System.out.println(
-					"If you have changed your mind about viewing the reports of a year, just press enter without any input.");
-			System.out.print("Year that you would like reports about: ");
+					"If you have changed your mind about viewing the reports of a year, just \npress enter without any input.");
+			System.out.print(BeautifulDisplay.BOLD + "\nYear that you would like reports about:" + BeautifulDisplay.RESET + " ");
 
 			String reportsInput = scanner.nextLine();
 
 			if (reportsInput.trim().isEmpty()) {
 				clearConsole();
+				BeautifulDisplay.printGradientHeader("REPORTS MENU", 70);
+				System.out.println();
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " View the reports of a different year");
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
@@ -1157,8 +1161,9 @@ final class MainMenu {
 
 			} catch (NumberFormatException e) {
 				clearConsole();
-				System.out.println("Your input, " + reportsInput + " , is not a valid year.");
-				System.out.println("What would you like to do?");
+				BeautifulDisplay.printGradientHeader("REPORTS MENU", 70);
+				BeautifulDisplay.printError("Your input, " + reportsInput + " , is not a valid year.");
+				System.out.println("\nWhat would you like to do?");
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " View the reports of a different year");
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
@@ -1180,8 +1185,9 @@ final class MainMenu {
 
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
-				System.out.println("There is no data for " + year + ".");
-				System.out.println("What would you like to do?");
+				BeautifulDisplay.printGradientHeader("REPORTS MENU", 70);
+				BeautifulDisplay.printError("There is no data for " + year + ".");
+				System.out.println("\nWhat would you like to do?");
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " View the reports of a different year");
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
 				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
@@ -1256,6 +1262,8 @@ final class MainMenu {
 		boolean plzEnterValidYearPred = false;
 		while(true) {
 			clearConsole();
+			BeautifulDisplay.printGradientHeader("PREDICTIONS MENU", 70);
+			System.out.println();
 			moduleHub.callStorage("listyears", currentUser, 0);
 			System.out.println();
 			System.out.println("Please enter the year you would like predictions about below and then press enter.");
@@ -1267,16 +1275,20 @@ final class MainMenu {
 				plzEnterValidYearPred = false;
 			}
 			System.out.println(
-					"If you have changed your mind about viewing the predictions of a year, just press enter without any input.");
-			System.out.print("Year that you would like predictions about: ");
+					"If you have changed your mind about viewing the predictions of a year, \njust press enter without any input.");
+			System.out.print(BeautifulDisplay.BOLD + "\nYear that you would like predictions about:" + BeautifulDisplay.RESET + " ");
 			String predictionInput = scanner.nextLine();
 
 			if (predictionInput.trim().isEmpty()) {
 				clearConsole();
+				BeautifulDisplay.printGradientHeader("PREDICTIONS MENU", 70);
+				System.out.println();
 				System.out.println("What would you like to do?");
-				System.out.println("  1. View the predictions of a different year");
-				System.out.println("  2. Return to Finance Menu");
-				System.out.println("  3. Return to Main Menu");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." +  BeautifulDisplay.RESET + " View the predictions of a different year");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." +  BeautifulDisplay.RESET + " Return to Finance Menu");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." +  BeautifulDisplay.RESET + " Return to Main Menu");
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 				int exitChoice = getUserChoice(3);
 
@@ -1301,10 +1313,11 @@ final class MainMenu {
 						System.out.println(
 								"The year you entered is too far into the future. The latest allowed year is 2100.");
 					}
-					System.out.println("What would you like to do?");
-					System.out.println("  1. View the predictions of a different year");
-					System.out.println("  2. Return to Finance Menu");
-					System.out.println("  3. Return to Main Menu");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." +  BeautifulDisplay.RESET + " View the predictions of a different year");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." +  BeautifulDisplay.RESET + " Return to Finance Menu");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." +  BeautifulDisplay.RESET + " Return to Main Menu");
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
 					System.out.print(
 							"Please enter the number associated with your desired option and then press enter: ");
 					int rangeYearChoice = getUserChoice(3);
@@ -1321,11 +1334,14 @@ final class MainMenu {
 
 			} catch (NumberFormatException e) {
 				clearConsole();
-				System.out.println("Your input, " + predictionInput + " , is not a valid year.");
-				System.out.println("What would you like to do?");
-				System.out.println("  1. View the predictions of a different year");
-				System.out.println("  2. Return to Finance Menu");
-				System.out.println("  3. Return to Main Menu");
+				BeautifulDisplay.printGradientHeader("PREDICTIONS MENU", 70);
+				BeautifulDisplay.printError("Your input, " + predictionInput + " , is not a valid year.");
+				System.out.println("\nWhat would you like to do?");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." +  BeautifulDisplay.RESET + " View the predictions of a different year");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." +  BeautifulDisplay.RESET + " Return to Finance Menu");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." +  BeautifulDisplay.RESET + " Return to Main Menu");
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 				int invalidYearChoice = getUserChoice(3);
 
@@ -1341,11 +1357,13 @@ final class MainMenu {
 
 			if (!moduleHub.hasDataForYear(currentUser, year)) {
 				clearConsole();
-				System.out.println("There is no data for " + year);
-				System.out.println("What would you like to do?");
-				System.out.println("  1. View the predictions of a different year");
-				System.out.println("  2. Return to Finance Menu");
-				System.out.println("  3. Return to Main Menu");
+				BeautifulDisplay.printGradientHeader("PREDICTIONS MENU", 70);
+				BeautifulDisplay.printError("There is no data for " + year);
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." +  BeautifulDisplay.RESET + " View the predictions of a different year");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." +  BeautifulDisplay.RESET + " Return to Finance Menu");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." +  BeautifulDisplay.RESET + " Return to Main Menu");
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 				int userChoice = getUserChoice(3);
 
@@ -1464,9 +1482,11 @@ final class MainMenu {
 				boolean plzEnterValidYearDel = false;
 				while (true) {
 					clearConsole();
+					BeautifulDisplay.printGradientHeader("DATA MANGAEMENT", 70);
+					System.out.println();
 					moduleHub.callStorage("listyears", currentUser, 0);
 					System.out.println();
-					System.out.println("Please enter the year of the CSV file you would like to delete below and then press enter. ");
+					System.out.println("Please enter the year of the CSV file you would like to delete below and then press enter. \n");
 					if (plzEnterYearInRangeDel) {
 						System.out.println("Please make sure that the year you enter is between 1900 and 2100.");
 						plzEnterYearInRangeDel = false;
@@ -1481,10 +1501,14 @@ final class MainMenu {
 					
 					if (csvDelInput.trim().isEmpty()) {
 						clearConsole();
+						BeautifulDisplay.printGradientHeader("DATA MANGAEMENT", 70);
+						System.out.println();
 						System.out.println("What would you like to do next?");
-						System.out.println("  1. Delete the data of a different year");
-						System.out.println("  2. Return to Finance Menu");
-						System.out.println("  3. Return to Main Menu");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Delete the data of a different year");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
+						System.out.println();
+						BeautifulDisplay.printGradientDivider(70);
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
 						int noDataChoice = getUserChoice(3);
 
@@ -1511,9 +1535,11 @@ final class MainMenu {
 							    System.out.println("The year you entered is too far into the future. The latest allowed year is 2100.");
 							}
 							System.out.println("What would you like to do next?");
-							System.out.println("  1. Delete the data of a different year");
-							System.out.println("  2. Return to Finance Menu");
-							System.out.println("  3. Return to Main Menu");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Delete the data of a different year");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
+							System.out.println();
+							BeautifulDisplay.printGradientDivider(70);
 							System.out.print("Please enter the number associated with your desired option and then press enter: ");
 							
 							int rangeYearChoice = getUserChoice(3);
@@ -1532,11 +1558,14 @@ final class MainMenu {
 						
 					} catch (NumberFormatException e) {
 						clearConsole();
-						System.out.println("Your input, "+ csvDelInput + " , is not a valid year.");
-						System.out.println("What would you like to do next?");
-						System.out.println("  1. Delete the data of a different year");
-						System.out.println("  2. Return to Finance Menu");
-						System.out.println("  3. Return to Main Menu");
+						BeautifulDisplay.printGradientHeader("DATA MANGAEMENT", 70);
+						BeautifulDisplay.printError("Your input, "+ csvDelInput + " , is not a valid year.");
+						System.out.println("\nWhat would you like to do next?");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Delete the data of a different year");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
+						System.out.println();
+						BeautifulDisplay.printGradientDivider(70);
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
 						int invalidYearChoice = getUserChoice(3);
 
@@ -1554,11 +1583,13 @@ final class MainMenu {
 					
 					if (!moduleHub.hasDataForYear(currentUser, year)) {
 						clearConsole();
-						System.out.println("There is no data for " + year);
-						System.out.println("What would you like to do?");
-						System.out.println("  1. Delete the data of a different year");
-						System.out.println("  2. Return to Finance Menu");
-						System.out.println("  3. Return to Main Menu");
+						BeautifulDisplay.printGradientHeader("DATA MANGAEMENT", 70);
+						BeautifulDisplay.printError("There is no data for " + year);
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Delete the data of a different year");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Finance Menu");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to Main Menu");
+						System.out.println();
+						BeautifulDisplay.printGradientDivider(70);
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
 						int noDataChoice = getUserChoice(3);
 
@@ -1576,9 +1607,12 @@ final class MainMenu {
 					moduleHub.callStorage("delete", currentUser, year);
 
 					clearConsole();
-					System.out.println("Would you like to delete another CSV file?");
-					System.out.println("  1. Yes");
-					System.out.println("  2. No");
+					BeautifulDisplay.printGradientHeader("DATA MANGAEMENT", 70);
+					System.out.println("\nWould you like to delete another CSV file?");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Yes");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " No");
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
 					System.out.print("Please enter the number associated with your desired option and then press enter: ");
 					int deleteAnotherChoice = getUserChoice(2);
 
@@ -1587,9 +1621,12 @@ final class MainMenu {
 					}
 					else {
 						clearConsole();
-						System.out.println("Would you like to return to the Finance Menu or the Main Menu?");
-						System.out.println("  1. Return to Finance Menu");
-						System.out.println("  2. Return to Main Menu");
+						BeautifulDisplay.printGradientHeader("DATA MANGAEMENT", 70);
+						System.out.println("\nWould you like to return to the Finance Menu or the Main Menu?");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Return to Finance Menu");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to Main Menu");
+						System.out.println();
+						BeautifulDisplay.printGradientDivider(70);
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
 						int returnChoice = getUserChoice(2);
 
@@ -1960,9 +1997,11 @@ final class MainMenu {
 					else {
 						System.out.println("Failed to update you security question and security question answer.");
 						System.out.println("What would you like to do?");
-						System.out.println("  1. Try changing your security question again");
-						System.out.println("  2. Return to the account settings menu");
-						System.out.println("  3. Exit the application");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Try changing your security question again");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to the account settings menu");
+						System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+						System.out.println();
+						BeautifulDisplay.printGradientDivider(70);
 						System.out.print("Please enter the number associated with your desired option and then press enter: ");
 						int incorrectChoice = getUserChoice(3);
 
@@ -1982,13 +2021,17 @@ final class MainMenu {
 			//If the login is invalid, then print invalid login menu
 			clearConsole();
 			//Print invalid login menu
-			System.out.println("The password you entered was incorrect.");
-			System.out.println("What you like to do? ");
-			System.out.println("  1. Try verifying your password again");
-			System.out.println("  2. Forgot your password?");
-			System.out.println("  3. Return to the account settings menu");
-			System.out.println("  4. Exit application");
+			BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);		
+			BeautifulDisplay.printError("The password you entered was incorrect.");
+			System.out.println("\nWhat you like to do? ");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Try verifying your password again");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Forgot your password?");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Return to the account settings menu");
+			System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  4." + BeautifulDisplay.RESET + " Exit application");
+			System.out.println();
+			BeautifulDisplay.printGradientDivider(70);
 			System.out.print("Please enter the number associated with your desired option and then press enter: ");
+			
 			int loginRetryChoice = getUserChoice(4);
 
 			//If the user wants to try logging in again, jump back to the start of the loop, so that they can try logging in again
@@ -2010,9 +2053,11 @@ final class MainMenu {
 					case INCORRECT_ANSWER:
 						if (retries < 3) {
 							System.out.println("What would you like to do?");
-							System.out.println("  1. Try answering your security question again");
-							System.out.println("  2. Return to the account settings menu");
-							System.out.println("  3. Exit the application");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Try answering your security question again");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Return to the account settings menu");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  3." + BeautifulDisplay.RESET + " Exit the application");
+							System.out.println();
+							BeautifulDisplay.printGradientDivider(70);
 							System.out.print("Please enter the number associated with your desired option and then press enter: ");
 							int incorrectChoice = getUserChoice(3);
 
@@ -2030,11 +2075,13 @@ final class MainMenu {
 
 						else {
 							System.out.println();
-							System.out.println("Too many account recovery attempts.");
-							System.out.println("You can either return to the account settings menu or exit the application.");
+							BeautifulDisplay.printError("Too many account recovery attempts.");
+							System.out.println("\nYou can either return to the account settings menu or exit the application.");
 							System.out.println("What would you like to do?");
-							System.out.println("  1. Return to the account settings menu");
-							System.out.println("  2. Exit the application");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Return to the account settings menu");
+							System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " Exit the application");
+							System.out.println();
+							BeautifulDisplay.printGradientDivider(70);
 							System.out.print("Please enter the number associated with your desired option and then press enter: ");
 
 							int exitChoice = getUserChoice(2);
@@ -2096,9 +2143,13 @@ final class MainMenu {
 				continue;
 			case 3:
 				clearConsole();
-				System.out.println("Are you sure you want to delete this account: " + currentUser + "? ");
-				System.out.println("  1. Yes");
-				System.out.println("  2. No");
+				BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+				System.out.println();
+				System.out.println("Are you sure you want to delete this account: " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN + currentUser + BeautifulDisplay.RESET + "? ");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Yes");
+				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " No");
+				System.out.println();
+				BeautifulDisplay.printGradientDivider(70);
 				System.out.print("Please enter the number associated with your desired option and then press enter: ");
 				int sureDelAccount = getUserChoice(2);
 
@@ -2108,20 +2159,26 @@ final class MainMenu {
 
 					if (deleted) {
 						clearConsole();
-						System.out.println("Your account has been deleted.");
+						BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+						System.out.println();
+						BeautifulDisplay.printSuccess("Your account has been deleted.");
 						System.out.print("Press enter when you are ready to return to the account settings menu...");
 						scanner.nextLine();
 						// Tell main() that the user is NO LONGER logged in
 						return false;
 					} else {
 						clearConsole();
-						System.out.println("Account deletion failed. Your account has not been removed.");
+						BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+						System.out.println();
+						BeautifulDisplay.printError("Account deletion failed. Your account has not been removed.");
 						System.out.print("Press enter when you are ready to return to the account settings menu...");
 						scanner.nextLine();
 						break;  // stay logged in / in settings
 					}
 				} else {
 					clearConsole();
+					BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+					System.out.println();
 					System.out.print("Press enter when you are ready to return to the account settings menu...");
 					scanner.nextLine();
 					break;
