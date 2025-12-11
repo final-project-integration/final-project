@@ -2197,100 +2197,10 @@ final class MainMenu {
 	 * 
 	 * @author Shazadul Islam
 	 */
-	private boolean accountSettingsMenu(String currentUsername) {
-		boolean inSettings = true;
-		while (inSettings) {
-			clearConsole();
-			// ✨ Pretty ACCOUNT SETTINGS menu
-			BeautifulDisplay.printAccountSettingsMenu(currentUsername);
-			int settingsChoice = getUserChoice(4);
-
-			switch (settingsChoice){
-			case 1:
-				handleChangePassword(currentUsername);
-				continue;
-			case 2:
-				handleResetSecurity(currentUsername);
-				continue;
-			case 3:
-				clearConsole();
-				BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);
-				System.out.println("\nPlease enter your current password below and then press enter.");
-				System.out.print("  Current Password: ");
-				
-				String currentPassword = scanner.nextLine();
-
-				//Check if the password we just received is valid
-				boolean validPass = moduleHub.verifyPassword(currentUsername, currentPassword);
-				
-				if (validPass) {
-					clearConsole();
-					BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-					System.out.println();
-					System.out.println("Are you sure you want to delete this account: " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN + currentUsername + BeautifulDisplay.RESET + "? ");
-					System.out.println(BeautifulDisplay.BRIGHT_BLUE + "  1." + BeautifulDisplay.RESET + " Yes");
-					System.out.println(BeautifulDisplay.BRIGHT_BLUE + "  2." + BeautifulDisplay.RESET + " No");
-					System.out.println();
-					BeautifulDisplay.printGradientDivider(70);
-					System.out.print("Please enter the number associated with your desired option and then press enter: ");
-					int sureDelAccount = getUserChoice(2);
-
-					if (sureDelAccount == 1) {
-						// Ask ModuleHub / Accounts to delete the user
-						boolean deleted = moduleHub.callAccounts("deleteaccount", currentUsername);
-
-						if (deleted) {
-							clearConsole();
-							BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-							System.out.println();
-							BeautifulDisplay.printSuccess("Your account has been deleted.");
-							System.out.print("Press enter when you are ready to return to the account settings menu...");
-							scanner.nextLine();
-							// Tell main() that the user is NO LONGER logged in
-							return false;
-						} else {
-							clearConsole();
-							BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-							System.out.println();
-							BeautifulDisplay.printError("Exiting account deletion. Your account has not been removed.");
-							System.out.print("Press enter when you are ready to return to the account settings menu...");
-							scanner.nextLine();
-							break;  // stay logged in / in settings
-						}
-						
-					} else {
-						clearConsole();
-						BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-						System.out.println();
-						System.out.print("Press enter when you are ready to return to the account settings menu...");
-						scanner.nextLine();
-						break;
-					}
-				}
-				else {
-					clearConsole();
-					BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-					System.out.println();
-					BeautifulDisplay.printError("The password you entered is incorrect. Account deletion failed.");
-					System.out.print("Press enter when you are ready to return to the account settings menu...");
-					scanner.nextLine();
-					break;  // stay logged in / in settings
-				}
-
-			case 4:
-				inSettings = false;
-				break;
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * Prints out the starting animation of the software
-	 * 
-	 * @author Aaron Madou
-	 */
 	public void intro() {
+		
+		clearConsole();
+		
 		String dash_line = "==========";
 
 		String Hamilton_Heights[] = {
@@ -2305,44 +2215,51 @@ final class MainMenu {
 			Hamilton_Heights[i] = Hamilton_Heights[i].replaceAll("■", "█");
 		}
 
-		String personalFinanceManager[] = {
-				"  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■■   ■■■■■   ■■    ■■   ■■■■   ■■       ■■■■■  ■■■■   ■■    ■■   ■■■■   ■■    ■■   ■■■■■  ■■■■■■    ■■■     ■■■   ■■■■   ■■    ■■   ■■■■    ■■■■■   ■■■■■■   ■■■■■     ",
-				"  ■■  ■■  ■■      ■■   ■■  ■■      ■■   ■■  ■■■■  ■■  ■■  ■■  ■■       ■■      ■■    ■■■■  ■■  ■■  ■■  ■■■■  ■■  ■■■     ■■        ■■■■   ■■■■  ■■  ■■  ■■■■  ■■  ■■  ■■  ■■       ■■       ■■   ■■   ",
-				"  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■   ■■   ■■  ■■ ■■ ■■  ■■■■■■  ■■       ■■■■■   ■■    ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■      ■■■■■■    ■■ ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■■■■■  ■■  ■■   ■■■■■■   ■■■■■■    ",
-				"  ■■      ■■      ■■   ■■      ■■  ■■   ■■  ■■  ■■■■  ■■  ■■  ■■       ■■      ■■    ■■  ■■■■  ■■  ■■  ■■  ■■■■  ■■■     ■■        ■■  ■■■  ■■  ■■  ■■  ■■  ■■■■  ■■  ■■  ■■   ■■  ■■       ■■   ■■   ",
-				"  ■■      ■■■■■■  ■■   ■■  ■■■■■    ■■■■■   ■■   ■■■  ■■  ■■  ■■■■     ■■     ■■■■   ■■   ■■■  ■■  ■■  ■■   ■■■   ■■■■■  ■■■■■■    ■■  ■■■  ■■  ■■  ■■  ■■   ■■■  ■■  ■■   ■■■■■   ■■■■■■   ■■   ■■   ",
+		String personalFinance[] = {
+				"\t\t  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■■   ■■■■■   ■■    ■■   ■■■■   ■■       ■■■■■  ■■■■   ■■    ■■   ■■■■   ■■    ■■   ■■■■■  ■■■■■■ ",
+				"\t\t  ■■  ■■  ■■      ■■   ■■  ■■      ■■   ■■  ■■■■  ■■  ■■  ■■  ■■       ■■      ■■    ■■■■  ■■  ■■  ■■  ■■■■  ■■  ■■■     ■■     ",
+				"\t\t  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■   ■■   ■■  ■■ ■■ ■■  ■■■■■■  ■■       ■■■■■   ■■    ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■      ■■■■■■ ",
+				"\t\t  ■■      ■■      ■■   ■■      ■■  ■■   ■■  ■■  ■■■■  ■■  ■■  ■■       ■■      ■■    ■■  ■■■■  ■■  ■■  ■■  ■■■■  ■■■     ■■     ",
+				"\t\t  ■■      ■■■■■■  ■■   ■■  ■■■■■    ■■■■■   ■■   ■■■  ■■  ■■  ■■■■     ■■     ■■■■   ■■   ■■■  ■■  ■■  ■■   ■■■   ■■■■■  ■■■■■■ ",
 
 		};
+		
+		String manager[] = { 
+			"\t\t\t\t\t\t  ■■■     ■■■   ■■■■   ■■    ■■   ■■■■    ■■■■■   ■■■■■■   ■■■■■     ",
+			"\t\t\t\t\t\t  ■■■■   ■■■■  ■■  ■■  ■■■■  ■■  ■■  ■■  ■■       ■■       ■■   ■■   ",
+			"\t\t\t\t\t\t  ■■ ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■■■■■  ■■  ■■   ■■■■■■   ■■■■■■    ",
+			"\t\t\t\t\t\t  ■■  ■■■  ■■  ■■  ■■  ■■  ■■■■  ■■  ■■  ■■   ■■  ■■       ■■   ■■   ",
+			"\t\t\t\t\t\t  ■■  ■■■  ■■  ■■  ■■  ■■   ■■■  ■■  ■■   ■■■■■   ■■■■■■   ■■   ■■   "
+		};
+		
 		for(int i = 0; i < 5; i++) {
-			personalFinanceManager[i] = personalFinanceManager[i].replaceAll("■", "█");
+			personalFinance[i] = personalFinance[i].replaceAll("■", "█");
+			manager[i] = manager[i].replaceAll("■", "█");
 		}
+		
+		
 		System.out.println("\n\n");
-		int size = personalFinanceManager[1].length();
-		int index = 0;
-		int time = 0;
-		while(time < 100) {
-			for(String line : Hamilton_Heights) {
-				System.out.println(BeautifulDisplay.BOLD + line + BeautifulDisplay.RESET);
-			};
-			System.out.println();
-			for(String str : personalFinanceManager) {
-				int frame = index;
-				System.out.print("\t\t\t");
-				for(int i = 0; i < 100; i++) {				
-					System.out.print(BeautifulDisplay.BRIGHT_GREEN + str.charAt(frame) + BeautifulDisplay.RESET);
-					frame = ((frame+1)%size);
-				}
-				System.out.println();
-			}
-			index = (index+1)%size;
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-	            Thread.currentThread().interrupt();
-			}
-			time++;
-			clearConsole();
+		
+		for(String line : Hamilton_Heights) {
+			System.out.println(BeautifulDisplay.BOLD + line + BeautifulDisplay.RESET);
+		};
+			
+		System.out.println("\n");
+		
+		for(String line : personalFinance) {
+			System.out.println(BeautifulDisplay.BRIGHT_GREEN + line + BeautifulDisplay.RESET);
 		}
+		
+		System.out.println("\n");
+		
+		for(String line : manager) {
+			System.out.println(BeautifulDisplay.BRIGHT_GREEN + line + BeautifulDisplay.RESET);
+		}
+		
+		System.out.println("\n\n\n");
+		System.out.print(BeautifulDisplay.BOLD + "Press Enter to continue... " + BeautifulDisplay.RESET);
+		Scanner s = new Scanner(System.in);
+		String apples = s.nextLine();
 	}
 
 	/**
