@@ -536,7 +536,7 @@ public class SurplusOptimizer {
      * expenses.
      * Intended primarily for debugging from a driver or test, not from the UI
      * layer.
-     *
+     * @return sb.toString() a formatted string containing all categories and their amounts
      * @author Daniel Moore
      * @return lists string for all the avaliable surplus categories
      */
@@ -619,7 +619,6 @@ public class SurplusOptimizer {
 
     /**
      * Prints the surplus log.
-     * 
      * @author Daniel Moore
      */
     public void printSurplusLog() {
@@ -666,6 +665,7 @@ public class SurplusOptimizer {
     /**
      * Prints the annual and monthly surplus.
      * @since  New Code 12/8/2025 to print annual and monthly surplus
+     * @return the surplus message with annual and monthly surplus
      * @author Daniel Moore
      * @return gives back summary and the surplus value
      */

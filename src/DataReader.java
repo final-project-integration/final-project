@@ -86,7 +86,7 @@ public class DataReader {
 
 	/**
 	 * Tracks totals for the "other" category separately
-	 * Problem Bug 68362783: The "other" category is not correctly classified as income or expense. 
+	 * Bug 68362783: The "other" category is not correctly classified as income or expense. 
 	 * Fix by classifying "other" as income or expense based on the amount sign.
 	 * @author Jessica Barrera Saguay
 	 */
@@ -249,7 +249,7 @@ public class DataReader {
 	 * Loads categories and amounts from a Budget object into the internal lists.
 	 * Existing data is cleared before loading. Income amounts are stored as
 	 * positive values and expense amounts are stored as negative values.
-	 * Problem Bug 68362783: The "other" category is not correctly classified as income or expense. 
+	 * Bug 68362783: The "other" category is not correctly classified as income or expense. 
 	 * Fix by classifying "other" as income or expense based on the amount sign.
 	 * 
 	 * @param budget the budget object containing transactions to read
