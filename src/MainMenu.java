@@ -40,8 +40,27 @@ final class MainMenu {
 	 */
 	private void clearConsole() {
 		System.out.println();
-		System.out.print("\033[H\033[2J");
-		System.out.flush();
+		if(System.console() != null) {
+			try {
+		        final String os = System.getProperty("os.name");
+
+		        if (os.contains("Windows")) {
+		            // Command for Windows
+		            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+		        } else {
+		            // Command for Linux/macOS
+		            Runtime.getRuntime().exec("clear"); 
+		        }
+		    } catch (final Exception e) {
+		        // Handle exceptions (e.g., if the command fails)
+		        e.printStackTrace();
+		    }
+		}
+		else {
+			// clear for IDE console
+			System.out.print("\033[H\033[2J");
+			System.out.flush();
+		}
 	}
 
 	/**
@@ -2357,12 +2376,11 @@ final class MainMenu {
 	public static void main(String[] args) {
 		MainMenu applicationInterface = new MainMenu();
 		
+		applicationInterface.clearConsole();
 		if (System.console() != null) {
-			applicationInterface.clearConsole();
 			applicationInterface.intro();
 		}
 		else {
-			applicationInterface.clearConsole();
 			BeautifulDisplay.printGradientHeader("HAMILTON HEIGHTS", 100);
 			BeautifulDisplay.printGradientHeader("Presents", 100);
 			BeautifulDisplay.printGradientHeader("Finance Manager", 100);
