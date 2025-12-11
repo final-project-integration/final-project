@@ -2357,7 +2357,16 @@ final class MainMenu {
 	public static void main(String[] args) {
 		MainMenu applicationInterface = new MainMenu();
 		
-		applicationInterface.intro();
+		if (System.console() != null) {
+			applicationInterface.clearConsole();
+			applicationInterface.intro();
+		}
+		else {
+			applicationInterface.clearConsole();
+			BeautifulDisplay.printGradientHeader("HAMILTON HEIGHTS", 100);
+			BeautifulDisplay.printGradientHeader("Presents", 100);
+			BeautifulDisplay.printGradientHeader("Finance Manager", 100);
+		}
 		
 		applicationInterface.clearConsole();
 		boolean running = true;
