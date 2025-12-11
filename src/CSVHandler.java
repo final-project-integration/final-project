@@ -52,13 +52,14 @@ public class CSVHandler {
 						continue;
 					}	
 				
-					String date = parts[0];
-					String category = parts[1];
-					String amountStr = parts[2];
+					String date = parts[0].trim();
+					String category = parts[1].trim();
+					String amountStr = parts[2].trim();
 					
 					try {
-						double amount = Double.parseDouble(amountStr);
-						transactions.add(new Transaction(date, category, amount));
+						int dollars = Integer.parseInt(amountStr);
+					    double amount = dollars;  // Exact storage
+					    transactions.add(new Transaction(date, category, amount));
 					} catch (NumberFormatException e) {
 						System.out.println("Skipping row with invalid amount: " + line);
 					}
@@ -86,8 +87,9 @@ public class CSVHandler {
 			bw.newLine();
 			
 			for (Transaction t : transactions) {
-				bw.write(t.getDate() + "," + t.getCategory() + "," + t.getAmount());
-				bw.newLine();
+				long amountLong = (long) t.getAmount();
+				bw.write(t.getDate() + "," + t.getCategory() + "," + amountLong);
+				bw.newLine();  // ← ADDED MISSING NEWLINE
 			}
 		}
 	}
@@ -150,9 +152,8 @@ public class CSVHandler {
 		
 		String date = parts[0].trim().toLowerCase();
 		String category = parts[1].trim().toLowerCase();
-		String amount = parts[2].trim().toLowerCase();
+		String amount = parts[2].trim().toLowerCase();  // ← FIXED: DECLARED 'amount'
 		
 		return date.equals("date") && category.equals("category") && amount.equals("amount");
-		
 	}
 }

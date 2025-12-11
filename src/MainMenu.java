@@ -23,14 +23,12 @@ final class MainMenu {
 	 * Connects the MainMenu to the rest of the functions from the accounts, reports, prediction, validation, and storage teams
 	 */
 	private final ModuleHub moduleHub;
-	private final ReportDisplay reportDisplay;
 
 	/**
 	 * Default constructor for MainMenu. Creates a new ModuleHub instance.
 	 */
 	private MainMenu() {
 		moduleHub = new ModuleHub();
-		reportDisplay = new ReportDisplay();
 	}
 
 	/**
@@ -85,32 +83,7 @@ final class MainMenu {
 		}
 	}
 
-	/**
-	 * Scans user input for a year,
-	 * validates that input to make sure its a valid year,
-	 * and return the valid year from the user input
-	 * 
-	 * @return the year entered by the user
-	 * 
-	 * @author Shazadul Islam
-	 */ 
-	private int getUserYear(){
-		while (true) {
-			try {
-				int year = Integer.parseInt(scanner.nextLine());
-				if ((year < 1900) || (year > 2100)) {
-					System.out.print("Please enter a valid year and then press enter: ");
-					continue;
-				}
-				return year;
-			} catch (NumberFormatException e) {
-				System.out.print("Please enter a valid year and then press enter: ");
-				continue;
-			}
-		}
-	}
-
-	enum AccountRecoverState{
+	enum AccountChangeState{
 		USERNAME_DNE,
 		INCORRECT_ANSWER,
 		SUCCESSFUL_PASSWORD_CHANGE,
@@ -125,7 +98,7 @@ final class MainMenu {
 	 * 
 	 * @author Shazadul Islam
 	 */
-	private AccountRecoverState accountRecover(String usernameRecovering) {
+	private AccountChangeState accountRecover(String usernameRecovering) {
 		//If the account does not exist...
 		clearConsole();
 		BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
@@ -141,7 +114,7 @@ final class MainMenu {
 			System.out.println(BeautifulDisplay.RED + "Error: " + BeautifulDisplay.RESET
 					+ "No account with the username, " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN
 					+ usernameRecovering + BeautifulDisplay.RESET + ", exists.");
-			return AccountRecoverState.USERNAME_DNE;
+			return AccountChangeState.USERNAME_DNE;
 		}
 
 		//If the account exists...
@@ -161,14 +134,24 @@ final class MainMenu {
 			System.out.println();
 
 			System.out.println("Your answer to the security question was incorrect.");
-			return AccountRecoverState.INCORRECT_ANSWER;
+			return AccountChangeState.INCORRECT_ANSWER;
 		}
 
 		//If the user's answer to their account's security question is correct
 		return recoveryChangePassword(usernameRecovering, secureQuestion, secureAnswer  );
 	}
 	
-	private AccountRecoverState recoveryChangePassword(String usernameChanging, String verifiedSecQuestion, String verifiedSecAnswer) {
+	/**
+	 * Handles the creation of a new password when trying to recover your password
+	 * 
+	 * @param usernameChanging - the username of the account the user is trying to recover
+	 * @param verifiedSecQuestion - the security question of the user
+	 * @param verifiedSecAnswer - the correct answer of the useer's security question
+	 * @return - return the result of what happened when trying to change your password during account recovery
+	 * 
+	 * @author Shazadul Islam
+	 */
+	private AccountChangeState recoveryChangePassword(String usernameChanging, String verifiedSecQuestion, String verifiedSecAnswer) {
 		//If the user's answer to their account's security question is correct
 		while (true) {
 			clearConsole();
@@ -210,7 +193,7 @@ final class MainMenu {
 					continue;
 				}
 				else if (recoverUserChoice == 2) {
-					return AccountRecoverState.RETURN_TO_MENU;
+					return AccountChangeState.RETURN_TO_MENU;
 				}
 				else if (recoverUserChoice == 3) {
 					exitApplication();
@@ -244,7 +227,7 @@ final class MainMenu {
 					continue;
 				}
 				else if (secretComparePassRetryChoice == 2) {
-					return AccountRecoverState.RETURN_TO_MENU;
+					return AccountChangeState.RETURN_TO_MENU;
 				}
 				else if (secretComparePassRetryChoice == 3) {
 					exitApplication();
@@ -260,7 +243,7 @@ final class MainMenu {
 			if (changedPasswordAccepted) {
 				clearConsole();
 				System.out.println("The password for the account, " + usernameChanging + ", has been successfully changed.");
-				return AccountRecoverState.SUCCESSFUL_PASSWORD_CHANGE;
+				return AccountChangeState.SUCCESSFUL_PASSWORD_CHANGE;
 			}
 
 			//If their new password is invalid..(just for safety)
@@ -290,7 +273,7 @@ final class MainMenu {
 			}
 			//Return to login menu
 			else if (recoverUserChoice == 2) {
-				return AccountRecoverState.RETURN_TO_MENU;
+				return AccountChangeState.RETURN_TO_MENU;
 			}
 			//Exit the application
 			else if (recoverUserChoice == 3) {
@@ -394,7 +377,7 @@ final class MainMenu {
 
 				int retries = 0;
 				while (true) {
-					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
+					AccountChangeState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
 					case USERNAME_DNE:
@@ -821,9 +804,26 @@ final class MainMenu {
 			}
 		}
 	}
-	/**
-	 * Finances Menu
-	 * 
+
+
+    /**
+     * Displays and manages the Finances Menu for the currently signed-in user.
+     *
+     * This method acts as the main navigation hub for all financial features,
+     * including:
+     *  Uploading CSV files with full validation handling
+     *  Viewing financial reports
+     *  Running financial predictions
+     *  Managing stored financial data
+     *
+     * During CSV uploads, this method:
+     *  Extracts the year from the CSV filename
+     *  Prevents invalid or duplicate-year uploads
+     *  Displays validation errors and warnings in a user-friendly way
+     *  Allows users to skip bad rows while still importing valid data
+     *  Detects duplicate transactions and prompts the user to continue or cancel
+     *  Finalizes the CSV import only after user confirmation
+     *
 	 * @param currentUser - username of the currently signed-in user
 	 * 
 	 * @author Aaron Madou
@@ -992,20 +992,44 @@ final class MainMenu {
                         }
 
                         //  NO HARD ERRORS handle warnings, especially duplicates
+                        //  NO HARD ERRORS handle warnings, especially duplicates
                         boolean hasDuplicateWarning = false;
 
-                        if (!result.getWarningMessages().isEmpty()) {
-                            BeautifulDisplay.printWarning("Upload validation completed with warnings:");
+                        List<String> warnings = result.getWarningMessages();
+
+                        if (warnings != null && !warnings.isEmpty()) {
+                            // Short summary instead of 5 miles of text
+                            BeautifulDisplay.printWarning("Upload validation completed with "
+                                    + warnings.size() + " warning(s).");
+                            System.out.println("Some bad rows were automatically skipped, but your valid data was saved.");
                             System.out.println();
-                            for (String msg : result.getWarningMessages()) {
-                                System.out.println("  • " + msg);
-                                if (msg.toLowerCase().contains("duplicate transactions detected")) {
+
+                            // Quietly check if duplicates are mentioned anywhere
+                            for (String raw : warnings) {
+                                if (raw != null && raw.toLowerCase().contains("duplicate transactions detected")) {
                                     hasDuplicateWarning = true;
+                                    break;
                                 }
                             }
-                            System.out.println();
-                        }
 
+                            // Let the user opt-in to details
+                            System.out.print("Type 'details' to see a few example issues, or press Enter to continue: ");
+                            String choice = scanner.nextLine().trim();
+
+                            if (choice.equalsIgnoreCase("details")) {
+                                System.out.println();
+                                int limit = Math.min(warnings.size(), 5);
+                                for (int i = 0; i < limit; i++) {
+                                    String cleaned = simplifyValidationMessage(warnings.get(i));
+                                    System.out.println("  • " + cleaned);
+                                }
+                                if (warnings.size() > limit) {
+                                    System.out.println("  (+ " + (warnings.size() - limit) + " more warning(s) not shown)");
+                                }
+                                System.out.println();
+                                moveOn();  // your usual "press Enter to continue"
+                            }
+                        }
                         //  If duplicates exist, give the user the required choice:
                         // "Continue import with duplicates" vs "Cancel and clean CSV."
                         if (hasDuplicateWarning) {
@@ -1036,11 +1060,9 @@ final class MainMenu {
                         clearConsole();
                         if (importOk) {
                             if (!result.getWarningMessages().isEmpty()) {
-                                BeautifulDisplay.printWarning("CSV imported for " + year + " with warnings:");
-                                System.out.println();
-                                for (String msg : result.getWarningMessages()) {
-                                    System.out.println("  • " + msg);
-                                }
+                                BeautifulDisplay.printWarning("CSV data for " + year + " imported with "
+                                        + result.getWarningMessages().size() + " warning(s).");
+                                System.out.println("See validation details above for specific rows that were skipped.");
                             } else {
                                 BeautifulDisplay.printSuccess("CSV data for " + year + " imported successfully.");
                             }
@@ -1074,6 +1096,43 @@ final class MainMenu {
 		}
 	}
 
+    /**
+     * Cleans up raw validation messages by removing internal system prefixes
+     * such as timestamps and severity labels.
+     *
+     * This method ensures that the user only sees the meaningful, human-readable
+     * portion of the message (for example: "Line 3: Invalid date format").
+     *
+     * It safely handles null values and trims unnecessary formatting so
+     * validation output remains clean and consistent in the UI.
+     *
+     * @param raw the original validation message produced by the validation system
+     * @return a simplified, user-friendly version of the validation message
+     *
+     * @author Denisa Cakoni
+     */
+
+    private String simplifyValidationMessage(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim();
+
+        // Many messages look like: [time][WARNING] [time] Line X: ...
+        // Peel off up to two leading "[...]" blocks.
+        for (int i = 0; i < 2; i++) {
+            if (s.startsWith("[")) {
+                int idx = s.indexOf("] ");
+                if (idx > 0 && idx + 2 < s.length()) {
+                    s = s.substring(idx + 2).trim();
+                }
+            }
+        }
+
+        return s;
+    }
+
+   
 	/**
 	 * Reports Menu
 	 * 
@@ -1379,7 +1438,6 @@ final class MainMenu {
 			}
 
 			boolean isWorkingWithYear = true;
-			int userChoice;
 			while (isWorkingWithYear) {
 				clearConsole();
 				// Pretty predictions screen
@@ -1646,7 +1704,16 @@ final class MainMenu {
 		}
 	}
 
-	private AccountRecoverState decideChangePassword(String usernameChanging, String oldCurrentPassword) {
+	/**
+	 * Handles the creation of a new password when trying to change your password
+	 * 
+	 * @param usernameChanging - the username of the account the user is trying to change the password of
+	 * @param oldCurrentPassword - the old password of the account you want to change the password of
+	 * @return - return the result of what happened when trying to change your password
+	 * 
+	 * @author Shazadul Islam
+	 */
+	private AccountChangeState decideChangePassword(String usernameChanging, String oldCurrentPassword) {
 		//If the user's answer to their account's security question is correct
 		while (true) {
 			clearConsole();
@@ -1688,7 +1755,7 @@ final class MainMenu {
 					continue;
 				}
 				else if (decideUserChoice == 2) {
-					return AccountRecoverState.RETURN_TO_MENU;
+					return AccountChangeState.RETURN_TO_MENU;
 				}
 				else if (decideUserChoice == 3) {
 					exitApplication();
@@ -1720,7 +1787,7 @@ final class MainMenu {
 					continue;
 				}
 				else if (decideComparePassRetryChoice == 2) {
-					return AccountRecoverState.RETURN_TO_MENU;
+					return AccountChangeState.RETURN_TO_MENU;
 				}
 				else if (decideComparePassRetryChoice == 3) {
 					exitApplication();
@@ -1737,7 +1804,7 @@ final class MainMenu {
 			if (changedPasswordAccepted) {
 				clearConsole();
 				System.out.println("The password for the account, " + usernameChanging + ", has been successfully changed.");
-				return AccountRecoverState.SUCCESSFUL_PASSWORD_CHANGE;
+				return AccountChangeState.SUCCESSFUL_PASSWORD_CHANGE;
 			}
 
 			//If their new password is invalid..(just for safety)
@@ -1761,7 +1828,7 @@ final class MainMenu {
 			}
 			//Return to login menu
 			else if (decideUserChoice == 2) {
-				return AccountRecoverState.RETURN_TO_MENU;
+				return AccountChangeState.RETURN_TO_MENU;
 			}
 			//Exit the application
 			else if (decideUserChoice == 3) {
@@ -1780,6 +1847,10 @@ final class MainMenu {
 	private void handleChangePassword(String currentUsername) {
 		while (true) {
 			clearConsole();
+			
+			BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
+			System.out.println();
+			
 			System.out.println("Please enter your current password below and then press enter.");
 			System.out.print("  Current Password: ");
 			String currentPassword = scanner.nextLine();
@@ -1789,7 +1860,7 @@ final class MainMenu {
 
 			//If the current password is valid, then change Password
 			if (validPass) {
-				AccountRecoverState currentPassChange = decideChangePassword(currentUsername, currentPassword);
+				AccountChangeState currentPassChange = decideChangePassword(currentUsername, currentPassword);
 				switch (currentPassChange) {
 				case SUCCESSFUL_PASSWORD_CHANGE:
 					System.out.print("Press enter when you are ready to return to the account settings menu...");
@@ -1833,7 +1904,7 @@ final class MainMenu {
 
 				int retries = 0;
 				while (true) {
-					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
+					AccountChangeState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
 					case INCORRECT_ANSWER:
@@ -2047,7 +2118,7 @@ final class MainMenu {
 
 				int retries = 0;
 				while (true) {
-					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
+					AccountChangeState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
 					case INCORRECT_ANSWER:
@@ -2119,69 +2190,91 @@ final class MainMenu {
 	/**
 	 * Account Settings Menu
 	 *
-	 * @param currentUser - username of the currently signed-in user
+	 * @param currentUsername - username of the currently signed-in user
 	 * @return Determines whether or not the user has decided to delete their account
 	 * 		   If the function returns true, then the user has not deleted their account and they can return to the Main Menu
 	 * 		   If the function returns false, then the user has deleted their account and are forcibly moved to the login page
 	 * 
 	 * @author Shazadul Islam
 	 */
-	private boolean accountSettingsMenu(String currentUser) {
+	private boolean accountSettingsMenu(String currentUsername) {
 		boolean inSettings = true;
 		while (inSettings) {
 			clearConsole();
 			// ✨ Pretty ACCOUNT SETTINGS menu
-			BeautifulDisplay.printAccountSettingsMenu(currentUser);
+			BeautifulDisplay.printAccountSettingsMenu(currentUsername);
 			int settingsChoice = getUserChoice(4);
 
 			switch (settingsChoice){
 			case 1:
-				handleChangePassword(currentUser);
+				handleChangePassword(currentUsername);
 				continue;
 			case 2:
-				handleResetSecurity(currentUser);
+				handleResetSecurity(currentUsername);
 				continue;
 			case 3:
 				clearConsole();
-				BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-				System.out.println();
-				System.out.println("Are you sure you want to delete this account: " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN + currentUser + BeautifulDisplay.RESET + "? ");
-				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Yes");
-				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " No");
-				System.out.println();
-				BeautifulDisplay.printGradientDivider(70);
-				System.out.print("Please enter the number associated with your desired option and then press enter: ");
-				int sureDelAccount = getUserChoice(2);
+				BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);
+				System.out.println("\nPlease enter your current password below and then press enter.");
+				System.out.print("  Current Password: ");
+				
+				String currentPassword = scanner.nextLine();
 
-				if (sureDelAccount == 1) {
-					// Ask ModuleHub / Accounts to delete the user
-					boolean deleted = moduleHub.callAccounts("deleteaccount", currentUser);
+				//Check if the password we just received is valid
+				boolean validPass = moduleHub.verifyPassword(currentUsername, currentPassword);
+				
+				if (validPass) {
+					clearConsole();
+					BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+					System.out.println();
+					System.out.println("Are you sure you want to delete this account: " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN + currentUsername + BeautifulDisplay.RESET + "? ");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Yes");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " No");
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
+					System.out.print("Please enter the number associated with your desired option and then press enter: ");
+					int sureDelAccount = getUserChoice(2);
 
-					if (deleted) {
-						clearConsole();
-						BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-						System.out.println();
-						BeautifulDisplay.printSuccess("Your account has been deleted.");
-						System.out.print("Press enter when you are ready to return to the account settings menu...");
-						scanner.nextLine();
-						// Tell main() that the user is NO LONGER logged in
-						return false;
+					if (sureDelAccount == 1) {
+						// Ask ModuleHub / Accounts to delete the user
+						boolean deleted = moduleHub.callAccounts("deleteaccount", currentUsername);
+
+						if (deleted) {
+							clearConsole();
+							BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+							System.out.println();
+							BeautifulDisplay.printSuccess("Your account has been deleted.");
+							System.out.print("Press enter when you are ready to return to the account settings menu...");
+							scanner.nextLine();
+							// Tell main() that the user is NO LONGER logged in
+							return false;
+						} else {
+							clearConsole();
+							BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+							System.out.println();
+							BeautifulDisplay.printError("Exiting account deletion. Your account has not been removed.");
+							System.out.print("Press enter when you are ready to return to the account settings menu...");
+							scanner.nextLine();
+							break;  // stay logged in / in settings
+						}
+						
 					} else {
 						clearConsole();
 						BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
 						System.out.println();
-						BeautifulDisplay.printError("Account deletion failed. Your account has not been removed.");
 						System.out.print("Press enter when you are ready to return to the account settings menu...");
 						scanner.nextLine();
-						break;  // stay logged in / in settings
+						break;
 					}
-				} else {
+				}
+				else {
 					clearConsole();
 					BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
 					System.out.println();
+					BeautifulDisplay.printError("The password you entered is incorrect. Account deletion failed.");
 					System.out.print("Press enter when you are ready to return to the account settings menu...");
 					scanner.nextLine();
-					break;
+					break;  // stay logged in / in settings
 				}
 
 			case 4:
@@ -2190,6 +2283,66 @@ final class MainMenu {
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Prints out the starting animation of the software
+	 * 
+	 * @author Aaron Madou
+	 */
+	public void intro() {
+		String dash_line = "==========";
+
+		String Hamilton_Heights[] = {
+				"\t\t  ■■  ■■   ■■■■   ■■■     ■■■  ■■■■  ■■    ■■■■■■  ■■■■■   ■■    ■■     ■■  ■■  ■■■■■  ■■■■    ■■■■■   ■■  ■■   ■■■■■■   ■■■■■  ", 
+				"\t\t  ■■  ■■  ■■  ■■  ■■■■   ■■■■   ■■   ■■      ■■   ■■   ■■  ■■■■  ■■     ■■  ■■  ■■      ■■    ■■       ■■  ■■     ■■    ■■      ",
+				"\t" + dash_line +	"■■■■■■  ■■■■■■  ■■ ■■ ■■ ■■   ■■   ■■      ■■   ■■   ■■  ■■ ■■ ■■     ■■■■■■  ■■■■■   ■■    ■■  ■■   ■■■■■■     ■■     ■■■■ " + dash_line,
+				"\t\t  ■■  ■■  ■■  ■■  ■■  ■■■  ■■   ■■   ■■      ■■   ■■   ■■  ■■  ■■■■     ■■  ■■  ■■      ■■    ■■   ■■  ■■  ■■     ■■        ■■  ",
+				"\t\t  ■■  ■■  ■■  ■■  ■■  ■■■  ■■  ■■■■  ■■■■■■  ■■    ■■■■■   ■■   ■■■     ■■  ■■  ■■■■■  ■■■■    ■■■■■   ■■  ■■     ■■    ■■■■■   " 				
+		};
+
+		for(int i = 0; i < 5; i++) {
+			Hamilton_Heights[i] = Hamilton_Heights[i].replaceAll("■", "█");
+		}
+
+		String personalFinanceManager[] = {
+				"  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■■   ■■■■■   ■■    ■■   ■■■■   ■■       ■■■■■  ■■■■   ■■    ■■   ■■■■   ■■    ■■   ■■■■■  ■■■■■■    ■■■     ■■■   ■■■■   ■■    ■■   ■■■■    ■■■■■   ■■■■■■   ■■■■■     ",
+				"  ■■  ■■  ■■      ■■   ■■  ■■      ■■   ■■  ■■■■  ■■  ■■  ■■  ■■       ■■      ■■    ■■■■  ■■  ■■  ■■  ■■■■  ■■  ■■■     ■■        ■■■■   ■■■■  ■■  ■■  ■■■■  ■■  ■■  ■■  ■■       ■■       ■■   ■■   ",
+				"  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■   ■■   ■■  ■■ ■■ ■■  ■■■■■■  ■■       ■■■■■   ■■    ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■      ■■■■■■    ■■ ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■■■■■  ■■  ■■   ■■■■■■   ■■■■■■    ",
+				"  ■■      ■■      ■■   ■■      ■■  ■■   ■■  ■■  ■■■■  ■■  ■■  ■■       ■■      ■■    ■■  ■■■■  ■■  ■■  ■■  ■■■■  ■■■     ■■        ■■  ■■■  ■■  ■■  ■■  ■■  ■■■■  ■■  ■■  ■■   ■■  ■■       ■■   ■■   ",
+				"  ■■      ■■■■■■  ■■   ■■  ■■■■■    ■■■■■   ■■   ■■■  ■■  ■■  ■■■■     ■■     ■■■■   ■■   ■■■  ■■  ■■  ■■   ■■■   ■■■■■  ■■■■■■    ■■  ■■■  ■■  ■■  ■■  ■■   ■■■  ■■  ■■   ■■■■■   ■■■■■■   ■■   ■■   ",
+
+		};
+		for(int i = 0; i < 5; i++) {
+			personalFinanceManager[i] = personalFinanceManager[i].replaceAll("■", "█");
+		}
+		System.out.println("\n\n");
+		int size = personalFinanceManager[1].length();
+		int index = 0;
+		int time = 0;
+		while(time < 100) {
+			for(String line : Hamilton_Heights) {
+				System.out.println(BeautifulDisplay.BOLD + line + BeautifulDisplay.RESET);
+			};
+			System.out.println();
+			for(String str : personalFinanceManager) {
+				int frame = index;
+				System.out.print("\t\t\t");
+				for(int i = 0; i < 100; i++) {				
+					System.out.print(BeautifulDisplay.BRIGHT_GREEN + str.charAt(frame) + BeautifulDisplay.RESET);
+					frame = ((frame+1)%size);
+				}
+				System.out.println();
+			}
+			index = (index+1)%size;
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+	            Thread.currentThread().interrupt();
+			}
+			time++;
+			clearConsole();
+		}
 	}
 
 	/**
@@ -2202,11 +2355,11 @@ final class MainMenu {
 	 * @author Shazadul Islam
 	 */
 	public static void main(String[] args) {
-		System.out.println("Hamilton Heights Presents");
-		System.out.println("Personal Finance Manager");
-
 		MainMenu applicationInterface = new MainMenu();
-
+		
+		applicationInterface.intro();
+		
+		applicationInterface.clearConsole();
 		boolean running = true;
 		while (running) {
 			String currentUser = applicationInterface.enter();

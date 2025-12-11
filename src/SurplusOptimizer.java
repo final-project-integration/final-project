@@ -538,6 +538,7 @@ public class SurplusOptimizer {
      * layer.
      * @return sb.toString() a formatted string containing all categories and their amounts
      * @author Daniel Moore
+     * @return lists string for all the avaliable surplus categories
      */
     public String printAllCategories() { 
                                        
@@ -666,6 +667,7 @@ public class SurplusOptimizer {
      * @since  New Code 12/8/2025 to print annual and monthly surplus
      * @return the surplus message with annual and monthly surplus
      * @author Daniel Moore
+     * @return gives back summary and the surplus value
      */
     public String printSurplus() {
         int annual = getSurplusValue();
@@ -745,3 +747,4 @@ public class SurplusOptimizer {
         return this;
     }
 }
+

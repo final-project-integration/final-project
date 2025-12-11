@@ -168,53 +168,74 @@ public class ReportManager {
 	 * @param year the four-digit year corresponding to the loaded dataset
 	 * @return an ArrayList of 12 formatted strings, one for each month
 	 */
-	public ArrayList<String> generateMonthlySummary(int year) {
-		ArrayList<String> summary = new ArrayList<>();
+    public ArrayList<String> generateMonthlySummary(int year) {
+        ArrayList<String> summary = new ArrayList<>();
 
-		if (loadedRecords.size() == 0) {
-			return summary;
-		}
+        if (loadedRecords.size() == 0) {
+            return summary;
+        }
 
-		// Arrays to store for each months Income and Expenses (index 0 is January,
-		// index 11 is December)
-		double[] monthlyIncome = new double[12];
-		double[] monthlyExpenses = new double[12];
+        double[] monthlyIncome = new double[12];
+        double[] monthlyExpenses = new double[12];
 
-		// Aggregate data by month
-		for (int i = 0; i < loadedRecords.size(); i++) {
-			FinancialRecord record = loadedRecords.get(i);
+        for (int i = 0; i < loadedRecords.size(); i++) {
+            FinancialRecord record = loadedRecords.get(i);
 
-			if (record.getYear() != year) {
-				continue;
-			}
+            if (record.getYear() != year) {
+                continue;
+            }
 
-			int month = record.getMonth();
-			double amount = Double.parseDouble(record.getAmount());
+            int rawMonth = record.getMonth();
 
-			if (record.isIncome()) {
-				monthlyIncome[month] += amount;
-			} else {
-				monthlyExpenses[month] += amount;
-			}
-		}
+            // Normalize month: accept 1–12 or 0–11, otherwise skip
+            int monthIndex;
+            if (rawMonth >= 1 && rawMonth <= 12) {
+                monthIndex = rawMonth - 1;      // CSV style 1–12
+            } else if (rawMonth >= 0 && rawMonth <= 11) {
+                monthIndex = rawMonth;          // 0-based style
+            } else {
+                continue;                       // bad month, ignore row
+            }
 
-		// Format results
-		String[] monthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September",
-				"October", "November", "December" };
+            double amount;
+            try {
+                amount = Double.parseDouble(record.getAmount());
+            } catch (NumberFormatException e) {
+                continue;                       // bad number, ignore row
+            }
 
-		for (int month = 0; month <= 11; month++) {
-			double income = monthlyIncome[month];
-			double expenses = monthlyExpenses[month];
-			double balance = income + expenses;
+            // Drop corrupted values
+            if (Double.isNaN(amount) || Double.isInfinite(amount) || Math.abs(amount) > 1_000_000.0) {
+                continue;
+            }
 
-			String line = String.format("%s: Income=$%.2f, Expenses=$%.2f, Balance=$%.2f", monthNames[month], income,
-					expenses, balance);
-			summary.add(line);
-		}
+            if (record.isIncome()) {
+                monthlyIncome[monthIndex] += amount;
+            } else {
+                monthlyExpenses[monthIndex] += amount; // probably negative in your data
+            }
+        }
 
-		return summary;
-	}
+        String[] monthNames = {
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+        };
 
+        for (int month = 0; month < 12; month++) {
+            double income = monthlyIncome[month];
+            double expenses = monthlyExpenses[month];
+            double balance = income + expenses;
+
+            // %.0f = no decimals
+            String line = String.format(
+                    "%s: Income=$%.0f, Expenses=$%.0f, Balance=$%.0f",
+                    monthNames[month], income, expenses, balance
+            );
+            summary.add(line);
+        }
+
+        return summary;
+    }
 	/**
 	 * Aggregates totals by category label, (e.g. "Rent", "Groceries"). Creates a
 	 * list of formatted summary strings showing the total amount for each category
@@ -222,54 +243,62 @@ public class ReportManager {
 	 * @param year the four-digit year corresponding to the loaded dataset
 	 * @return an ArrayList of formatted strings in "Category: $Amount" format
 	 */
-	public ArrayList<String> generateCategorySummary(int year) {
-		ArrayList<String> summary = new ArrayList<>();
+    public ArrayList<String> generateCategorySummary(int year) {
+        ArrayList<String> summary = new ArrayList<>();
 
-		if (loadedRecords.size() == 0) {
-			return summary;
-		}
+        if (loadedRecords.size() == 0) {
+            return summary;
+        }
 
-		// Lists to track categories and their totals
-		ArrayList<String> categories = new ArrayList<>();
-		ArrayList<Double> totals = new ArrayList<>();
+        // Lists to track categories and their totals
+        ArrayList<String> categories = new ArrayList<>();
+        ArrayList<Double> totals = new ArrayList<>();
 
-		// Aggregate by category
-		for (int i = 0; i < loadedRecords.size(); i++) {
-			FinancialRecord record = loadedRecords.get(i);
+        // Aggregate by category
+        for (int i = 0; i < loadedRecords.size(); i++) {
+            FinancialRecord record = loadedRecords.get(i);
 
-			// Only process record from specified year
-			if (record.getYear() != year) {
-				continue;
-			}
+            // Only process record from specified year
+            if (record.getYear() != year) {
+                continue;
+            }
 
-			String category = record.getCategory();
-			double amount = Double.parseDouble(record.getAmount());
+            // Normalize category – handle null or blank as "Uncategorized"
+            String category = record.getCategory();
+            if (category == null || category.trim().isEmpty()) {
+                category = "Uncategorized";
+            } else {
+                category = category.trim();
+            }
 
-			// Find if category already exists
-			int index = -1;
-			for (int j = 0; j < categories.size(); j++) {
-				if (categories.get(j).equals(category)) {
-					index = j;
-					break;
-				}
-			}
+            double amount = Double.parseDouble(record.getAmount());
 
-			if (index == -1) {
-				categories.add(category);
-				totals.add(amount);
-			} else {
-				totals.set(index, totals.get(index) + amount);
-			}
-		}
+            // Find if category already exists
+            int index = -1;
+            for (int j = 0; j < categories.size(); j++) {
+                if (categories.get(j).equals(category)) {
+                    index = j;
+                    break;
+                }
+            }
 
-		// Format results (no sorting for simplicity)
-		for (int i = 0; i < categories.size(); i++) {
-			String line = String.format("%s: $%.2f", categories.get(i), totals.get(i));
-			summary.add(line);
-		}
+            if (index == -1) {
+                categories.add(category);
+                totals.add(amount);
+            } else {
+                totals.set(index, totals.get(index) + amount);
+            }
+        }
 
-		return summary;
-	}
+        // Format results: whole dollars, no decimals
+        for (int i = 0; i < categories.size(); i++) {
+            long rounded = Math.round(totals.get(i));   // round to nearest dollar
+            String line = categories.get(i) + ": $" + rounded;
+            summary.add(line);
+        }
+
+        return summary;
+    }
 
 	/**
 	 * Produces year-wide totals for income, expenses, and net balance.
@@ -277,36 +306,58 @@ public class ReportManager {
 	 * @param year the four-digit year corresponding to the loaded dataset
 	 * @return a YearlySummary struct containing key totals as strings
 	 */
-	public YearlySummary generateYearlySummary(int year) {
-		if (loadedRecords.size() == 0) {
-			return new YearlySummary("0.00", "0.00", "0.00");
-		}
+    public YearlySummary generateYearlySummary(int year) {
+        if (loadedRecords.size() == 0) {
+            return new YearlySummary("0", "0", "0");
+        }
 
-		double totalIncome = 0.0;
-		double totalExpenses = 0.0;
+        double totalIncome = 0.0;
+        double totalExpenses = 0.0;
 
-		for (int i = 0; i < loadedRecords.size(); i++) {
-			FinancialRecord record = loadedRecords.get(i);
+        for (int i = 0; i < loadedRecords.size(); i++) {
+            FinancialRecord record = loadedRecords.get(i);
 
-			// Only process record from specified year
-			if (record.getYear() != year) {
-				continue;
-			}
+            if (record.getYear() != year) {
+                continue;
+            }
 
-			double amount = Double.parseDouble(record.getAmount());
+            double amount;
+            try {
+                amount = Double.parseDouble(record.getAmount());
+            } catch (NumberFormatException e) {
+                continue;
+            }
 
-			if (record.isIncome()) {
-				totalIncome += amount;
-			} else {
-				totalExpenses += amount;
-			}
-		}
+            if (Double.isNaN(amount) || Double.isInfinite(amount) || Math.abs(amount) > 1_000_000.0) {
+                continue;
+            }
 
-		double netBalance = totalIncome + totalExpenses;
+            if (record.isIncome()) {
+                totalIncome += amount;
+            } else {
+                totalExpenses += amount; // negative in your data → subtracts
+            }
+        }
 
-		return new YearlySummary(String.format("%.2f", totalIncome), String.format("%.2f", totalExpenses),
-				String.format("%.2f", netBalance));
-	}
+        double netBalance = totalIncome + totalExpenses;
+
+        if (Double.isNaN(totalIncome) || Double.isInfinite(totalIncome)) {
+            totalIncome = 0.0;
+        }
+        if (Double.isNaN(totalExpenses) || Double.isInfinite(totalExpenses)) {
+            totalExpenses = 0.0;
+        }
+        if (Double.isNaN(netBalance) || Double.isInfinite(netBalance)) {
+            netBalance = totalIncome + totalExpenses;
+        }
+
+        // No decimals
+        return new YearlySummary(
+                String.format("%.0f", totalIncome),
+                String.format("%.0f", totalExpenses),
+                String.format("%.0f", netBalance)
+        );
+    }
 
 	/**
 	 * Calculates the overall balance for the specified year (totalIncome -

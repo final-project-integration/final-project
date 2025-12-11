@@ -246,7 +246,16 @@ public class ValidationResult {
             rowValidationStatus.put(rowNumber, true);
         }
     }
-
+    /**
+     * Check if a specific row is valid (passed validation with no errors).
+     *
+     * @param rowNumber the row number (1-based) to check
+     * @return true if the row is explicitly marked valid, false otherwise
+     */
+    public boolean isRowValid(Integer rowNumber) {
+        Boolean status = rowValidationStatus.get(rowNumber);
+        return status != null && status;
+    }
     /**
      * Check if errors exist.
      *

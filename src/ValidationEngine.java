@@ -209,7 +209,7 @@ public class ValidationEngine {
         return result;
     }
 
-    /**
+ /**
      * Validate a CSV file represented as a list of lines.
      * UPDATED: Now uses row-level tracking to support partial imports.
      *
@@ -232,9 +232,7 @@ public class ValidationEngine {
             result.addError("Invalid CSV header. Expected exactly: '" + expectedHeader
                     + "' but found: '" + header + "'. "
                     + "Please ensure the header has exactly these three columns with correct spelling and no extra columns.");
-            // Header failure is usually fatal for the whole file, but we continue
-            // to allow row processing if the user forces it, or we just return here.
-            // Usually header errors block everything, but we'll let the loop run.
+            // We still continue row processing so we can report per-row problems too.
         }
 
         // Keep track of year consistency
@@ -244,6 +242,9 @@ public class ValidationEngine {
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
             int lineNumber = i + 1; // human-readable (header is line 1)
+
+            // track whether this row has any errors
+            boolean rowHasError = false;
 
             // Ignore completely blank lines
             if (line == null || line.trim().isEmpty()) {
@@ -256,13 +257,11 @@ public class ValidationEngine {
             if (fields.length != 3) {
                 String columnIssue = fields.length > 3 ? "extra columns" : "missing columns";
                 result.addError("Line " + lineNumber
-                        + ": Expected exactly 3 columns (Date,Category,Amount) but found "
-                        + fields.length + " columns (" + columnIssue + "). "
-                        + "Each row must have exactly Date, Category, and Amount with no extra fields.",
-                        lineNumber); // <--- Passed lineNumber
-
-                // If structure is broken, we usually can't parse the rest of the row safely.
-                // markRowValid will NOT run because addError sets the status to false.
+                                + ": Expected exactly 3 columns (Date,Category,Amount) but found "
+                                + fields.length + " columns (" + columnIssue + "). "
+                                + "Each row must have exactly Date, Category, and Amount with no extra fields.",
+                        lineNumber);
+                rowHasError = true;
                 continue;
             }
 
@@ -271,26 +270,24 @@ public class ValidationEngine {
             String amountField = fields[2].trim();
 
             // ----- Missing required fields -----
-            boolean missing = false;
-
             if (!dataValidator.isNonEmpty(dateField)) {
                 result.addError("Line " + lineNumber + ": Date field is required and cannot be empty. "
                         + "Please provide a date in MM/DD/YYYY format.", lineNumber);
-                missing = true;
+                rowHasError = true;
             }
             if (!dataValidator.isNonEmpty(categoryField)) {
                 result.addError("Line " + lineNumber + ": Category field is required and cannot be empty. "
                         + "Please provide a valid category from the approved list.", lineNumber);
-                missing = true;
+                rowHasError = true;
             }
             if (!dataValidator.isNonEmpty(amountField)) {
                 result.addError("Line " + lineNumber + ": Amount field is required and cannot be empty. "
                         + "Please provide a numeric amount.", lineNumber);
-                missing = true;
+                rowHasError = true;
             }
 
-            if (missing) {
-                // Determine validity at end of loop
+            if (rowHasError) {
+                // Don’t try to do further checks on a row missing required fields
                 continue;
             }
 
@@ -298,6 +295,7 @@ public class ValidationEngine {
             if (!dataValidator.isValidDate(dateField)) {
                 result.addError("Line " + lineNumber + ": Invalid date '" + dateField
                         + "'. Date must be in MM/DD/YYYY format.", lineNumber);
+                rowHasError = true;
             } else {
                 int year = dataValidator.extractYear(dateField);
                 if (fileYear == null) {
@@ -306,6 +304,7 @@ public class ValidationEngine {
                     result.addError("Line " + lineNumber
                             + ": Year " + year + " does not match file year " + fileYear + ". "
                             + "All transactions in the CSV must be from the same year.", lineNumber);
+                    rowHasError = true;
                 }
             }
 
@@ -322,6 +321,7 @@ public class ValidationEngine {
                         + ": Invalid category '" + categoryField
                         + "'. Category must be one of the approved categories: "
                         + String.join(", ", ALLOWED_CATEGORIES) + ".", lineNumber);
+                rowHasError = true;
             }
 
             // ----- Amount basic validation + sign consistency -----
@@ -329,6 +329,7 @@ public class ValidationEngine {
                 result.addError("Line " + lineNumber
                         + ": Amount '" + amountField + "' is not a valid integer number. "
                         + "Please provide a whole number.", lineNumber);
+                rowHasError = true;
             } else {
                 try {
                     int amount = Integer.parseInt(amountField.trim());
@@ -343,24 +344,27 @@ public class ValidationEngine {
                         if (isIncome && amount < 0) {
                             result.addError("Line " + lineNumber + ": Income category '" + categoryField
                                     + "' must not have a negative amount (" + amount + ").", lineNumber);
+                            rowHasError = true;
                         } else if (!isIncome && amount > 0) {
                             result.addError("Line " + lineNumber + ": Expense category '" + categoryField
                                     + "' should have a negative amount, but found " + amount + ".", lineNumber);
+                            rowHasError = true;
                         }
                     }
 
                 } catch (NumberFormatException e) {
                     result.addError("Line " + lineNumber + ": Amount format error.", lineNumber);
+                    rowHasError = true;
                 }
             }
 
-            // FINAL STEP: Mark row as valid if no errors were added for this row.
-            // If addError(..., lineNumber) was called above, the row is already marked
-            // false (invalid).
-            // This method simply sets it to true if it isn't already tracked.
-            result.markRowValid(lineNumber);
+            // FINAL STEP: Only mark this row valid if NO errors were added
+            if (!rowHasError) {
+                result.markRowValid(lineNumber);
+            }
         }
 
+        // return the full result (with rowValid flags filled in)
         return result;
     }
 }
