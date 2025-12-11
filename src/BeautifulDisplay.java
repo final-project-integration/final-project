@@ -549,7 +549,7 @@ public class BeautifulDisplay {
         int width = MAIN_WIDTH;
 
         // Big blue box (already looks nice)
-        printGradientHeader("WELCOME TO PERSONAL FINANCE MANAGER", width);
+        printGradientHeader("HAMILTON HEIGHTS: PERSONAL FINANCE MANAGER", width);
         System.out.println();
 
         // Full-width green START bar
