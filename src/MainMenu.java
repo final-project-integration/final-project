@@ -23,14 +23,12 @@ final class MainMenu {
 	 * Connects the MainMenu to the rest of the functions from the accounts, reports, prediction, validation, and storage teams
 	 */
 	private final ModuleHub moduleHub;
-	private final ReportDisplay reportDisplay;
 
 	/**
 	 * Default constructor for MainMenu. Creates a new ModuleHub instance.
 	 */
 	private MainMenu() {
 		moduleHub = new ModuleHub();
-		reportDisplay = new ReportDisplay();
 	}
 
 	/**
@@ -85,32 +83,7 @@ final class MainMenu {
 		}
 	}
 
-	/**
-	 * Scans user input for a year,
-	 * validates that input to make sure its a valid year,
-	 * and return the valid year from the user input
-	 * 
-	 * @return the year entered by the user
-	 * 
-	 * @author Shazadul Islam
-	 */ 
-	private int getUserYear(){
-		while (true) {
-			try {
-				int year = Integer.parseInt(scanner.nextLine());
-				if ((year < 1900) || (year > 2100)) {
-					System.out.print("Please enter a valid year and then press enter: ");
-					continue;
-				}
-				return year;
-			} catch (NumberFormatException e) {
-				System.out.print("Please enter a valid year and then press enter: ");
-				continue;
-			}
-		}
-	}
-
-	enum AccountRecoverState{
+	enum AccountChangeState{
 		USERNAME_DNE,
 		INCORRECT_ANSWER,
 		SUCCESSFUL_PASSWORD_CHANGE,
@@ -125,7 +98,7 @@ final class MainMenu {
 	 * 
 	 * @author Shazadul Islam
 	 */
-	private AccountRecoverState accountRecover(String usernameRecovering) {
+	private AccountChangeState accountRecover(String usernameRecovering) {
 		//If the account does not exist...
 		clearConsole();
 		BeautifulDisplay.printGradientHeader("RECOVER PASSWORD", 70);
@@ -141,7 +114,7 @@ final class MainMenu {
 			System.out.println(BeautifulDisplay.RED + "Error: " + BeautifulDisplay.RESET
 					+ "No account with the username, " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN
 					+ usernameRecovering + BeautifulDisplay.RESET + ", exists.");
-			return AccountRecoverState.USERNAME_DNE;
+			return AccountChangeState.USERNAME_DNE;
 		}
 
 		//If the account exists...
@@ -161,14 +134,14 @@ final class MainMenu {
 			System.out.println();
 
 			System.out.println("Your answer to the security question was incorrect.");
-			return AccountRecoverState.INCORRECT_ANSWER;
+			return AccountChangeState.INCORRECT_ANSWER;
 		}
 
 		//If the user's answer to their account's security question is correct
 		return recoveryChangePassword(usernameRecovering, secureQuestion, secureAnswer  );
 	}
 	
-	private AccountRecoverState recoveryChangePassword(String usernameChanging, String verifiedSecQuestion, String verifiedSecAnswer) {
+	private AccountChangeState recoveryChangePassword(String usernameChanging, String verifiedSecQuestion, String verifiedSecAnswer) {
 		//If the user's answer to their account's security question is correct
 		while (true) {
 			clearConsole();
@@ -210,7 +183,7 @@ final class MainMenu {
 					continue;
 				}
 				else if (recoverUserChoice == 2) {
-					return AccountRecoverState.RETURN_TO_MENU;
+					return AccountChangeState.RETURN_TO_MENU;
 				}
 				else if (recoverUserChoice == 3) {
 					exitApplication();
@@ -244,7 +217,7 @@ final class MainMenu {
 					continue;
 				}
 				else if (secretComparePassRetryChoice == 2) {
-					return AccountRecoverState.RETURN_TO_MENU;
+					return AccountChangeState.RETURN_TO_MENU;
 				}
 				else if (secretComparePassRetryChoice == 3) {
 					exitApplication();
@@ -260,7 +233,7 @@ final class MainMenu {
 			if (changedPasswordAccepted) {
 				clearConsole();
 				System.out.println("The password for the account, " + usernameChanging + ", has been successfully changed.");
-				return AccountRecoverState.SUCCESSFUL_PASSWORD_CHANGE;
+				return AccountChangeState.SUCCESSFUL_PASSWORD_CHANGE;
 			}
 
 			//If their new password is invalid..(just for safety)
@@ -290,7 +263,7 @@ final class MainMenu {
 			}
 			//Return to login menu
 			else if (recoverUserChoice == 2) {
-				return AccountRecoverState.RETURN_TO_MENU;
+				return AccountChangeState.RETURN_TO_MENU;
 			}
 			//Exit the application
 			else if (recoverUserChoice == 3) {
@@ -394,7 +367,7 @@ final class MainMenu {
 
 				int retries = 0;
 				while (true) {
-					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
+					AccountChangeState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
 					case USERNAME_DNE:
@@ -1455,7 +1428,6 @@ final class MainMenu {
 			}
 
 			boolean isWorkingWithYear = true;
-			int userChoice;
 			while (isWorkingWithYear) {
 				clearConsole();
 				// Pretty predictions screen
@@ -1722,7 +1694,14 @@ final class MainMenu {
 		}
 	}
 
-	private AccountRecoverState decideChangePassword(String usernameChanging, String oldCurrentPassword) {
+	/**
+	 * Handles the creation of a new password when trying to change your password
+	 * 
+	 * @param usernameChanging - the username of the account you want to change the password of
+	 * @param oldCurrentPassword - the old password of the account you want to change the password of
+	 * @return - return the result of what happened when trying to change your password
+	 */
+	private AccountChangeState decideChangePassword(String usernameChanging, String oldCurrentPassword) {
 		//If the user's answer to their account's security question is correct
 		while (true) {
 			clearConsole();
@@ -1764,7 +1743,7 @@ final class MainMenu {
 					continue;
 				}
 				else if (decideUserChoice == 2) {
-					return AccountRecoverState.RETURN_TO_MENU;
+					return AccountChangeState.RETURN_TO_MENU;
 				}
 				else if (decideUserChoice == 3) {
 					exitApplication();
@@ -1796,7 +1775,7 @@ final class MainMenu {
 					continue;
 				}
 				else if (decideComparePassRetryChoice == 2) {
-					return AccountRecoverState.RETURN_TO_MENU;
+					return AccountChangeState.RETURN_TO_MENU;
 				}
 				else if (decideComparePassRetryChoice == 3) {
 					exitApplication();
@@ -1813,7 +1792,7 @@ final class MainMenu {
 			if (changedPasswordAccepted) {
 				clearConsole();
 				System.out.println("The password for the account, " + usernameChanging + ", has been successfully changed.");
-				return AccountRecoverState.SUCCESSFUL_PASSWORD_CHANGE;
+				return AccountChangeState.SUCCESSFUL_PASSWORD_CHANGE;
 			}
 
 			//If their new password is invalid..(just for safety)
@@ -1837,7 +1816,7 @@ final class MainMenu {
 			}
 			//Return to login menu
 			else if (decideUserChoice == 2) {
-				return AccountRecoverState.RETURN_TO_MENU;
+				return AccountChangeState.RETURN_TO_MENU;
 			}
 			//Exit the application
 			else if (decideUserChoice == 3) {
@@ -1856,6 +1835,10 @@ final class MainMenu {
 	private void handleChangePassword(String currentUsername) {
 		while (true) {
 			clearConsole();
+			
+			BeautifulDisplay.printGradientHeader("ACCOUNT SETTINGS", 70);
+			System.out.println();
+			
 			System.out.println("Please enter your current password below and then press enter.");
 			System.out.print("  Current Password: ");
 			String currentPassword = scanner.nextLine();
@@ -1865,7 +1848,7 @@ final class MainMenu {
 
 			//If the current password is valid, then change Password
 			if (validPass) {
-				AccountRecoverState currentPassChange = decideChangePassword(currentUsername, currentPassword);
+				AccountChangeState currentPassChange = decideChangePassword(currentUsername, currentPassword);
 				switch (currentPassChange) {
 				case SUCCESSFUL_PASSWORD_CHANGE:
 					System.out.print("Press enter when you are ready to return to the account settings menu...");
@@ -1909,7 +1892,7 @@ final class MainMenu {
 
 				int retries = 0;
 				while (true) {
-					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
+					AccountChangeState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
 					case INCORRECT_ANSWER:
@@ -2123,7 +2106,7 @@ final class MainMenu {
 
 				int retries = 0;
 				while (true) {
-					AccountRecoverState forgotPasswordReturn = accountRecover(loginSecretUsername);
+					AccountChangeState forgotPasswordReturn = accountRecover(loginSecretUsername);
 
 					switch (forgotPasswordReturn) {
 					case INCORRECT_ANSWER:
@@ -2289,6 +2272,64 @@ final class MainMenu {
 		}
 		return true;
 	}
+	
+	/**
+	 * Prints out the starting animation of the software
+	 */
+	public void intro() {
+		String dash_line = "==========";
+
+		String Hamilton_Heights[] = {
+				"\t  ■■  ■■   ■■■■   ■■■     ■■■  ■■■■  ■■    ■■■■■■  ■■■■■   ■■    ■■     ■■  ■■  ■■■■■  ■■■■    ■■■■■   ■■  ■■   ■■■■■■   ■■■■■  ", 
+				"\t\t  ■■  ■■  ■■  ■■  ■■■■   ■■■■   ■■   ■■      ■■   ■■   ■■  ■■■■  ■■     ■■  ■■  ■■      ■■    ■■       ■■  ■■     ■■    ■■      ",
+				"\t" + dash_line +	"■■■■■■  ■■■■■■  ■■ ■■ ■■ ■■   ■■   ■■      ■■   ■■   ■■  ■■ ■■ ■■     ■■■■■■  ■■■■■   ■■    ■■  ■■   ■■■■■■     ■■     ■■■■ " + dash_line,
+				"\t\t  ■■  ■■  ■■  ■■  ■■  ■■■  ■■   ■■   ■■      ■■   ■■   ■■  ■■  ■■■■     ■■  ■■  ■■      ■■    ■■   ■■  ■■  ■■     ■■        ■■  ",
+				"\t\t  ■■  ■■  ■■  ■■  ■■  ■■■  ■■  ■■■■  ■■■■■■  ■■    ■■■■■   ■■   ■■■     ■■  ■■  ■■■■■  ■■■■    ■■■■■   ■■  ■■     ■■    ■■■■■   " 				
+		};
+
+		for(int i = 0; i < 5; i++) {
+			Hamilton_Heights[i] = Hamilton_Heights[i].replaceAll("■", "█");
+		}
+
+		String personalFinanceManager[] = {
+				"  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■■   ■■■■■   ■■    ■■   ■■■■   ■■       ■■■■■  ■■■■   ■■    ■■   ■■■■   ■■    ■■   ■■■■■  ■■■■■■    ■■■     ■■■   ■■■■   ■■    ■■   ■■■■    ■■■■■   ■■■■■■   ■■■■■     ",
+				"  ■■  ■■  ■■      ■■   ■■  ■■      ■■   ■■  ■■■■  ■■  ■■  ■■  ■■       ■■      ■■    ■■■■  ■■  ■■  ■■  ■■■■  ■■  ■■■     ■■        ■■■■   ■■■■  ■■  ■■  ■■■■  ■■  ■■  ■■  ■■       ■■       ■■   ■■   ",
+				"  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■   ■■   ■■  ■■ ■■ ■■  ■■■■■■  ■■       ■■■■■   ■■    ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■      ■■■■■■    ■■ ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■■■■■  ■■  ■■   ■■■■■■   ■■■■■■    ",
+				"  ■■      ■■      ■■   ■■      ■■  ■■   ■■  ■■  ■■■■  ■■  ■■  ■■       ■■      ■■    ■■  ■■■■  ■■  ■■  ■■  ■■■■  ■■■     ■■        ■■  ■■■  ■■  ■■  ■■  ■■  ■■■■  ■■  ■■  ■■   ■■  ■■       ■■   ■■   ",
+				"  ■■      ■■■■■■  ■■   ■■  ■■■■■    ■■■■■   ■■   ■■■  ■■  ■■  ■■■■     ■■     ■■■■   ■■   ■■■  ■■  ■■  ■■   ■■■   ■■■■■  ■■■■■■    ■■  ■■■  ■■  ■■  ■■  ■■   ■■■  ■■  ■■   ■■■■■   ■■■■■■   ■■   ■■   ",
+
+		};
+		for(int i = 0; i < 5; i++) {
+			personalFinanceManager[i] = personalFinanceManager[i].replaceAll("■", "█");
+		}
+		System.out.println("\n\n");
+		int size = personalFinanceManager[1].length();
+		int index = 0;
+		int time = 0;
+		while(time < 100) {
+			for(String line : Hamilton_Heights) {
+				System.out.println(BeautifulDisplay.BOLD + line + BeautifulDisplay.RESET);
+			};
+			System.out.println();
+			for(String str : personalFinanceManager) {
+				int frame = index;
+				System.out.print("\t\t\t");
+				for(int i = 0; i < 100; i++) {				
+					System.out.print(BeautifulDisplay.BRIGHT_GREEN + str.charAt(frame) + BeautifulDisplay.RESET);
+					frame = ((frame+1)%size);
+				}
+				System.out.println();
+			}
+			index = (index+1)%size;
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+	            Thread.currentThread().interrupt();
+			}
+			time++;
+			clearConsole();
+		}
+	}
 
 	/**
 	 * Runs the entire application with the MainMenu as the main interface for the user to interact with
@@ -2300,11 +2341,11 @@ final class MainMenu {
 	 * @author Shazadul Islam
 	 */
 	public static void main(String[] args) {
-		System.out.println("Hamilton Heights Presents");
-		System.out.println("Personal Finance Manager");
-
 		MainMenu applicationInterface = new MainMenu();
-
+		
+		applicationInterface.intro();
+		
+		applicationInterface.clearConsole();
 		boolean running = true;
 		while (running) {
 			String currentUser = applicationInterface.enter();
