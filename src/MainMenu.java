@@ -2195,69 +2195,91 @@ final class MainMenu {
 	/**
 	 * Account Settings Menu
 	 *
-	 * @param currentUser - username of the currently signed-in user
+	 * @param currentUsername - username of the currently signed-in user
 	 * @return Determines whether or not the user has decided to delete their account
 	 * 		   If the function returns true, then the user has not deleted their account and they can return to the Main Menu
 	 * 		   If the function returns false, then the user has deleted their account and are forcibly moved to the login page
 	 * 
 	 * @author Shazadul Islam
 	 */
-	private boolean accountSettingsMenu(String currentUser) {
+	private boolean accountSettingsMenu(String currentUsername) {
 		boolean inSettings = true;
 		while (inSettings) {
 			clearConsole();
 			// ✨ Pretty ACCOUNT SETTINGS menu
-			BeautifulDisplay.printAccountSettingsMenu(currentUser);
+			BeautifulDisplay.printAccountSettingsMenu(currentUsername);
 			int settingsChoice = getUserChoice(4);
 
 			switch (settingsChoice){
 			case 1:
-				handleChangePassword(currentUser);
+				handleChangePassword(currentUsername);
 				continue;
 			case 2:
-				handleResetSecurity(currentUser);
+				handleResetSecurity(currentUsername);
 				continue;
 			case 3:
 				clearConsole();
-				BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-				System.out.println();
-				System.out.println("Are you sure you want to delete this account: " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN + currentUser + BeautifulDisplay.RESET + "? ");
-				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Yes");
-				System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " No");
-				System.out.println();
-				BeautifulDisplay.printGradientDivider(70);
-				System.out.print("Please enter the number associated with your desired option and then press enter: ");
-				int sureDelAccount = getUserChoice(2);
+				BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);
+				System.out.println("\nPlease enter your current password below and then press enter.");
+				System.out.print("  Current Password: ");
+				
+				String currentPassword = scanner.nextLine();
 
-				if (sureDelAccount == 1) {
-					// Ask ModuleHub / Accounts to delete the user
-					boolean deleted = moduleHub.callAccounts("deleteaccount", currentUser);
+				//Check if the password we just received is valid
+				boolean validPass = moduleHub.verifyPassword(currentUsername, currentPassword);
+				
+				if (validPass) {
+					clearConsole();
+					BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+					System.out.println();
+					System.out.println("Are you sure you want to delete this account: " + BeautifulDisplay.BOLD + BeautifulDisplay.CYAN + currentUsername + BeautifulDisplay.RESET + "? ");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  1." + BeautifulDisplay.RESET + " Yes");
+					System.out.println(BeautifulDisplay.BRIGHT_YELLOW + "  2." + BeautifulDisplay.RESET + " No");
+					System.out.println();
+					BeautifulDisplay.printGradientDivider(70);
+					System.out.print("Please enter the number associated with your desired option and then press enter: ");
+					int sureDelAccount = getUserChoice(2);
 
-					if (deleted) {
-						clearConsole();
-						BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
-						System.out.println();
-						BeautifulDisplay.printSuccess("Your account has been deleted.");
-						System.out.print("Press enter when you are ready to return to the account settings menu...");
-						scanner.nextLine();
-						// Tell main() that the user is NO LONGER logged in
-						return false;
+					if (sureDelAccount == 1) {
+						// Ask ModuleHub / Accounts to delete the user
+						boolean deleted = moduleHub.callAccounts("deleteaccount", currentUsername);
+
+						if (deleted) {
+							clearConsole();
+							BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+							System.out.println();
+							BeautifulDisplay.printSuccess("Your account has been deleted.");
+							System.out.print("Press enter when you are ready to return to the account settings menu...");
+							scanner.nextLine();
+							// Tell main() that the user is NO LONGER logged in
+							return false;
+						} else {
+							clearConsole();
+							BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
+							System.out.println();
+							BeautifulDisplay.printError("Exiting account deletion. Your account has not been removed.");
+							System.out.print("Press enter when you are ready to return to the account settings menu...");
+							scanner.nextLine();
+							break;  // stay logged in / in settings
+						}
+						
 					} else {
 						clearConsole();
 						BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
 						System.out.println();
-						BeautifulDisplay.printError("Account deletion failed. Your account has not been removed.");
 						System.out.print("Press enter when you are ready to return to the account settings menu...");
 						scanner.nextLine();
-						break;  // stay logged in / in settings
+						break;
 					}
-				} else {
+				}
+				else {
 					clearConsole();
 					BeautifulDisplay.printGradientHeader("DELETE ACCOUNT", 70);	
 					System.out.println();
+					BeautifulDisplay.printError("The password you entered is incorrect. Account deletion failed.");
 					System.out.print("Press enter when you are ready to return to the account settings menu...");
 					scanner.nextLine();
-					break;
+					break;  // stay logged in / in settings
 				}
 
 			case 4:
