@@ -166,8 +166,9 @@ public class ScenarioSimulator {
         sb.append("===== Proportional Deficit Plan =====\n");
 
         double deficit = solver.calculateDeficit(); // total adjustable deficit
-        sb.append(String.format("Your deficit that can be fixed through adjustable spending is $%.2f.%n%n",
-                                deficit));
+        int deficitInt = (int) Math.round(deficit); // round to nearest dollar
+        sb.append(String.format("Your deficit that can be fixed through adjustable spending is $%d.%n%n",
+                                deficitInt));
 
         boolean anyCut = false; // check if any cuts are suggested
         for (double cut : cuts) { // check each suggested cut
@@ -186,13 +187,39 @@ public class ScenarioSimulator {
 
         sb.append("Recommended reductions:\n\n");
 
-        for (int i = 0; i < categories.size(); i++) { // list each category
-            double cut = cuts.get(i);          // suggested cut
-            double current = expenses.get(i); // current expense
+        // Determine longest category for dynamic column width
+        int longestCategory = "Category".length();
+        for (String cat : categories) {
+            if (cat.length() > longestCategory) {
+                longestCategory = cat.length();
+            }
+        }
+        // Build table format strings
+        String headerFormat = "%-" + longestCategory + "s  %15s  %14s%n";
+        String rowFormat    = "%-" + longestCategory + "s  %15s  %14s%n";
+        int totalWidth = longestCategory + 34;
+        String separator = "-".repeat(totalWidth);
 
-            if (cut > 0) { // only show categories with suggested cuts
-                sb.append(String.format("  %-15s reduce by $%.2f (current: $%.2f)%n",
-                                        categories.get(i), cut, current));
+        sb.append(String.format(headerFormat, "Category", "Reduce By", "Current Spending"));
+        sb.append(separator).append("\n");
+
+        // Print each reduction row
+        for (int i = 0; i < categories.size(); i++) {
+            double cut = cuts.get(i);      
+            double current = expenses.get(i);
+
+            if (cut > 0) {
+
+                int cutInt = (int) Math.round(cut);
+                int currentInt = (int) Math.round(current);
+
+                String cutStr = "$" + cutInt;
+                String currentStr = "$" + currentInt;
+
+                sb.append(String.format(rowFormat,
+                        capitalize(categories.get(i)), 
+                        cutStr,
+                        currentStr));
             }
         }
 
@@ -300,24 +327,43 @@ public class ScenarioSimulator {
         int annualSurplus = optimizer.getSurplusValue();
         int monthlySurplus = annualSurplus / 12;
 
+        // Find the longest category name to format the table correctly
+        int longestCategory = "Category".length();
+        for (String key : plan.keySet()) { // each category
+            String catName = capitalize(key); // capitalize category name
+            if (catName.length() > longestCategory) { // if this category is longer
+                longestCategory = catName.length(); // update longest category length
+            }
+        }
+        // Format strings for table headers and rows
+        String headerFormat = "%-" + longestCategory + "s  %15s  %15s%n";
+        String rowFormat    = "%-" + longestCategory + "s  %15s  %15s%n";
+        // Calculate total width of the table for the separator line
+        int totalWidth = longestCategory + 34;
+        String separatorLine = "-".repeat(totalWidth);
+
         StringBuilder sb = new StringBuilder(); // build the plan string
         sb.append("===== Proportional Surplus Plan =====\n");
         sb.append(String.format("You have an annual surplus of $%d (≈ $%d per month).%n%n",
-                                annualSurplus, monthlySurplus));
+                                annualSurplus, monthlySurplus)); // annual and monthly surplus
         sb.append("This plan allocates your surplus in proportion to how much you\n");
         sb.append("currently spend in each category.\n\n");
-        sb.append(String.format("%-30s  %15s  %15s%n",
-                                "Category", "Annual Increase", "≈ Monthly"));
-        sb.append("--------------------------------------------------------\n");
+
+        // Use dynamic header formatting
+        sb.append(String.format(headerFormat, // header format
+                                "Category", "Annual Increase", "≈ Monthly")); // header line
+        sb.append(separatorLine).append("\n"); // separator line
+
 
         for (Map.Entry<String, Integer> entry : plan.entrySet()) { // each category
             String cat = capitalize(entry.getKey()); // category name
             int annual = entry.getValue();          // annual increase
             int monthly = (int) Math.round(annual / 12.0); // monthly approx
+            String annualStr = "$" + annual;
+            String monthlyStr = "$" + monthly;
 
-
-            sb.append(String.format("%-30s  $%14d  $%14d%n",
-                                    cat, annual, monthly)); // formatted line
+            sb.append(String.format(rowFormat,
+                            cat, annualStr, monthlyStr)); // formatted line
         }
 
         sb.append("\nAfter following this plan, you should end at break-even.\n");
