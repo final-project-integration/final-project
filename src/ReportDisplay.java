@@ -12,6 +12,17 @@ import java.util.ArrayList;
  */
 public class ReportDisplay {
 
+     /**
+     * Default constructor
+     * This constructor performs no additional initialization because the class
+     * is stateless and only formats data passed into its methods.
+     *
+     * @author Denisa Cakoni
+     */
+    public ReportDisplay() {
+
+    }
+    
     /**
      * Prints a colored header with horizontal lines of a fixed width.
      *
