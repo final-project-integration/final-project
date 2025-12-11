@@ -2310,58 +2310,91 @@ final class MainMenu {
 	 * @author Aaron Madou
 	 */
 	public void intro() {
-		String dash_line = "==========";
+	    final String RESET = BeautifulDisplay.RESET;
+	    final String GREEN = BeautifulDisplay.BRIGHT_GREEN;
+	    final String BOLD = BeautifulDisplay.BOLD;
 
-		String Hamilton_Heights[] = {
-				"\t\t  ■■  ■■   ■■■■   ■■■     ■■■  ■■■■  ■■    ■■■■■■  ■■■■■   ■■    ■■     ■■  ■■  ■■■■■  ■■■■    ■■■■■   ■■  ■■   ■■■■■■   ■■■■■  ", 
-				"\t\t  ■■  ■■  ■■  ■■  ■■■■   ■■■■   ■■   ■■      ■■   ■■   ■■  ■■■■  ■■     ■■  ■■  ■■      ■■    ■■       ■■  ■■     ■■    ■■      ",
-				"\t" + dash_line +	"■■■■■■  ■■■■■■  ■■ ■■ ■■ ■■   ■■   ■■      ■■   ■■   ■■  ■■ ■■ ■■     ■■■■■■  ■■■■■   ■■    ■■  ■■   ■■■■■■     ■■     ■■■■ " + dash_line,
-				"\t\t  ■■  ■■  ■■  ■■  ■■  ■■■  ■■   ■■   ■■      ■■   ■■   ■■  ■■  ■■■■     ■■  ■■  ■■      ■■    ■■   ■■  ■■  ■■     ■■        ■■  ",
-				"\t\t  ■■  ■■  ■■  ■■  ■■  ■■■  ■■  ■■■■  ■■■■■■  ■■    ■■■■■   ■■   ■■■     ■■  ■■  ■■■■■  ■■■■    ■■■■■   ■■  ■■     ■■    ■■■■■   " 				
-		};
+	    final String CLEAR = "\033[H\033[2J";
+	    final int FPS = 60;
+	    final long FRAME_TIME = 1_000_000_000L / FPS; // Nanoseconds per frame
 
-		for(int i = 0; i < 5; i++) {
-			Hamilton_Heights[i] = Hamilton_Heights[i].replaceAll("■", "█");
-		}
+	    String dash_line = "==========";
 
-		String personalFinanceManager[] = {
-				"  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■■   ■■■■■   ■■    ■■   ■■■■   ■■       ■■■■■  ■■■■   ■■    ■■   ■■■■   ■■    ■■   ■■■■■  ■■■■■■    ■■■     ■■■   ■■■■   ■■    ■■   ■■■■    ■■■■■   ■■■■■■   ■■■■■     ",
-				"  ■■  ■■  ■■      ■■   ■■  ■■      ■■   ■■  ■■■■  ■■  ■■  ■■  ■■       ■■      ■■    ■■■■  ■■  ■■  ■■  ■■■■  ■■  ■■■     ■■        ■■■■   ■■■■  ■■  ■■  ■■■■  ■■  ■■  ■■  ■■       ■■       ■■   ■■   ",
-				"  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■   ■■   ■■  ■■ ■■ ■■  ■■■■■■  ■■       ■■■■■   ■■    ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■      ■■■■■■    ■■ ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■■■■■  ■■  ■■   ■■■■■■   ■■■■■■    ",
-				"  ■■      ■■      ■■   ■■      ■■  ■■   ■■  ■■  ■■■■  ■■  ■■  ■■       ■■      ■■    ■■  ■■■■  ■■  ■■  ■■  ■■■■  ■■■     ■■        ■■  ■■■  ■■  ■■  ■■  ■■  ■■■■  ■■  ■■  ■■   ■■  ■■       ■■   ■■   ",
-				"  ■■      ■■■■■■  ■■   ■■  ■■■■■    ■■■■■   ■■   ■■■  ■■  ■■  ■■■■     ■■     ■■■■   ■■   ■■■  ■■  ■■  ■■   ■■■   ■■■■■  ■■■■■■    ■■  ■■■  ■■  ■■  ■■  ■■   ■■■  ■■  ■■   ■■■■■   ■■■■■■   ■■   ■■   ",
+	    String Hamilton_Heights[] = {
+	        "\t\t  ■■  ■■   ■■■■   ■■■     ■■■  ■■■■  ■■    ■■■■■■  ■■■■■   ■■    ■■     ■■  ■■  ■■■■■  ■■■■    ■■■■■   ■■  ■■   ■■■■■■   ■■■■■  ", 
+	        "\t\t  ■■  ■■  ■■  ■■  ■■■■   ■■■■   ■■   ■■      ■■   ■■   ■■  ■■■■  ■■     ■■  ■■  ■■      ■■    ■■       ■■  ■■     ■■    ■■      ",
+	        "\t" + dash_line + "■■■■■■  ■■■■■■  ■■ ■■ ■■ ■■   ■■   ■■      ■■   ■■   ■■  ■■ ■■ ■■     ■■■■■■  ■■■■■   ■■    ■■  ■■   ■■■■■■     ■■     ■■■■ " + dash_line,
+	        "\t\t  ■■  ■■  ■■  ■■  ■■  ■■■  ■■   ■■   ■■      ■■   ■■   ■■  ■■  ■■■■     ■■  ■■  ■■      ■■    ■■   ■■  ■■  ■■     ■■        ■■  ",
+	        "\t\t  ■■  ■■  ■■  ■■  ■■  ■■■  ■■  ■■■■  ■■■■■■  ■■    ■■■■■   ■■   ■■■     ■■  ■■  ■■■■■  ■■■■    ■■■■■   ■■  ■■     ■■    ■■■■■   "
+	    };
 
-		};
-		for(int i = 0; i < 5; i++) {
-			personalFinanceManager[i] = personalFinanceManager[i].replaceAll("■", "█");
-		}
-		System.out.println("\n\n");
-		int size = personalFinanceManager[1].length();
-		int index = 0;
-		int time = 0;
-		while(time < 100) {
-			for(String line : Hamilton_Heights) {
-				System.out.println(BeautifulDisplay.BOLD + line + BeautifulDisplay.RESET);
-			};
-			System.out.println();
-			for(String str : personalFinanceManager) {
-				int frame = index;
-				System.out.print("\t\t\t");
-				for(int i = 0; i < 100; i++) {				
-					System.out.print(BeautifulDisplay.BRIGHT_GREEN + str.charAt(frame) + BeautifulDisplay.RESET);
-					frame = ((frame+1)%size);
-				}
-				System.out.println();
-			}
-			index = (index+1)%size;
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-	            Thread.currentThread().interrupt();
-			}
-			time++;
-			clearConsole();
-		}
+	    String personalFinanceManager[] = {
+	        "  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■■   ■■■■■   ■■    ■■   ■■■■   ■■       ■■■■■  ■■■■   ■■    ■■   ■■■■   ■■    ■■   ■■■■■  ■■■■■■    ■■■     ■■■   ■■■■   ■■    ■■   ■■■■    ■■■■■   ■■■■■■   ■■■■■     ",
+	        "  ■■  ■■  ■■      ■■   ■■  ■■      ■■   ■■  ■■■■  ■■  ■■  ■■  ■■       ■■      ■■    ■■■■  ■■  ■■  ■■  ■■■■  ■■  ■■■     ■■        ■■■■   ■■■■  ■■  ■■  ■■■■  ■■  ■■  ■■  ■■       ■■       ■■   ■■   ",
+	        "  ■■■■■■  ■■■■■■  ■■■■■■    ■■■■   ■■   ■■  ■■ ■■ ■■  ■■■■■■  ■■       ■■■■■   ■■    ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■      ■■■■■■    ■■ ■■ ■■ ■■  ■■■■■■  ■■ ■■ ■■  ■■■■■■  ■■  ■■   ■■■■■■   ■■■■■■    ",
+	        "  ■■      ■■      ■■   ■■      ■■  ■■   ■■  ■■  ■■■■  ■■  ■■  ■■       ■■      ■■    ■■  ■■■■  ■■  ■■  ■■  ■■■■  ■■■     ■■        ■■  ■■■  ■■  ■■  ■■  ■■  ■■■■  ■■  ■■  ■■   ■■  ■■       ■■   ■■   ",
+	        "  ■■      ■■■■■■  ■■   ■■  ■■■■■    ■■■■■   ■■   ■■■  ■■  ■■  ■■■■     ■■     ■■■■   ■■   ■■■  ■■  ■■  ■■   ■■■   ■■■■■  ■■■■■■    ■■  ■■■  ■■  ■■  ■■  ■■   ■■■  ■■  ■■   ■■■■■   ■■■■■■   ■■   ■■   ",
+	    };
+
+	    for (int i = 0; i < 5; i++) {
+	        Hamilton_Heights[i] = Hamilton_Heights[i].replace('■', '█');
+	        personalFinanceManager[i] = personalFinanceManager[i].replace('■', '█');
+	    }
+
+	    // Precompute sliding frames for every row of personalFinanceManager
+	    int size = personalFinanceManager[0].length();
+	    String[][] sliding = new String[5][size];
+
+	    for (int row = 0; row < 5; row++) {
+	        String str = personalFinanceManager[row];
+	        for (int start = 0; start < size; start++) {
+	            StringBuilder sb = new StringBuilder(100);
+	            int idx = start;
+	            for (int i = 0; i < 100; i++) {
+	                sb.append(str.charAt(idx));
+	                idx = (idx + 1) % size;
+	            }
+	            sliding[row][start] = sb.toString();
+	        }
+	    }
+
+	    int index = 0;
+	    long nextFrame = System.nanoTime();
+
+	    for (int t = 0; t < 100; t++) {
+	        StringBuilder frame = new StringBuilder(8000);
+
+	        // Fast clear
+	        frame.append(CLEAR);
+
+	        // Big banner
+	        for (String line : Hamilton_Heights) {
+	            frame.append(BOLD).append(line).append(RESET).append('\n');
+	        }
+	        frame.append('\n');
+
+	        // Sliding text
+	        frame.append(GREEN);
+	        for (int row = 0; row < 5; row++) {
+	            frame.append("\t\t\t").append(sliding[row][index]).append('\n');
+	        }
+	        frame.append(RESET);
+
+	        // Print entire frame at once
+	        System.out.print(frame.toString());
+	        System.out.flush();
+
+	        // FPS pacing
+	        nextFrame += FRAME_TIME;
+	        long sleepNanos = nextFrame - System.nanoTime();
+	        if (sleepNanos > 0) {
+	            try {
+	                Thread.sleep(sleepNanos / 1_000_000, (int)(sleepNanos % 1_000_000));
+	            } catch (InterruptedException ignored) {}
+	        }
+
+	        index = (index + 1) % size;
+	    }
 	}
 
 	/**
