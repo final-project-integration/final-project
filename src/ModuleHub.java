@@ -6,7 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 /**
  * ModuleHub is the integration layer and traffic controller for the application.
  * It routes requests between Accounts, Storage, Reports, Prediction, and Validation modules.
@@ -413,8 +414,84 @@ public class ModuleHub {
         }
 
         try {
-            storageModule.importCSV(username, year, csvFile.getPath());
+            //  Read all lines from the original CSV
+            List<String> lines = readAllLines(csvFile);
+            if (lines.isEmpty()) {
+                System.out.println("[ModuleHub] CSV file is empty, nothing to import.");
+                return false;
+            }
+
+            // 2) Re-run validation so we know which rows are valid vs invalid
+            ValidationResult validation =
+                    validationModule.validateCsvLines(csvFile.getName(), lines);
+
+            // Treat only header / whole-file problems as fatal.
+            boolean hasFatalFileError = false;
+            for (String msg : validation.getErrorMessages()) {
+                String lower = msg.toLowerCase();
+
+                boolean headerOrFileProblem =
+                        lower.contains("header")
+                                || (lower.contains("column") && lower.contains("count"))
+                                || lower.contains("too many columns")
+                                || lower.contains("too few columns")
+                                || lower.contains("empty file")
+                                || lower.contains("no data rows");
+
+                if (headerOrFileProblem) {
+                    hasFatalFileError = true;
+                    break;
+                }
+            }
+
+            if (hasFatalFileError) {
+
+                System.out.println("[ModuleHub] Cannot import CSV due to header/structure errors.");
+                return false;
+            }
+
+            // filtered list header + only rows that are marked valid
+            List<String> filteredLines = new ArrayList<>();
+            filteredLines.add(lines.get(0)); // header
+
+            for (int i = 1; i < lines.size(); i++) {
+                String line = lines.get(i);
+                if (line == null || line.trim().isEmpty()) {
+                    continue;
+                }
+
+                int lineNumber = i + 1;
+
+                // Only keep rows that are explicitly marked valid
+                if (!validation.isRowValid(lineNumber)) {
+                    continue; // skip invalid rows
+                }
+
+                filteredLines.add(line);
+            }
+
+            if (filteredLines.size() <= 1) {
+                // only header / no valid data
+
+                System.out.println("[ModuleHub] No valid data rows found to import.");
+                return false;
+            }
+
+            //  writes filtered lines to a temporary cleaned CSV file
+            File cleanedFile = File.createTempFile("pfm_clean_", ".csv");
+            cleanedFile.deleteOnExit(); // best-effort cleanup
+
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(cleanedFile))) {
+                for (String l : filteredLines) {
+                    bw.write(l);
+                    bw.newLine();
+                }
+            }
+
+            // 5) Now import ONLY the cleaned CSV into storage
+            storageModule.importCSV(username, year, cleanedFile.getPath());
             return true;
+
         } catch (Exception e) {
             errorHandler.handleModuleError("Storage", e);
             return false;
